@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdSlot from "@/components/AdSlot";
+import { indefiniteArticle, withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
 import { getResult } from "@/lib/result-store";
 import ResultActions from "./ResultActions";
@@ -15,13 +16,14 @@ export async function generateMetadata({ params }: ResultPageProps): Promise<Met
   const result = await getResult(id);
   if (!result) return { title: "Result not found", robots: { index: false, follow: false } };
   const name = `${result.primary.raceName} ${result.primary.className}`;
+  const phrase = withArticle(name);
   const description = `My WoW Forever pick is ${name}. ${result.primary.verdict}`;
   return {
-    title: `You should play a ${name}`,
+    title: `You should play ${phrase}`,
     description,
     robots: { index: false, follow: true },
-    openGraph: { title: `You should play a ${name}`, description, type: "article", url: `/result/${id}` },
-    twitter: { card: "summary_large_image", title: `You should play a ${name}`, description },
+    openGraph: { title: `You should play ${phrase}`, description, type: "article", url: `/result/${id}` },
+    twitter: { card: "summary_large_image", title: `You should play ${phrase}`, description },
   };
 }
 
@@ -42,7 +44,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
       <div className="mx-auto max-w-6xl px-5 pb-20 pt-10 sm:px-8 sm:pt-16">
         <div className="max-w-4xl">
           <p className="eyebrow">Your WoW Forever pick</p>
-          <h1 className="display-font mt-4 text-5xl leading-[0.96] sm:text-7xl">You should play a <span className="text-[var(--gold-bright)]">{title}</span>.</h1>
+          <h1 className="display-font mt-4 text-5xl leading-[0.96] sm:text-7xl">You should play {indefiniteArticle(title)} <span className="text-[var(--gold-bright)]">{title}</span>.</h1>
           <p className="mt-7 max-w-3xl text-xl leading-8 text-[var(--muted)] sm:text-2xl sm:leading-9">{result.primary.verdict}</p>
           <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/[.03] px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--teal)]">
             <span aria-hidden="true">◉</span> Data checked {result.dataCheckedLabel}

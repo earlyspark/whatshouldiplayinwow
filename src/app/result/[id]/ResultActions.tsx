@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { track } from "@vercel/analytics";
+import { withArticle } from "@/lib/article";
 
 export default function ResultActions({ title }: { title: string }) {
   const [copied, setCopied] = useState(false);
@@ -17,7 +18,7 @@ export default function ResultActions({ title }: { title: string }) {
   const share = async () => {
     if (!navigator.share) return copy();
     try {
-      await navigator.share({ title, text: `I should play a ${title} in WoW Forever.`, url: window.location.href });
+      await navigator.share({ title, text: `I should play ${withArticle(title)} in WoW Forever.`, url: window.location.href });
       track("result_shared", { method: "native" });
     } catch { /* User cancelled the share sheet. */ }
   };
