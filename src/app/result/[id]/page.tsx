@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cache } from "react";
+import { Suspense, cache } from "react";
 import AdSlot from "@/components/AdSlot";
+import AmazonBanner from "@/components/AmazonBanner";
 import { indefiniteArticle, withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
 import { getResult } from "@/lib/result-store";
@@ -66,7 +67,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{result.primary.whyClass}</p>
             </section>
 
-            <div className="lg:hidden"><AdSlot placement="sidebar" /></div>
+            <div className="lg:hidden"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" /></Suspense></div>
 
             <section className="glass-panel rounded-3xl p-6 sm:p-8">
               <p className="eyebrow">Why the race fits</p>
@@ -83,7 +84,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <p className="mt-5 text-xs leading-5 text-[var(--muted)]">Forever is still evolving. Trait wording and values may change after this result’s {result.dataCheckedLabel} data review.</p>
             </section>
           </div>
-          <div className="hidden lg:sticky lg:top-6 lg:block"><AdSlot placement="sidebar" /></div>
+          <div className="hidden lg:sticky lg:top-6 lg:block"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" /></Suspense></div>
         </div>
 
         <section className="mt-16" aria-labelledby="alternatives-title">
@@ -99,7 +100,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
           </div>
         </section>
 
-        <div className="mt-10"><AdSlot placement="inline" /></div>
+        <div className="mt-10"><Suspense fallback={<AdSlot placement="inline" />}><AmazonBanner placement="inline" /></Suspense></div>
 
         <section className="mt-12 rounded-3xl border border-[var(--line)] bg-white/[.025] p-6 sm:p-8">
           <h2 className="display-font text-3xl">Take this pick with you</h2>
