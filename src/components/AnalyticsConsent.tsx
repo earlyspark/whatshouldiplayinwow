@@ -4,21 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import GoogleAnalyticsPageViews from "./GoogleAnalyticsPageViews";
+import { prepareGtag } from "@/lib/gtag";
 
 const CONSENT_KEY = "wow-forever-analytics-consent";
 const SETTINGS_EVENT = "wow-forever-open-analytics-settings";
 type Choice = "accepted" | "declined";
-
-declare global {
-  interface Window {
-    dataLayer?: unknown[];
-  }
-}
-
-function prepareGtag() {
-  window.dataLayer ??= [];
-  window.gtag ??= (...args: unknown[]) => { window.dataLayer?.push(args); };
-}
 
 function clearAnalyticsCookies() {
   const names = document.cookie.split(";").map((part) => part.trim().split("=")[0]);
@@ -104,7 +94,7 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
           <div className="surface mx-auto max-w-3xl border-[var(--bronze-dim)] bg-[var(--surface)] p-5 shadow-2xl sm:p-6">
             <h2 id="cookie-consent-title" className="t-card">Cookie consent</h2>
             <p className="t-small mt-2 text-[var(--dim)]">
-              Use Google Analytics cookies to measure visits, quiz interactions, and affiliate-link clicks. The quiz works if you decline. Read more in{" "}
+              Read more in{" "}
               <Link href="/methodology#privacy" className="link-bronze focus-ring">privacy and cookies</Link>.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">

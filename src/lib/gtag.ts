@@ -11,10 +11,20 @@ import { redactedPageUrl } from "@/lib/analytics-url";
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
 export type EventParams = Record<string, string | number | boolean | undefined>;
+
+export function prepareGtag() {
+  window.dataLayer ??= [];
+  window.gtag ??= function gtag() {
+    // Google tag expects an Arguments object in dataLayer, not a rest-parameter array.
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer?.push(arguments);
+  };
+}
 
 function send(command: string, name: string, params: EventParams) {
   if (typeof window === "undefined" || typeof window.gtag !== "function") return;
