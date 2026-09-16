@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
 import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
+import CreatorShopCard from "@/components/CreatorShopCard";
 import SiteFooter from "@/components/SiteFooter";
 import WowheadTooltips from "@/components/WowheadTooltips";
 import crest from "../../../../assets/crest.png";
@@ -98,7 +99,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
               )}
             </section>
 
-            <div className="lg:hidden"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense></div>
+            <div className="lg:hidden space-y-5">
+              <CreatorShopCard />
+              <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense>
+            </div>
 
             <section className="surface p-6 sm:p-8">
               <p className="t-label text-[var(--dim)]">Class</p>
@@ -124,7 +128,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <div className="mt-6"><ResultActions /></div>
             </section>
           </div>
-          <div className="hidden lg:sticky lg:top-6 lg:block"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense></div>
+          <div className="hidden lg:block lg:space-y-5">
+            <CreatorShopCard />
+            <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense>
+          </div>
         </div>
 
         <SiteFooter />
