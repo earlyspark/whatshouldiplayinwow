@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cache } from "react";
+import { Suspense, cache } from "react";
 import AdSlot from "@/components/AdSlot";
+import AmazonBanner from "@/components/AmazonBanner";
+import ContextualPick from "@/components/ContextualPick";
 import crest from "../../../../assets/crest.png";
 import { indefiniteArticle, withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
@@ -37,6 +39,9 @@ export default async function ResultPage({ params }: ResultPageProps) {
   if (!result) notFound();
   const isOutdated = result.dataVersion !== DATA_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;
+  // Ties the result page ads to the pick the reader just received, rather than
+  // the generic pool the quiz pages rotate through.
+  const resultKeywords = `World of Warcraft ${result.primary.className}`;
 
   return (
     <main id="main-content" className="min-h-screen">
@@ -65,14 +70,20 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <p className="t-label text-[var(--dim)]">Why the class fits</p>
               <h2 className="t-section mt-3">{result.primary.className}</h2>
               <p className="t-body mt-4 text-[var(--dim)]">{result.primary.whyClass}</p>
+              <Suspense fallback={null}>
+                <ContextualPick lead="Kitting out for the climb?" seed={`${id}:class`} keywords={resultKeywords} />
+              </Suspense>
             </section>
 
-            <div className="lg:hidden"><AdSlot placement="sidebar" /></div>
+            <div className="lg:hidden"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} /></Suspense></div>
 
             <section className="surface p-6 sm:p-8">
               <p className="t-label text-[var(--dim)]">Why the race fits</p>
               <h2 className="t-section mt-3">{result.primary.raceName}</h2>
               <p className="t-body mt-4 text-[var(--dim)]">{result.primary.whyRace}</p>
+              <Suspense fallback={null}>
+                <ContextualPick lead="Worth a look while you wait for launch:" seed={`${id}:race`} keywords={resultKeywords} />
+              </Suspense>
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 {result.primary.racials.map((racial) => (
                   <article key={racial.name} className="inset border-l-2 border-l-[var(--plum)] p-4">
@@ -84,7 +95,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <p className="t-small mt-6 text-[var(--dim)]">Forever is still evolving. Trait wording and values may change after this result’s {result.dataCheckedLabel} data review.</p>
             </section>
           </div>
-          <div className="hidden lg:sticky lg:top-6 lg:block"><AdSlot placement="sidebar" /></div>
+          <div className="hidden lg:sticky lg:top-6 lg:block"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} /></Suspense></div>
         </div>
 
         <section className="mt-16" aria-labelledby="alternatives-title">
@@ -100,7 +111,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
           </div>
         </section>
 
-        <div className="mt-10"><AdSlot placement="inline" /></div>
+        <div className="mt-10"><Suspense fallback={<AdSlot placement="inline" />}><AmazonBanner placement="inline" keywords={resultKeywords} /></Suspense></div>
 
         <section className="surface mt-12 p-6 sm:p-8">
           <h2 className="t-section">Take this pick with you</h2>

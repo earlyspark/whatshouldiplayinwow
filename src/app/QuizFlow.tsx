@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { questions, QUIZ_VERSION, type QuizOption } from "@/data/questions";
+import QuizBanner from "@/components/QuizBanner";
 import { trackEvent } from "@/lib/gtag";
 
 type Answers = Record<string, string[]>;
@@ -253,6 +254,7 @@ export default function QuizFlow() {
           {error && <p role="alert" className="t-small mt-5 text-[var(--warn)]">{error}</p>}
         </motion.div>
       </AnimatePresence>
+      <QuizBanner questionIndex={index} />
     </section>
   );
 }
