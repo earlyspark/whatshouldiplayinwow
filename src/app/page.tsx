@@ -7,7 +7,7 @@ import { siteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "What Should I Play? WoW Forever Race & Class Quiz",
-  description: "Which World of Warcraft: Forever race and class should you play? Rank your playstyle, fantasy, and favorite content to get a personalized pick.",
+  description: "Which World of Warcraft: Forever race and class should you play? Rank your playstyle, fantasy, and preferred adventures to get a personalized pick.",
   alternates: { canonical: siteUrl },
 };
 

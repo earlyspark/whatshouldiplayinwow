@@ -11,10 +11,25 @@ import { siteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
+const shareTitle = "How this WoW Forever quiz works";
+const shareDescription = "See how your playstyle answers become a WoW Forever race and class recommendation.";
+
 export const metadata: Metadata = {
-  title: "How the WoW Forever quiz works",
-  description: "A quick look behind the WoW Forever race and class quiz: how it makes a pick, why it offers alternatives, and where its game data comes from.",
+  title: shareTitle,
+  description: shareDescription,
   alternates: { canonical: `${siteUrl}/methodology` },
+  openGraph: {
+    title: shareTitle,
+    description: shareDescription,
+    type: "website",
+    url: `${siteUrl}/methodology`,
+    siteName: "What Should I Play?",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: shareTitle,
+    description: shareDescription,
+  },
 };
 
 export default function MethodologyPage() {

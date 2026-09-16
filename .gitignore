@@ -3,7 +3,8 @@ node_modules/
 .vercel/
 coverage/
 .env*
-!.env.example
+AGENTS.md
+CLAUDE.md
 *.tsbuildinfo
 .DS_Store
 npm-debug.log*

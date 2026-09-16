@@ -1,126 +1,123 @@
 # What Should I Play?
 
-A deterministic, shareable World of Warcraft: Forever race and class quiz.
+A 12-question quiz that suggests a race and class for *World of Warcraft: Forever*. It asks how you like to play, and gives you one main pick plus two alternatives you can share with friends.
 
-## Local development
+![The quiz landing page](docs/screenshots/home.png)
 
-```bash
-npm install
-npm run dev
-```
+## What you get
 
-Copy `.env.example` to `.env.local`. Redis is optional in development; an in-memory result store is used when Redis variables are absent. Redis is required in production. Result creation is deliberately not rate-limited on localhost, even when local testing uses the shared Redis database. Vercel preview and production deployments retain the hourly limit.
+After the last question you land on a result page with its own shareable link:
 
-## Vercel configuration
+- **Your main pick**, such as *Tauren Shaman*, with a short explanation for the race and the class based on the answers
+- **The race's racial abilities**, so you can see what the race actually does for you
+- **Two alternatives**: one keeps your class with a different race, the other suggests a different class
+- A retake prompt if the game data has changed since you took the quiz
 
-Set these environment variables:
+<img src="docs/screenshots/result.png" alt="A result page recommending Tauren Shaman, with racials and two alternatives" width="600">
+
+## The questions
+
+The quiz covers:
+
+1. When you started playing WoW
+2. Which faction you lean toward
+3. What you're most excited to do in Forever (questing, dungeons, raids, PvP, crafting, exploration, community)
+4. What you like to contribute to a group
+5. How you like to fight
+6. How you react when a fight gets unpredictable
+7. How you feel about pets and summoned companions
+8. The kinds of adventures you enjoy (solo, duo, small or large groups, open world)
+9. Which character fantasy pulls you in
+10. What you do first when a plan falls apart
+11. Which starting-zone atmosphere appeals to you
+12. What annoys you the most
+
+Some questions take a single answer. Others ask you to **rank** up to three picks (two for character fantasy).
+
+## How scoring works
+
+The scoring is deterministic. There's no randomness and no AI involved, so the same answers and the same game data always give the same result.
+
+### 1. Every valid combination is scored
+
+The quiz scores all 56 race and class combinations available in Forever and never suggests a pairing you can't create.
+
+### 2. Each answer gives points to classes and races
+
+Each answer adds 0 to 3 points to the classes and races it fits. For example, *Keep allies alive* favors Priest, Paladin and Shaman, while *Ranged weapons & a companion* favors Hunter and Warlock. Your answer to "What annoys you the most?" can also **subtract** points (up to −3) from classes that are known for that frustration, such as downtime between fights or juggling lots of buttons.
+
+### 3. Questions carry different weight
+
+Some questions say more about class and others say more about race. Each question has a separate class weight and race weight:
+
+| Question | Class weight | Race weight |
+| --- | :---: | :---: |
+| How you react when a fight gets unpredictable | 3 | — |
+| Starting-zone atmosphere | — | 3 |
+| Character fantasy | 2.5 | — |
+| Faction | — | 2.5 |
+| What annoys you | 2.2 | 0.6 |
+| What you do when a plan falls apart | — | 2.2 |
+| Group contribution | 2 | — |
+| Fighting style | 2 | — |
+| Adventures you enjoy | 1.7 | 0.3 |
+| Pets and companions | 1.5 | — |
+| What you're excited about | 1.2 | 1.2 |
+| When you started playing | — | 0.5 |
+
+### 4. Your first ranked pick counts most
+
+For ranked questions, one question's worth of points is split across your picks:
+
+| Picks | 1st | 2nd | 3rd |
+| --- | :---: | :---: | :---: |
+| 1 | 100% | | |
+| 2 | 62.5% | 37.5% | |
+| 3 | 55.6% | 33.3% | 11.1% |
+
+If one option is a clear favorite, pick only that one and it gets the full weight.
+
+### 5. Class fit matters more than race fit
+
+For each combination, the class total and race total are each scaled against the highest score possible. The final score is:
 
 ```text
-NEXT_PUBLIC_SITE_URL=https://whatshouldiplayinwowforever.com
-WOWFOREVER_KV_REST_API_URL=
-WOWFOREVER_KV_REST_API_TOKEN=
-CRON_SECRET=
-STATS_PASSWORD=
-NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG=
-NEXT_PUBLIC_GA_MEASUREMENT_ID=
-AMAZON_CREATORS_CREDENTIAL_ID=
-AMAZON_CREATORS_CREDENTIAL_SECRET=
-AMAZON_CREATORS_VERSION=3.1
-AMAZON_CREATORS_MARKETPLACE=www.amazon.com
-AMAZON_AD_ASINS=
-AMAZON_AD_KEYWORDS=World of Warcraft
-AMAZON_AD_PINNED_ASIN=
-AMAZON_AD_POOL_SIZE=50
+score = 65% × class fit + 35% × race fit
 ```
 
-The Upstash aliases `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are also supported. Connect the repository to Vercel and provision Upstash from the Vercel Marketplace. `vercel.json` schedules the authenticated daily keepalive route.
+Your race is still part of the result, but your class has more effect on how the game feels day to day.
 
-## Quiz statistics
+### A few special rules
 
-Set a strong, unique `STATS_PASSWORD` in Vercel's **Production** environment. After deployment, open `https://www.whatshouldiplayinwowforever.com/stats` and sign in with username `admin` and that password. The private page shows all-time and monthly answer totals, first-ranked choices, and recommended races/classes. It is excluded from search indexing. Without the password, the page fails closed.
+- **Faction is just a preference.** Choosing Alliance or Horde gives that faction's races a large boost, but a strong enough match on the other side can still win.
+- **Community players get more say in atmosphere.** Ranking *Community & the vibes* doesn't favor either faction. Instead, it makes your starting-zone atmosphere answer count more: ×1.5 when ranked first, ×1.3 second, ×1.15 third.
+- **Ties are broken by your top priorities.** If two combinations have the same score, the quiz first compares how well each one matches your first-ranked picks, then how well each class fits your answer about unpredictable fights.
 
-A quiz is counted only after its creator reaches the result page with the private completion receipt. Redis marks each result ID counted and increments its monthly totals in one atomic operation, so reloads and shared-link visits cannot add duplicates. Only a Vercel production deployment (`VERCEL=1` and `VERCEL_ENV=production`) writes statistics; local and preview tests never tally, even if they share production Redis credentials. Totals start at deployment and do not backfill older results. Each retake is another completed result, not a unique person.
+### Picking the alternatives
 
-## Data updates
+The alternatives aren't just the 2nd- and 3rd-highest scores, since those would often be near-duplicates of your main pick. Instead you get:
 
-Forever source data, compatibility, and the public checked date live in `src/data/forever.ts`. Scoring weights live separately in `src/data/scoring-config.ts`. Update `DATA_VERSION`, `DATA_CHECKED_AT`, and `DATA_CHECKED_LABEL` whenever the source data is reviewed.
+- **The highest-scoring combination with the same class and a different race**, to show what changing only your race would do
+- **The highest-scoring combination with a different class**, if you want a different playstyle
 
-## Amazon affiliate banners
+## How the data is kept up to date
 
-Amazon retired the Product Advertising API (PA-API 5.0) on 15 May 2026, along with
-the static banner and iframe creatives that used to be pasted into a page. Banners
-are now built from catalog data returned by the **Creators API**.
+The race and class list, which combinations are allowed, and each race's racials are checked by hand against:
 
-Create a credential in Associates Central under Tools → Creators API, then set
-`AMAZON_CREATORS_CREDENTIAL_ID` and `AMAZON_CREATORS_CREDENTIAL_SECRET`. The secret
-is shown only once. These are server-only and must never carry a `NEXT_PUBLIC_`
-prefix.
+- Blizzard's [*What's Next* panel recap](https://worldofwarcraft.blizzard.com/en-us/news/24303862/world-of-warcraft-forever-whats-next-panel-recap)
+- Blizzard's [*Deep Dive* panel recap](https://worldofwarcraft.blizzard.com/en-us/news/24303313/world-of-warcraft-forever-deep-dive-panel-recap)
+- Wowhead's [racials and class-race combinations guide](https://www.wowhead.com/forever/guide/new-race-class-combinations)
 
-`AMAZON_CREATORS_VERSION` decides which token endpoint is used and which
-marketplaces the credential can query:
+Each review gets a data version and a "checked on" date, shown on the site's [How this works](https://www.whatshouldiplayinwowforever.com/methodology) page.
 
-The value supplied by Amazon as `v3.1` is accepted as-is; the app normalizes
-the optional `v` prefix. Use the same value in `.env.local` and Vercel.
+**Shared results don't change.** Each result saves your answers and the data version it was scored with, so a link you shared keeps showing the same pick. If the data has changed since then, the result page says so and offers a retake with the current data.
 
-| Version | Auth | Marketplaces |
-| --- | --- | --- |
-| `3.1` | Login with Amazon | US, CA, MX, BR |
-| `3.2` | Login with Amazon | UK, DE, FR, IT, ES |
-| `3.3` | Login with Amazon | JP, IN, AU |
-| `2.1` / `2.2` / `2.3` | Cognito | Legacy equivalents of the above |
+The recommendations are about what you might enjoy playing, not a prediction of the best build on launch day.
 
-### Pool, pinning and rotation
+## Built with
 
-Products are fetched into a **pool** that is cached for six hours. Amazon
-SearchItems returns at most ten products per request, so a 50-product pool
-requires up to five paginated searches per keyword query (and possibly one
-extra request to confirm that results are exhausted). The pinned product is
-fetched separately. Rotating the cached products does not call Amazon again.
+Next.js, React, Tailwind CSS and Upstash Redis, hosted on Vercel.
 
-- `AMAZON_AD_ASINS` — a comma-separated list of up to ten ASINs to use as the
-  pool. When empty, the pool is filled by a keyword search.
-- `AMAZON_AD_KEYWORDS` — the search that fills the pool.
-- `AMAZON_AD_POOL_SIZE` — how many products to pull, 1 to 100, across up to ten
-  search pages. Clamped to that range.
-- `AMAZON_AD_PINNED_ASIN` — an evergreen product that always takes the first
-  quiz banner slot. It is fetched separately, so it appears even when the pool
-  does not contain it, and it is never duplicated further down. Result-specific
-  searches do not force this generic product into the results banners.
+## License
 
-The quiz shows the pinned product plus up to three rotating products in a
-responsive four-product grid. The visible selection changes with each question
-and is offset per visit. Result pages show up to four products in a sidebar,
-searched by the primary recommendation's class and filtered to titles that
-mention that class. Each class-specific pool is limited to one ten-item search
-request and cached for six hours. If no relevant products are available, the
-sidebar remains reserved rather than showing unrelated items.
-
-`AdSlot` renders reserved ad space whenever credentials are absent or Amazon is
-unreachable, so ads never break a page. Product titles, images, and links are
-cached for six hours. Prices and other offer data are not requested or displayed,
-since Amazon's offer-data cache guidance allows only one hour.
-
-### Where the ads appear
-
-| Route | Format | Products |
-| --- | --- | --- |
-| `/` (quiz) | Banner below the start button on the intro, above questions after starting | Pinned product plus generic `AMAZON_AD_KEYWORDS` pool, rotating by question and visit |
-| `/methodology` | Inline banner above the shared footer | Four products from a World of Warcraft search, without the pinned product |
-| `/result/[id]` | Four-product sidebar on desktop, below the first explanation on mobile | Searched on the primary class, then filtered by class title match; no pinned product |
-
-The quiz is a client-side stepper on a statically rendered page, so it reads the
-pool from `/api/product-pool` rather than taking server props, which keeps the
-landing page static. That route serves public catalog data only and reads the
-same six-hour pool cache, so it costs no extra Amazon calls after pool creation.
-
-### Local development
-
-Put credentials in `.env.local` (gitignored). The same variables go into the
-Vercel dashboard for preview and production — tick Preview as well as
-Production so preview deploys show ads.
-
-Restart `npm run dev` after editing `.env.local`; Next reads the file at startup.
-
-Run `npm run amazon:check` to verify credentials without the app. It reports
-which step failed — token exchange, `searchItems`, or the pinned ASIN — rather
-than failing silently behind a placeholder ad slot.
+See [LICENSE](LICENSE).

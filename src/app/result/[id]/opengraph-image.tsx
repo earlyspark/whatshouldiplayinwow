@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { indefiniteArticle } from "@/lib/article";
 import { getResult } from "@/lib/result-store";
 
 export const alt = "Personalized WoW Forever race and class quiz result";
@@ -28,10 +27,13 @@ const fonts = [
 export default async function OpenGraphImage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const result = await getResult(id);
-  const race = result?.primary.raceName ?? "your perfect";
-  const className = result?.primary.className ?? "class";
-  const tagline = result?.primary.verdict ?? "Take the WoW Forever race and class quiz.";
-  const article = result ? indefiniteArticle(race) : "";
+  const resultName = result
+    ? `${result.primary.raceName} ${result.primary.className}`
+    : "Find your race and class";
+  const description = result
+    ? `Best balances ${result.primary.classTagline} with ${result.primary.raceTagline}.`
+    : "Take the WoW Forever race and class quiz.";
+  const titleSize = resultName.length > 25 ? 67 : resultName.length > 20 ? 74 : 80;
 
   return new ImageResponse(
     (
@@ -55,14 +57,11 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ id:
         </div>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ color: "#a79cb0", display: "flex", fontSize: 30, marginBottom: 14 }}>
-            {`You should play ${article}`.trimEnd()}
-          </div>
-          <div style={{ color: "#c8964a", display: "flex", fontFamily: "Marcellus", fontSize: 80, lineHeight: 1.06 }}>
-            {race} {className}
+          <div style={{ color: "#c8964a", display: "flex", fontFamily: "Marcellus", fontSize: titleSize, lineHeight: 1.06, maxWidth: 1040 }}>
+            {resultName}
           </div>
           <div style={{ color: "#a79cb0", display: "flex", fontSize: 26, lineHeight: 1.45, marginTop: 26, maxWidth: 930 }}>
-            {tagline}
+            {description}
           </div>
         </div>
 

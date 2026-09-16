@@ -6,10 +6,12 @@ import { Suspense, cache } from "react";
 import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
 import SiteFooter from "@/components/SiteFooter";
+import WowheadTooltips from "@/components/WowheadTooltips";
 import crest from "../../../../assets/crest.png";
 import { withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
 import { getResult } from "@/lib/result-store";
+import { wowheadRacialUrl } from "@/lib/wowhead-tooltips";
 import ResultActions from "./ResultActions";
 import ResultCompletion from "./ResultCompletion";
 
@@ -44,9 +46,11 @@ export default async function ResultPage({ params }: ResultPageProps) {
   // Ties the result page ads to the pick the reader just received, rather than
   // the generic pool the quiz pages rotate through.
   const resultKeywords = `World of Warcraft ${result.primary.className}`;
+  const hasWowheadTooltips = result.primary.racials.some((racial) => wowheadRacialUrl(result.primary.raceId, racial.name));
 
   return (
     <main id="main-content" className="min-h-screen">
+      {hasWowheadTooltips && <WowheadTooltips resultId={id} />}
       <ResultCompletion id={id} />
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
         <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
@@ -74,11 +78,24 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 {result.primary.racials.map((racial) => (
                   <article key={racial.name} className="inset border-l-2 border-l-[var(--plum)] p-4">
-                    <h3 className="t-card">{racial.name}</h3>
+                    <h3 className={wowheadRacialUrl(result.primary.raceId, racial.name) ? undefined : "t-card"}>
+                      {wowheadRacialUrl(result.primary.raceId, racial.name) ? (
+                        <a
+                          href={wowheadRacialUrl(result.primary.raceId, racial.name)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {racial.name}
+                        </a>
+                      ) : racial.name}
+                    </h3>
                     <p className="t-small mt-1 text-[var(--dim)]">{racial.description}</p>
                   </article>
                 ))}
               </div>
+              {hasWowheadTooltips && (
+                <p className="t-small mt-4 text-[var(--dim)]">Some Wowhead spell tooltips still show older values. The descriptions above reflect this result&apos;s reviewed Forever data.</p>
+              )}
             </section>
 
             <div className="lg:hidden"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense></div>
