@@ -1,3 +1,7 @@
+"use client";
+
+import { trackEvent } from "@/lib/gtag";
+
 interface AdSlotProps {
   placement: "sidebar" | "inline";
   href?: string;
@@ -7,10 +11,18 @@ interface AdSlotProps {
 
 export default function AdSlot({ placement, href, headline, body }: AdSlotProps) {
   const size = placement === "sidebar" ? "min-h-[250px] lg:min-h-[300px]" : "min-h-[110px]";
+  const trackClick = () => {
+    if (!href) return;
+    trackEvent("ad_click", {
+      placement,
+      destination_host: new URL(href, window.location.href).hostname,
+    });
+  };
+
   return (
     <aside className={`${size} flex w-full items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[.02] p-5 text-center`} aria-label="Advertisement">
       {href && headline ? (
-        <a href={href} target="_blank" rel="sponsored nofollow" className="focus-ring rounded-lg text-sm hover:text-white">
+        <a href={href} target="_blank" rel="sponsored nofollow" onClick={trackClick} className="focus-ring rounded-lg text-sm hover:text-white">
           <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">Advertisement</span>
           <strong className="mt-3 block text-[var(--gold-bright)]">{headline}</strong>
           {body && <span className="mt-2 block leading-6 text-[var(--muted)]">{body}</span>}

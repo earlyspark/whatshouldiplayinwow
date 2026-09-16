@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import AdSlot from "@/components/AdSlot";
 import { indefiniteArticle, withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
@@ -10,10 +11,11 @@ import ResultActions from "./ResultActions";
 interface ResultPageProps { params: Promise<{ id: string }> }
 
 export const dynamic = "force-dynamic";
+const getCachedResult = cache(getResult);
 
 export async function generateMetadata({ params }: ResultPageProps): Promise<Metadata> {
   const { id } = await params;
-  const result = await getResult(id);
+  const result = await getCachedResult(id);
   if (!result) return { title: "Result not found", robots: { index: false, follow: false } };
   const name = `${result.primary.raceName} ${result.primary.className}`;
   const phrase = withArticle(name);
@@ -29,7 +31,7 @@ export async function generateMetadata({ params }: ResultPageProps): Promise<Met
 
 export default async function ResultPage({ params }: ResultPageProps) {
   const { id } = await params;
-  const result = await getResult(id);
+  const result = await getCachedResult(id);
   if (!result) notFound();
   const isOutdated = result.dataVersion !== DATA_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;

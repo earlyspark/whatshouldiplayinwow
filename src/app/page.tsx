@@ -5,7 +5,7 @@ import { DATA_CHECKED_LABEL } from "@/data/forever";
 import { siteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "WoW Forever Race & Class Quiz",
+  title: "What Should I Pick? WoW Forever Race & Class Quiz",
   description: "Which World of Warcraft: Forever race and class should you play? Rank your playstyle, fantasy, and favorite content to get a personalized pick.",
   alternates: { canonical: siteUrl },
 };

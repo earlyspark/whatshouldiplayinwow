@@ -48,6 +48,40 @@ export default function MethodologyPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             {races.map((item) => <span key={item.id} className="rounded-full border border-[var(--line)] bg-white/[.03] px-3 py-2 text-sm">{item.name}</span>)}
           </div>
+
+          <h3 className="display-font mt-10 text-2xl">Current race and class combinations</h3>
+          <p className="mt-3 leading-7 text-[var(--muted)]">A recommendation is only eligible when the combination appears below. On smaller screens, scroll the table horizontally.</p>
+          <div className="-mx-5 mt-5 overflow-x-auto px-5 pb-3 sm:-mx-8 sm:px-8">
+            <table className="min-w-[880px] border-separate border-spacing-0 text-sm">
+              <caption className="sr-only">Available WoW Forever classes for each faction-specific race, checked {DATA_CHECKED_LABEL}</caption>
+              <thead>
+                <tr>
+                  <th scope="col" className="sticky left-0 z-10 border-b border-[var(--line)] bg-[var(--deep)] px-4 py-3 text-left font-bold">Race</th>
+                  {classes.map((item) => <th key={item.id} scope="col" className="border-b border-[var(--line)] px-3 py-3 text-center font-bold">{item.name}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {races.map((race) => (
+                  <tr key={race.id}>
+                    <th scope="row" className="sticky left-0 z-10 border-b border-[var(--line)] bg-[var(--deep)] px-4 py-3 text-left font-semibold">
+                      {race.name}
+                      <span className="mt-1 block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-[var(--muted)]">{race.faction}</span>
+                    </th>
+                    {classes.map((classProfile) => {
+                      const available = race.classes.includes(classProfile.id);
+                      return (
+                        <td key={classProfile.id} className="border-b border-[var(--line)] px-3 py-3 text-center">
+                          <span className={available ? "font-bold text-[var(--teal)]" : "text-white/20"} aria-label={available ? `${race.name} can be a ${classProfile.name}` : `${race.name} cannot be a ${classProfile.name}`}>
+                            {available ? "✓" : "—"}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="mt-12 rounded-3xl border border-[var(--line)] bg-white/[.025] p-6 sm:p-8">

@@ -7,7 +7,12 @@ import { answersSchema } from "@/lib/result-schema";
 import { createSavedResult, validateAnswers } from "@/lib/scoring";
 import { saveResult } from "@/lib/result-store";
 
+const MAX_REQUEST_BYTES = 16_384;
+
 function rateLimiter() {
+  // Local testing reuses real Redis credentials for permalink testing. Keep
+  // the deployed guard in place without making repeated local QA hit the quota.
+  if (process.env.VERCEL_ENV !== "production" && process.env.VERCEL_ENV !== "preview") return null;
   const config = redisConfig();
   if (!config) return null;
   return new Ratelimit({
@@ -38,8 +43,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body = await request.json();
-    const parsed = answersSchema.safeParse(body?.answers);
+    const contentType = request.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      return NextResponse.json({ error: "This endpoint accepts JSON only." }, { status: 415 });
+    }
+
+    const contentLength = Number(request.headers.get("content-length") ?? 0);
+    if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+      return NextResponse.json({ error: "The submitted quiz is too large." }, { status: 413 });
+    }
+
+    const rawBody = await request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_REQUEST_BYTES) {
+      return NextResponse.json({ error: "The submitted quiz is too large." }, { status: 413 });
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ error: "The submitted JSON is invalid." }, { status: 400 });
+    }
+
+    const answerPayload = typeof body === "object" && body !== null && "answers" in body ? body.answers : undefined;
+    const parsed = answersSchema.safeParse(answerPayload);
     if (!parsed.success) return NextResponse.json({ error: "The quiz answers are incomplete or invalid." }, { status: 400 });
     validateAnswers(parsed.data);
 
