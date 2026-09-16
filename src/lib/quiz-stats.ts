@@ -10,6 +10,8 @@ export interface MonthlyQuizStats {
 }
 
 const statsPrefix = "wow-forever:quiz-stats:v1";
+export const quizStatsMonthKey = (month: string) => `${statsPrefix}:month:${month}`;
+export const quizStatsMonthsKey = `${statsPrefix}:months`;
 const completionScript = `
   if redis.call("EXISTS", KEYS[1]) == 1 then return 0 end
   redis.call("SET", KEYS[1], "1")
@@ -59,7 +61,7 @@ export async function recordQuizCompletion(result: SavedResult): Promise<boolean
   const args = [month, String(markerTtl), ...Object.entries(increments).flatMap(([field, value]) => [field, String(value)])];
   const added = await client.eval<string[], number>(
     completionScript,
-    [`${statsPrefix}:counted:${result.id}`, `${statsPrefix}:month:${month}`, `${statsPrefix}:months`],
+    [`${statsPrefix}:counted:${result.id}`, quizStatsMonthKey(month), quizStatsMonthsKey],
     args,
   );
   return added === 1;
@@ -68,9 +70,9 @@ export async function recordQuizCompletion(result: SavedResult): Promise<boolean
 export async function readMonthlyQuizStats(): Promise<MonthlyQuizStats[]> {
   if (!isProductionDeployment()) return [];
   const client = statsRedis();
-  const months = (await client.smembers<string[]>(`${statsPrefix}:months`)).sort().reverse();
+  const months = (await client.smembers<string[]>(quizStatsMonthsKey)).sort().reverse();
   return Promise.all(months.map(async (month) => {
-    const raw = await client.hgetall<Record<string, string | number>>(`${statsPrefix}:month:${month}`) ?? {};
+    const raw = await client.hgetall<Record<string, string | number>>(quizStatsMonthKey(month)) ?? {};
     return { month, counts: Object.fromEntries(Object.entries(raw).map(([field, value]) => [field, Number(value)])) };
   }));
 }

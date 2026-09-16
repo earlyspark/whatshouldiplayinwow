@@ -73,7 +73,10 @@ export default function MethodologyPage() {
               Completed quizzes also contribute to monthly aggregate counts, such as answers chosen and recommended classes. We do not keep a per-person breakdown of those counts, so we cannot reliably attribute or subtract one person&apos;s contribution after it has been counted.
             </p>
             <p className="t-small text-[var(--dim)]">
-              Your browser uses session storage to keep an unfinished quiz and the one-time receipt used to count a completed quiz. Session storage normally clears when the tab session ends. We use your IP address to limit result creation and protect the service; hosting providers may also process request logs.
+              Rating a recommendation is optional and does not require analytics consent. Only the quiz-taker with the creator receipt in this tab session can rate the main pick and either alternative; people opening a shared link cannot vote. We store one current thumbs-up or thumbs-down vote per pick and result ID until that result expires. Changing a vote replaces the old one. The public quiz stats page shows only aggregate counts for the first, second, and third picks, which remain after individual results expire. Other visitors cannot see your ratings on the shared result page.
+            </p>
+            <p className="t-small text-[var(--dim)]">
+              Your browser uses session storage to keep an unfinished quiz, the one-time receipt used to count a completed quiz, and a separate copy of that receipt for rating your result. The counting copy is deleted after use; the rating copy normally clears when the tab session ends. We use your IP address to limit result creation and protect the service; hosting providers may also process request logs.
             </p>
             <p className="t-small text-[var(--dim)]">
               If you accept analytics, Google Analytics loads and uses cookies to measure page visits, quiz interactions, and affiliate-link clicks. If you decline, Google Analytics does not load. Your choice is saved in this browser&apos;s local storage. Withdrawing consent stops future Google Analytics activity on this site and clears its first-party cookies where the browser allows.

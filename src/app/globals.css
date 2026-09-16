@@ -58,6 +58,23 @@ body::before {
 
 body > main { position: relative; z-index: 1; }
 
+/* Result ads follow all recommendations in portrait, and become a sidebar only on wide landscape screens. */
+.result-layout {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+.result-ads {
+  width: min(100%, 42rem);
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) and (orientation: landscape) {
+  .result-layout { grid-template-columns: minmax(0, 1fr) 300px; }
+  .result-ads { width: 100%; }
+}
+
 @media (max-width: 640px) {
   body::before { right: -38vw; opacity: 0.1; }
 }

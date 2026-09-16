@@ -11,6 +11,7 @@ After the last question you land on a result page with its own shareable link:
 - **Your main pick**, such as *Tauren Shaman*, with a short explanation for the race and the class based on the answers
 - **The race's racial abilities**, so you can see what the race actually does for you
 - **Two alternatives**: one keeps your class with a different race, the other suggests a different class
+- **Optional thumbs feedback** on each of the three picks, available to the quiz-taker during the same tab session
 - A retake prompt if the game data, quiz questions, or scoring have changed since you took the quiz
 
 <img src="docs/screenshots/result.png" alt="A result page recommending Tauren Shaman, with racials and two alternatives" width="600">
@@ -38,7 +39,7 @@ Some questions take a single answer. Others ask you to **rank** up to three pick
 ## How scoring works
 
 The scoring is deterministic. There's no randomness and no AI involved, so the same answers and the same game data always give the same result.
-The weights are bounded judgments checked against class roles, racial kits, and representative answer profiles. Aggregate completion counts do not tell us whether players liked their recommendations, so these weights cannot be fitted to an objective accuracy measure yet.
+The weights are bounded judgments checked against class roles, racial kits, and representative answer profiles. Optional thumbs feedback can show whether quiz-takers liked their first, second, or third pick, but self-selected ratings are not an objective accuracy measure or an automatic input to scoring.
 
 ### 1. Every valid combination is scored
 
@@ -103,6 +104,12 @@ The alternatives aren't just the 2nd- and 3rd-highest scores, since those would 
 
 - **The next race for the winning class**, to show what changing only your race would do
 - **The next class with its best playable race**, if you want a different playstyle
+
+## Recommendation feedback
+
+The quiz-taker can give each race/class pick one thumbs-up or thumbs-down vote and change it while their tab session retains the creator receipt. The receipt is stored separately from the shareable URL and is checked by the server. Shared-link visitors cannot vote. Closing the tab normally clears voting access; browser session restore may preserve it. Results created before voting was added do not have a voting receipt.
+
+Production votes are stored per result until that result expires. The public [quiz stats page](https://www.whatshouldiplayinwowforever.com/stats) shows aggregate thumbs-up, thumbs-down, and response counts by recommendation position, all-time and by the result's creation month. It does not break ratings down by race/class, and shared-link visitors cannot see an individual's votes. Changing a vote adjusts the counts rather than adding another response. Local and preview testing do not contribute to production totals. Voting works independently of Google Analytics consent.
 
 ## How the data is kept up to date
 

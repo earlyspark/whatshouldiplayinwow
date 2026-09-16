@@ -179,6 +179,7 @@ export default function QuizFlow() {
       trackEvent("quiz_complete");
       try {
         sessionStorage.setItem(`wow-forever-completion:${body.id}`, body.receipt);
+        sessionStorage.setItem(`wow-forever-feedback:${body.id}`, body.receipt);
         sessionStorage.removeItem(storageKey);
       } catch { /* Storage restrictions must not strand a completed result. */ }
       router.push(`/result/${body.id}`);

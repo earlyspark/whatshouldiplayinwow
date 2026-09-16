@@ -16,6 +16,7 @@ import { getResult } from "@/lib/result-store";
 import { wowheadRacialUrl } from "@/lib/wowhead-tooltips";
 import ResultActions from "./ResultActions";
 import ResultCompletion from "./ResultCompletion";
+import { ResultFeedback, ResultFeedbackProvider } from "./ResultFeedback";
 
 interface ResultPageProps { params: Promise<{ id: string }> }
 
@@ -74,7 +75,8 @@ export default async function ResultPage({ params }: ResultPageProps) {
           )}
         </header>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+        <div className="result-layout mt-8">
+          <ResultFeedbackProvider id={id}>
           <div className="space-y-8">
             <section className="surface p-6 sm:p-8">
               <p className="t-label text-[var(--dim)]">Race</p>
@@ -101,27 +103,23 @@ export default async function ResultPage({ params }: ResultPageProps) {
               {hasWowheadTooltips && (
                 <p className="t-small mt-4 text-[var(--dim)]">Some Wowhead spell tooltips still show older values. The descriptions above reflect this result&apos;s reviewed Forever data.</p>
               )}
-            </section>
-
-            <div className="lg:hidden space-y-5">
-              <CreatorShopCard />
-              <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense>
-            </div>
-
-            <section className="surface p-6 sm:p-8">
-              <p className="t-label text-[var(--dim)]">Class</p>
-              <h2 className="t-section mt-3">{result.primary.className}</h2>
-              <p className="t-body mt-4 text-[var(--dim)]">{result.primary.whyClass}</p>
+              <div className="mt-8 border-t border-[var(--line)] pt-8">
+                <p className="t-label text-[var(--dim)]">Class</p>
+                <h2 className="t-section mt-3">{result.primary.className}</h2>
+                <p className="t-body mt-4 text-[var(--dim)]">{result.primary.whyClass}</p>
+                <ResultFeedback position="primary" name={`${result.primary.raceName} ${result.primary.className}`} />
+              </div>
             </section>
 
             <section className="pt-8" aria-labelledby="alternatives-title">
               <p className="t-label text-[var(--dim)]">Runner Ups</p>
               <h2 id="alternatives-title" className="t-section mt-3">Alternatives that also match your style</h2>
               <div className="mt-7 grid gap-5 md:grid-cols-2">
-                {result.alternatives.map((alternative) => (
+                {result.alternatives.map((alternative, index) => (
                   <article key={`${alternative.raceId}-${alternative.classId}`} className="surface p-6">
                     <h3 className="t-card text-[var(--bronze)]">{alternative.raceName} {alternative.className}</h3>
                     <p className="t-small mt-3 text-[var(--dim)]">{alternative.tradeoff}</p>
+                    <ResultFeedback position={index === 0 ? "runner-up-1" : "runner-up-2"} name={`${alternative.raceName} ${alternative.className}`} />
                   </article>
                 ))}
               </div>
@@ -133,7 +131,8 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <div className="mt-6"><ResultActions /></div>
             </section>
           </div>
-          <div className="hidden lg:block lg:space-y-5">
+          </ResultFeedbackProvider>
+          <div className="result-ads space-y-5">
             <CreatorShopCard />
             <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense>
           </div>
