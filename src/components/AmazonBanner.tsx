@@ -6,6 +6,8 @@ interface AmazonBannerProps {
   placement: "sidebar" | "inline";
   /** Overrides the configured pool query, e.g. to match a quiz result. */
   keywords?: string;
+  /** Keep contextual products aligned with the primary recommendation. */
+  focusTerm?: string;
 }
 
 /**
@@ -18,9 +20,9 @@ interface AmazonBannerProps {
  *
  * Falls back to the reserved ad space whenever there is nothing to show.
  */
-export default async function AmazonBanner({ placement, keywords }: AmazonBannerProps) {
-  const limit = placement === "sidebar" ? 1 : 3;
-  const products = await getBannerProducts(limit, keywords);
+export default async function AmazonBanner({ placement, keywords, focusTerm }: AmazonBannerProps) {
+  const limit = 4;
+  const products = await getBannerProducts(limit, keywords, focusTerm);
   if (!products.length) return <AdSlot placement={placement} />;
 
   const isSidebar = placement === "sidebar";
@@ -34,7 +36,7 @@ export default async function AmazonBanner({ placement, keywords }: AmazonBanner
         Advertisement
       </span>
 
-      <div className={isSidebar ? "mt-4 space-y-4" : "mt-4 grid gap-4 sm:grid-cols-3"}>
+      <div className={isSidebar ? "mt-4 grid grid-cols-2 gap-3" : "mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4"}>
         {products.map((product) => (
           <AmazonProductLink
             key={product.asin}
@@ -53,22 +55,18 @@ export default async function AmazonBanner({ placement, keywords }: AmazonBanner
                 width={product.imageWidth ?? undefined}
                 height={product.imageHeight ?? undefined}
                 loading="lazy"
-                className="mx-auto h-auto max-h-[180px] w-auto max-w-full rounded-lg bg-white/90 object-contain p-2"
+                className={`mx-auto w-full rounded-lg bg-white/90 object-contain p-2 ${isSidebar ? "h-24" : "h-auto max-h-[180px] max-w-full"}`}
               />
             )}
             <span className="t-small line-clamp-3 text-[var(--dim)] group-hover:text-[var(--bone)]">
               {product.title}
             </span>
-            {product.price && (
-              <strong className="t-small text-[var(--bronze)]">{product.price}</strong>
-            )}
           </AmazonProductLink>
         ))}
       </div>
 
       <p className="t-small mt-4 text-[var(--dim)] opacity-70">
-        As an Amazon Associate, this site earns from qualifying purchases. Prices and availability are
-        accurate as of the time shown and are subject to change.
+        Ads help me pay the bills for this site, thanks for supporting a small creator! As an Amazon Associate, this site earns from qualifying purchases.
       </p>
     </aside>
   );

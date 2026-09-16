@@ -10,7 +10,7 @@ export interface OptionScore {
 
 export const questionWeights: Record<QuestionId, { class: number; race: number }> = {
   q1: { class: 0, race: 0.5 },
-  q2: { class: 0, race: 0 },
+  q2: { class: 0, race: 2.5 },
   q3: { class: 1.2, race: 1.2 },
   q4: { class: 2, race: 0 },
   q5: { class: 2, race: 0 },
@@ -20,7 +20,7 @@ export const questionWeights: Record<QuestionId, { class: number; race: number }
   q9: { class: 2.5, race: 0 },
   q10: { class: 0, race: 2.2 },
   q11: { class: 0, race: 3 },
-  q12: { class: 2.2, race: 0 },
+  q12: { class: 2.2, race: 0.6 },
 };
 
 export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
@@ -30,9 +30,12 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     "bfa-shadowlands": { races: { gnome: 2, human: 2, "night-elf": 2, troll: 1, orc: 1 } },
     "mists-legion": { races: { human: 2, orc: 2, troll: 2, "night-elf": 2, undead: 1 } },
     "original-cata": { races: { dwarf: 2, human: 2, orc: 2, undead: 2, troll: 2 } },
-    "many-eras": { races: { human: 2, dwarf: 2, orc: 2, undead: 2, gnome: 1, "night-elf": 1 } },
   },
-  q2: { alliance: {}, horde: {}, either: {} },
+  q2: {
+    alliance: { races: { human: 3, dwarf: 3, "night-elf": 3, gnome: 3, "skyborne-alliance": 3 } },
+    horde: { races: { orc: 3, undead: 3, tauren: 3, troll: 3, "skyborne-horde": 3 } },
+    either: {},
+  },
   q3: {
     leveling: {
       classes: { hunter: 3, druid: 3, warlock: 2, paladin: 2, shaman: 2, mage: 1, priest: 1, rogue: 1, warrior: 1 },
@@ -58,6 +61,9 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
       classes: { druid: 3, hunter: 3, rogue: 2, mage: 2, shaman: 1, warlock: 1 },
       races: { dwarf: 3, "skyborne-alliance": 3, "skyborne-horde": 3, "night-elf": 2, tauren: 2 },
     },
+    // Community is not intrinsically better on either faction. It raises the
+    // importance of the player's own atmosphere choice in scoreCandidate.
+    vibes: {},
   },
   q4: {
     protect: { classes: { warrior: 3, paladin: 3, druid: 2, shaman: 1 } },
@@ -74,11 +80,11 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     adaptable: { classes: { druid: 3, shaman: 3, paladin: 2, priest: 1 } },
   },
   q6: {
-    dive: { classes: { warrior: 3, rogue: 3, paladin: 2, shaman: 2, druid: 2 } },
-    "measured-close": { classes: { paladin: 3, warrior: 2, shaman: 3, druid: 2, rogue: 1 } },
-    "second-line": { classes: { priest: 3, shaman: 3, hunter: 2, druid: 2, paladin: 1 } },
-    backline: { classes: { mage: 3, warlock: 3, hunter: 3, priest: 2 } },
-    shift: { classes: { druid: 3, rogue: 3, shaman: 2, hunter: 2, paladin: 1 } },
+    "act-fast": { classes: { warrior: 3, rogue: 3, mage: 2, hunter: 2, paladin: 2, shaman: 2, druid: 2, priest: 1, warlock: 1 } },
+    "wait-opening": { classes: { rogue: 3, mage: 3, warlock: 3, hunter: 2, paladin: 2, warrior: 2, shaman: 2, druid: 2, priest: 2 } },
+    "help-ally": { classes: { priest: 3, shaman: 3, paladin: 3, druid: 3, warrior: 2, hunter: 2, mage: 2, rogue: 1, warlock: 1 } },
+    "stick-plan": { classes: { warlock: 3, priest: 3, mage: 2, warrior: 2, hunter: 2, paladin: 2, shaman: 2, rogue: 1, druid: 1 } },
+    improvise: { classes: { druid: 3, shaman: 3, rogue: 3, hunter: 2, paladin: 2, mage: 2, priest: 2, warrior: 1, warlock: 1 } },
   },
   q7: {
     central: { classes: { hunter: 3, warlock: 3 } },
@@ -108,14 +114,11 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     },
   },
   q9: {
-    martial: { classes: { warrior: 3, paladin: 2, rogue: 2, hunter: 1 } },
-    ranger: { classes: { hunter: 3, druid: 1, rogue: 1 } },
-    nature: { classes: { druid: 3, shaman: 2, hunter: 1 } },
-    elements: { classes: { shaman: 3, mage: 1 } },
-    holy: { classes: { paladin: 3, priest: 3 } },
-    arcane: { classes: { mage: 3, warlock: 1 } },
-    shadow: { classes: { warlock: 3, priest: 2, rogue: 1 } },
-    stealth: { classes: { rogue: 3, druid: 2, hunter: 1 } },
+    martial: { classes: { warrior: 3, paladin: 2, rogue: 2, hunter: 2, shaman: 1 } },
+    wilds: { classes: { druid: 3, shaman: 3, hunter: 3, mage: 1 } },
+    holy: { classes: { paladin: 3, priest: 3, shaman: 1 } },
+    arcane: { classes: { mage: 3, warlock: 2, priest: 2, shaman: 1, druid: 1 } },
+    secrets: { classes: { rogue: 3, warlock: 3, priest: 2, druid: 2, hunter: 1, mage: 1 } },
   },
   q10: {
     finish: { races: { orc: 3, troll: 3, "night-elf": 3, gnome: 2, "skyborne-alliance": 2, "skyborne-horde": 2 } },
@@ -126,24 +129,25 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     resource: { races: { tauren: 3, gnome: 3, dwarf: 3, "skyborne-alliance": 2, "skyborne-horde": 2 } },
   },
   q11: {
-    human: { races: { human: 3 } },
-    dwarf: { races: { dwarf: 3 } },
-    "night-elf": { races: { "night-elf": 3 } },
-    gnome: { races: { gnome: 3 } },
-    orc: { races: { orc: 3 } },
-    undead: { races: { undead: 3 } },
-    tauren: { races: { tauren: 3 } },
-    troll: { races: { troll: 3 } },
-    skyborne: { races: { "skyborne-alliance": 3, "skyborne-horde": 3 } },
-    "no-race-preference": {},
+    // These evoke the verified starting areas, but overlap deliberately:
+    // Elwynn, Dun Morogh, Teldrassil, Durotar, Mulgore, Tirisfal, Zephras Isle.
+    "woodland-mystery": { races: { human: 3, "night-elf": 3, undead: 3, "skyborne-alliance": 1, "skyborne-horde": 1, tauren: 1 } },
+    "mountain-outposts": { races: { dwarf: 3, gnome: 3, human: 1, orc: 1, "skyborne-alliance": 1, "skyborne-horde": 1 } },
+    "open-frontier": { races: { tauren: 3, orc: 3, troll: 3, "skyborne-alliance": 2, "skyborne-horde": 2, dwarf: 1, undead: 1 } },
+    "no-zone-preference": {},
   },
   q12: {
-    responsibility: { classes: { warrior: -3, priest: -3, paladin: -2, shaman: -2, druid: -2 } },
-    companion: { classes: { hunter: -3, warlock: -3 } },
-    melee: { classes: { warrior: -3, rogue: -3, paladin: -2, shaman: -1, druid: -1 } },
-    casting: { classes: { mage: -3, warlock: -2, priest: -2, hunter: -2 } },
-    forms: { classes: { druid: -3, shaman: -1 } },
-    setup: { classes: { rogue: -3, druid: -1 } },
+    downtime: {
+      classes: { mage: -2, priest: -2, shaman: -2, warlock: -1, warrior: -1 },
+      races: { undead: 3, troll: 3, "skyborne-alliance": 2, tauren: 1 },
+    },
+    prep: { classes: { warlock: -3, rogue: -2, hunter: -2, mage: -1, druid: -1 } },
+    cornered: {
+      classes: { warrior: -3, priest: -2, shaman: -1, warlock: -1 },
+      races: { gnome: 3, human: 3, undead: 3, dwarf: 2, "night-elf": 1 },
+    },
+    repetition: { classes: { druid: 3, shaman: 3, rogue: 2, hunter: 2, mage: 2, warlock: 2, paladin: 2, priest: 2, warrior: 1 } },
+    juggling: { classes: { druid: -3, shaman: -2, warlock: -2, hunter: -1, rogue: -1, mage: -1 } },
     none: {},
   },
 };

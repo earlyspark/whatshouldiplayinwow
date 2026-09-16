@@ -24,9 +24,14 @@ function jsonResponse(body: unknown, status = 200) {
 
 /** Answers the token endpoint and the catalog endpoint from one stub. */
 function stubAmazon(catalog: unknown = CATALOG_RESPONSE, catalogStatus = 200) {
-  return vi.fn(async (input: string | URL | Request) => {
+  return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.toString();
     if (url.includes("/auth/o2/token") || url.includes("amazoncognito.com")) return jsonResponse(TOKEN_RESPONSE);
+    if (url.includes("searchItems") && catalog && typeof catalog === "object" && "searchResult" in catalog) {
+      const { itemCount, itemPage } = JSON.parse(init?.body as string);
+      const result = catalog.searchResult as { items?: unknown[] };
+      return jsonResponse({ searchResult: { items: result.items?.slice((itemPage - 1) * itemCount, itemPage * itemCount) ?? [] } }, catalogStatus);
+    }
     return jsonResponse(catalog, catalogStatus);
   });
 }
@@ -126,7 +131,6 @@ describe("getBannerProducts", () => {
         imageUrl: "https://m.media-amazon.com/images/I/test.jpg",
         imageWidth: 500,
         imageHeight: 500,
-        price: "$19.99",
       },
     ]);
   });
@@ -157,7 +161,8 @@ describe("getBannerProducts", () => {
     const [catalogUrl, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
     expect(catalogUrl).toBe("https://creatorsapi.amazon/catalog/v1/searchItems");
     // The search now fills the rotation pool, not just the visible slots.
-    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ keywords: "warcraft mousepad", itemCount: 50 });
+    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ keywords: "warcraft mousepad", itemCount: 10, itemPage: 1 });
+    expect(JSON.parse(catalogInit.body as string).resources).not.toContain("offersV2.listings.price");
     expect(products).toHaveLength(1);
   });
 
@@ -252,6 +257,23 @@ describe("pool, pinning and rotation", () => {
     expect(products.slice(1).some((product) => product.asin === "B0PINNED01")).toBe(false);
   });
 
+  it("keeps the pinned product visible when the search fails", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("/auth/o2/token")) return jsonResponse(TOKEN_RESPONSE);
+      if (url.includes("searchItems")) return jsonResponse({ message: "unavailable" }, 500);
+      return jsonResponse({ itemsResult: { items: [{
+        asin: "B0PINNED01",
+        detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
+        itemInfo: { title: { displayValue: "Evergreen pick" } },
+      }] } });
+    }));
+
+    expect((await getProductPool()).map((product) => product.asin)).toEqual(["B0PINNED01"]);
+  });
+
   it("varies the rotating slots across renders without new API calls", async () => {
     vi.stubEnv("AMAZON_AD_ASINS", "");
     const fetchMock = stubAmazon(poolResponse(40));
@@ -267,31 +289,35 @@ describe("pool, pinning and rotation", () => {
     expect(renders.size).toBeGreaterThan(1);
 
     const catalogCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes("/catalog/v1/"));
-    expect(catalogCalls).toHaveLength(1);
+    expect(catalogCalls).toHaveLength(5); // Four full pages, then an empty end-of-results page.
   });
 
   it("keeps the pool within the requested size", async () => {
     vi.stubEnv("AMAZON_AD_ASINS", "");
     vi.stubEnv("AMAZON_AD_POOL_SIZE", "25");
-    const fetchMock = stubAmazon(poolResponse(25));
+    const fetchMock = stubAmazon(poolResponse(30));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getProductPool();
-
-    const [, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
-    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ itemCount: 25 });
+    expect(await getProductPool()).toHaveLength(25);
+    const searches = fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"));
+    expect(searches).toHaveLength(3);
+    expect(searches.map(([, init]) => JSON.parse((init as RequestInit).body as string))).toEqual([
+      expect.objectContaining({ itemCount: 10, itemPage: 1 }),
+      expect.objectContaining({ itemCount: 10, itemPage: 2 }),
+      expect.objectContaining({ itemCount: 10, itemPage: 3 }),
+    ]);
   });
 
   it("clamps an out-of-range pool size to what searchItems accepts", async () => {
     vi.stubEnv("AMAZON_AD_ASINS", "");
     vi.stubEnv("AMAZON_AD_POOL_SIZE", "500");
-    const fetchMock = stubAmazon(poolResponse(10));
+    const fetchMock = stubAmazon(poolResponse(100));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getProductPool();
-
-    const [, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
-    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ itemCount: 100 });
+    expect(await getProductPool()).toHaveLength(100);
+    const searches = fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"));
+    expect(searches).toHaveLength(10);
+    expect(searches.every(([, init]) => JSON.parse((init as RequestInit).body as string).itemCount === 10)).toBe(true);
   });
 });
 
@@ -374,7 +400,58 @@ describe("keyword overrides", () => {
     await getProductPool("World of Warcraft Druid"); // served from cache
 
     const searches = fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"));
-    expect(searches).toHaveLength(2);
+    expect(searches).toHaveLength(2); // One request per distinct result query.
+  });
+
+  it("fills a four-product result sidebar from one class-specific search", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "B0CURATED1");
+    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
+    const fetchMock = stubAmazon(poolResponse(20));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const products = await getBannerProducts(4, "World of Warcraft Druid");
+
+    expect(products).toHaveLength(4);
+    const searches = fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"));
+    expect(searches).toHaveLength(1);
+    expect(JSON.parse((searches[0][1] as RequestInit).body as string)).toMatchObject({
+      keywords: "World of Warcraft Druid", itemCount: 10, itemPage: 1,
+    });
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes("getItems"))).toBe(false);
+  });
+
+  it("excludes unrelated search hits from result-specific placements", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    const response = poolResponse(4);
+    response.searchResult.items[0].itemInfo.title.displayValue = "WoW Warrior Shirt";
+    response.searchResult.items[1].itemInfo.title.displayValue = "World of Warcraft Book";
+    response.searchResult.items[2].itemInfo.title.displayValue = "Warrior Gaming Mat";
+    response.searchResult.items[3].itemInfo.title.displayValue = "Pandaren Figure";
+    vi.stubGlobal("fetch", stubAmazon(response));
+
+    const banner = await getBannerProducts(4, "World of Warcraft Warrior", "Warrior");
+    const contextual = await getContextualProduct("result-123:race", "World of Warcraft Warrior", "Warrior");
+
+    expect(banner.map((product) => product.title).sort()).toEqual(["Warrior Gaming Mat", "WoW Warrior Shirt"]);
+    expect(contextual?.title).toContain("Warrior");
+  });
+
+  it("keeps the generic pinned product out of result-specific pools", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
+    const response = poolResponse(8);
+    response.searchResult.items.unshift({
+      asin: "B0PINNED01",
+      detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
+      itemInfo: { title: { displayValue: "Evergreen pick" } },
+    });
+    const fetchMock = stubAmazon(response);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const products = await getProductPool("World of Warcraft Druid");
+    expect(products).toHaveLength(8);
+    expect(products.some((product) => product.asin === "B0PINNED01")).toBe(false);
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("getItems"))).toHaveLength(0);
   });
 
   it("prefers an explicit query over a curated ASIN list", async () => {

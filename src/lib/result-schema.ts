@@ -35,6 +35,7 @@ export const savedResultSchema = z.object({
   provisional: z.boolean(),
   createdAt: z.string(),
   answers: answersSchema,
+  completionTokenHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   primary: candidateSnapshotSchema,
   alternatives: z.array(candidateSnapshotSchema).length(2),
   sources: z.array(z.object({ label: z.string(), url: z.string().url() })),

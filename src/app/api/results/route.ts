@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
@@ -71,9 +71,13 @@ export async function POST(request: NextRequest) {
     validateAnswers(parsed.data);
 
     const id = randomBytes(9).toString("base64url");
-    const result = createSavedResult(id, parsed.data);
+    const receipt = randomBytes(32).toString("base64url");
+    const result = {
+      ...createSavedResult(id, parsed.data),
+      completionTokenHash: createHash("sha256").update(receipt).digest("hex"),
+    };
     await saveResult(result);
-    return NextResponse.json({ id });
+    return NextResponse.json({ id, receipt }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create a result.";
     const clientError = message.startsWith("Missing answer") || message.includes("accepts") || message.includes("invalid") || message.includes("conflicts");

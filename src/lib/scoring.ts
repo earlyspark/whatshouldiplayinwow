@@ -8,7 +8,6 @@ import {
   raceById,
   races,
   type ClassId,
-  type Faction,
   type RaceId,
 } from "@/data/forever";
 import { questionById, questions, QUIZ_VERSION, type QuestionId } from "@/data/questions";
@@ -62,29 +61,17 @@ function joinSignals(signals: CandidateScore["classSignals"] | CandidateScore["r
   return `${labels[0]}, ${labels[1]}, and ${labels[2]}`;
 }
 
-function factionFromAnswers(answers: QuizAnswers): Faction | null {
-  const faction = answers.q2?.[0];
-  return faction === "alliance" || faction === "horde" ? faction : null;
-}
-
 export function validateAnswers(answers: QuizAnswers) {
   for (const question of questions) {
     const chosen = answers[question.id];
     if (!chosen?.length) throw new Error(`Missing answer for ${question.id}.`);
     if (question.type === "single" && chosen.length !== 1) throw new Error(`${question.id} accepts one answer.`);
-    if (question.type === "ranked" && chosen.length > 3) throw new Error(`${question.id} accepts up to three answers.`);
+    if (question.type === "ranked" && chosen.length > (question.maxRank ?? 3)) {
+      throw new Error(`${question.id} accepts up to ${question.maxRank ?? 3} answers.`);
+    }
     if (new Set(chosen).size !== chosen.length) throw new Error(`${question.id} contains duplicate answers.`);
     const validIds = new Set(question.options.map((option) => option.id));
     if (chosen.some((id) => !validIds.has(id))) throw new Error(`${question.id} contains an invalid answer.`);
-  }
-
-  const faction = factionFromAnswers(answers);
-  const raceQuestion = questionById.q11;
-  for (const id of answers.q11) {
-    const option = raceQuestion.options.find((item) => item.id === id);
-    if (faction && option?.factions && !option.factions.includes(faction)) {
-      throw new Error("A ranked race choice conflicts with the selected faction.");
-    }
   }
 }
 
@@ -95,6 +82,10 @@ function scoreCandidate(raceId: RaceId, classId: ClassId, answers: QuizAnswers):
   let tempoScore = 0;
   const classSignals: CandidateScore["classSignals"] = [];
   const raceSignals: CandidateScore["raceSignals"] = [];
+  const vibesRank = answers.q3.indexOf("vibes");
+  // Give a player who prioritizes community/atmosphere more say in their
+  // preferred starting-zone mood, without assigning a "better" faction.
+  const atmosphereWeight = vibesRank === 0 ? 1.5 : vibesRank === 1 ? 1.3 : vibesRank === 2 ? 1.15 : 1;
 
   for (const question of questions) {
     const selections = answers[question.id];
@@ -103,7 +94,7 @@ function scoreCandidate(raceId: RaceId, classId: ClassId, answers: QuizAnswers):
       const optionScore = scoring[question.id]?.[optionId];
       const factor = question.type === "ranked" ? factors[index] : 1;
       const classValue = (optionScore?.classes?.[classId] ?? 0) * questionWeights[question.id].class * factor;
-      const raceValue = (optionScore?.races?.[raceId] ?? 0) * questionWeights[question.id].race * factor;
+      const raceValue = (optionScore?.races?.[raceId] ?? 0) * questionWeights[question.id].race * factor * (question.id === "q11" ? atmosphereWeight : 1);
       classScore += classValue;
       raceScore += raceValue;
       classSignals.push({ questionId: question.id, optionId, value: classValue });
@@ -157,11 +148,9 @@ function snapshot(candidate: CandidateScore, primary?: CandidateScore): Candidat
 
 export function scoreQuiz(answers: QuizAnswers): ScoredResult {
   validateAnswers(answers);
-  const faction = factionFromAnswers(answers);
   const candidates: CandidateScore[] = [];
 
   for (const race of races) {
-    if (faction && race.faction !== faction) continue;
     for (const classId of race.classes) candidates.push(scoreCandidate(race.id, classId, answers));
   }
 

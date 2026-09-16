@@ -1,107 +1,66 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import crest from "../../../assets/crest.png";
-import { DATA_CHECKED_LABEL, DATA_SOURCES, classes, races } from "@/data/forever";
+import AdSlot from "@/components/AdSlot";
+import AmazonBanner from "@/components/AmazonBanner";
+import SiteFooter from "@/components/SiteFooter";
+import { DATA_CHECKED_LABEL, DATA_SOURCES } from "@/data/forever";
 import { siteUrl } from "@/lib/site-url";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
-  title: "Quiz methodology and Forever data",
-  description: "See how the What Should I Play? quiz scores playstyle, ranks race and class combinations, and keeps WoW Forever data current.",
+  title: "How the WoW Forever quiz works",
+  description: "A quick look behind the WoW Forever race and class quiz: how it makes a pick, why it offers alternatives, and where its game data comes from.",
   alternates: { canonical: `${siteUrl}/methodology` },
 };
 
 export default function MethodologyPage() {
   return (
     <main id="main-content">
-      <header className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-8 sm:px-8">
-        <Link href="/" className="focus-ring inline-block" aria-label="What Should I Play? — home">
-            <Image src={crest} alt="" priority sizes="56px" className="h-14 w-auto" />
+      <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
+        <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
+          <Link href="/" className="focus-ring mx-auto mb-5 block w-fit" aria-label="What Should I Play? — home">
+            <Image src={crest} alt="" priority sizes="130px" className="h-[110px] w-auto sm:h-[130px]" />
           </Link>
-        <Link href="/#quiz" className="btn focus-ring">Take the quiz</Link>
-      </header>
-
-      <article className="mx-auto max-w-4xl px-5 pb-24 pt-14 sm:px-8 sm:pt-20">
-        <p className="t-label text-[var(--bronze)]">Transparent by design</p>
-        <h1 className="t-display mt-4">How the recommendation works</h1>
-        <p className="t-body mt-6 max-w-[62ch] text-[var(--dim)]">The quiz is not a simulated conversation or a hidden AI judgment. It is a versioned scoring model built around the way you want to fight, adventure, contribute, and inhabit Azeroth.</p>
-
-        <div className="my-12 h-px bg-[var(--line)]" />
-
-        <section className="space-y-5">
-          <h2 className="t-section">The scoring model</h2>
-          <p className="t-body max-w-[66ch] text-[var(--dim)]">Class fit makes up 65% of the final score; race fit makes up 35%. Faction and confirmed race/class availability are hard gates. Ranked answers use normalized 5:3:1 weighting, so a first choice matters most without rewarding people simply for choosing more options.</p>
-          <p className="t-body max-w-[66ch] text-[var(--dim)]">The combat-instinct question receives extra weight because wanting to dive into the fray or deliberately read a fight from the back line changes the lived experience of a class. Dealbreakers subtract points. They do not silently remove a class.</p>
-        </section>
-
-        <section className="mt-12">
-          <h2 className="t-section">How alternatives are chosen</h2>
-          <ol className="t-body mt-5 max-w-[66ch] space-y-3 text-[var(--dim)]">
-            <li><strong className="text-[var(--bone)]">1.</strong> The highest-scoring valid race/class combination is the primary pick.</li>
-            <li><strong className="text-[var(--bone)]">2.</strong> The first alternative keeps the class and shows the strongest different race.</li>
-            <li><strong className="text-[var(--bone)]">3.</strong> The second alternative changes class and shows a genuinely different path.</li>
-          </ol>
-        </section>
-
-        <section className="mt-12">
-          <p className="t-label text-[var(--dim)]">Current pool</p>
-          <h2 className="t-section mt-3">Nine classes, ten faction-specific races</h2>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {classes.map((item) => <span key={item.id} className="t-small border border-[var(--line)] bg-[var(--raised)] px-3 py-1.5">{item.name}</span>)}
+          <div className="flex flex-col items-start gap-5">
+            <p className="t-eyebrow text-[var(--bronze)]">World of Warcraft: Forever</p>
+            <h1 className="t-display">How this works</h1>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {races.map((item) => <span key={item.id} className="t-small border border-[var(--line)] bg-[var(--raised)] px-3 py-1.5">{item.name}</span>)}
-          </div>
+        </header>
 
-          <h3 className="t-card mt-10">Current race and class combinations</h3>
-          <p className="t-small mt-3 max-w-[66ch] text-[var(--dim)]">A recommendation is only eligible when the combination appears below. On smaller screens, scroll the table horizontally.</p>
-          <div className="-mx-5 mt-5 overflow-x-auto px-5 pb-3 sm:-mx-8 sm:px-8">
-            <table className="min-w-[880px] border-separate border-spacing-0 text-sm">
-              <caption className="sr-only">Available WoW Forever classes for each faction-specific race, checked {DATA_CHECKED_LABEL}</caption>
-              <thead>
-                <tr>
-                  <th scope="col" className="sticky left-0 z-10 border-b border-[var(--line)] bg-[var(--ground)] px-4 py-3 text-left font-semibold">Race</th>
-                  {classes.map((item) => <th key={item.id} scope="col" className="border-b border-[var(--line)] px-3 py-3 text-center font-bold">{item.name}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {races.map((race) => (
-                  <tr key={race.id}>
-                    <th scope="row" className="sticky left-0 z-10 border-b border-[var(--line)] bg-[var(--ground)] px-4 py-3 text-left font-semibold">
-                      {race.name}
-                      <span className="t-label mt-1 block text-[var(--dim)]">{race.faction}</span>
-                    </th>
-                    {classes.map((classProfile) => {
-                      const available = race.classes.includes(classProfile.id);
-                      return (
-                        <td key={classProfile.id} className="border-b border-[var(--line)] px-3 py-3 text-center">
-                          <span className={available ? "text-[var(--bronze)]" : "text-[var(--dim)] opacity-30"} aria-label={available ? `${race.name} can be a ${classProfile.name}` : `${race.name} cannot be a ${classProfile.name}`}>
-                            {available ? "✓" : "—"}
-                          </span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <article>
+          <section className="space-y-5">
+            <p className="t-body text-[var(--dim)]">Your answers are compared with every playable race and class pairing. How you like to fight, what you enjoy doing, and the character fantasy you want shape your class match. Your race match also considers identity, content, and useful racials. Class fit carries more weight, and choosing a faction doesn&apos;t necessarily rule out the other faction.</p>
+            <p className="t-body text-[var(--dim)]">Your first-ranked choices matter most, and the frustrations you identify can count against a poor fit. It is a consistent scoring system: the same answers and game data lead to the same result.</p>
+            <p className="t-body text-[var(--dim)]">Your main result is the strongest match. One alternative keeps the class but changes the race; the other gives you a different class to consider. Think of them as nearby paths. Most importantly: this is about what you may enjoy playing, not a prediction of the best launch-day build!</p>
+          </section>
 
-        <section className="surface mt-12 p-6 sm:p-8">
-          <p id="sources" className="t-label text-[var(--dim)]">Freshness</p>
-          <h2 className="t-section mt-3">Last checked {DATA_CHECKED_LABEL}</h2>
-          <p className="t-body mt-4 max-w-[62ch] text-[var(--dim)]">Forever is still evolving, so every stored result records the data version that created it. When the source data changes, old links retain their original reasoning and clearly offer a current retake.</p>
-          <ul className="mt-6 space-y-3">
-            {DATA_SOURCES.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" className="link-bronze focus-ring">{source.label}</a></li>)}
-          </ul>
-        </section>
+          <section className="surface mt-12 p-6 sm:p-8">
+            <p id="sources" className="t-label text-[var(--dim)]">Behind the data</p>
+            <h2 className="t-section mt-3">Sources checked on: {DATA_CHECKED_LABEL}</h2>
+            <p className="t-body mt-4 text-[var(--dim)]">We check race/class combinations and racials against the sources below. Shared results keep the version they were made with, and older results offer a retake when the data changes.</p>
+            <p className="t-small mt-6 text-[var(--dim)]">Current sources:</p>
+            <ul className="mt-3 list-disc space-y-1 pl-6 marker:text-[var(--bronze)]">
+              {DATA_SOURCES.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="link-bronze focus-ring">{source.label}</a></li>)}
+            </ul>
+          </section>
+        </article>
 
-        <section className="mt-12">
-          <h2 className="t-section">What this quiz does not claim</h2>
-          <p className="t-body mt-5 max-w-[66ch] text-[var(--dim)]">It does not predict the future meta, prescribe a specialization, or promise that one racial is universally best. It turns your preferences into a useful starting point with an explanation you can inspect.</p>
-        </section>
-      </article>
+        <div className="mt-12 flex justify-center">
+          <Link href="/" className="btn focus-ring">Go to the quiz</Link>
+        </div>
+
+        <div className="mt-8">
+          <Suspense fallback={<AdSlot placement="inline" />}>
+            <AmazonBanner placement="inline" keywords="World of Warcraft" />
+          </Suspense>
+        </div>
+
+        <SiteFooter />
+      </div>
     </main>
   );
 }

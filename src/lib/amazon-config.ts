@@ -78,7 +78,7 @@ export function hasAmazonConfig() {
   return Boolean(amazonConfig());
 }
 
-/** searchItems accepts an itemCount between 1 and 100. */
+/** SearchItems accepts 10 items per page and up to 10 pages. */
 const MAX_POOL_SIZE = 100;
 const DEFAULT_POOL_SIZE = 50;
 

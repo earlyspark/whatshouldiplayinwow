@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import QuizFlow from "./QuizFlow";
 import crest from "../../assets/crest.png";
-import { DATA_CHECKED_LABEL } from "@/data/forever";
+import SiteFooter from "@/components/SiteFooter";
 import { siteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
@@ -28,7 +27,7 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
 
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
-        <header className="pb-14 pt-4 sm:pb-16 sm:pt-5">
+        <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
           <Image
             src={crest}
             alt="What Should I Play?"
@@ -58,25 +57,7 @@ export default function HomePage() {
 
         <QuizFlow />
 
-        <footer className="mt-24 border-t border-[var(--line)] pb-6 pt-8 text-center">
-          <p className="t-small text-[var(--dim)]">
-            Unofficial fan project. World of Warcraft is a trademark of Blizzard Entertainment.
-            <span aria-hidden="true"> · </span>
-            <Link href="/methodology" className="link-bronze focus-ring">How it works</Link>
-          </p>
-          <p className="t-small mt-2 text-[var(--dim)]">Data last checked: {DATA_CHECKED_LABEL}</p>
-          <p className="t-small mt-0.5 text-[var(--dim)]">
-            ©&nbsp;
-            <a
-              href="https://earlyspark.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="link-bronze focus-ring"
-            >
-              earlyspark
-            </a>
-          </p>
-        </footer>
+        <SiteFooter />
       </div>
     </main>
   );

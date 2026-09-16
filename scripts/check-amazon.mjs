@@ -103,7 +103,7 @@ async function catalog(operation, payload) {
     },
     body: JSON.stringify({
       partnerTag: tag,
-      resources: ["images.primary.large", "itemInfo.title", "offersV2.listings.price"],
+      resources: ["images.primary.large", "itemInfo.title"],
       ...payload,
     }),
   });

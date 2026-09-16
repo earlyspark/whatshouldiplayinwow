@@ -19,22 +19,19 @@ import {
  * buffer rather than requested per call, which is the fastest way to get
  * throttled.
  *
- * Product data is cached separately. The Associates Program Operating
- * Agreement requires that displayed prices are no more than 24 hours old, so
- * the TTL is capped below that.
+ * Product identity, titles, images, and links are cached separately. Offer
+ * prices are not requested or displayed because they require a shorter TTL.
  */
 
 const TOKEN_EXPIRY_BUFFER_SECONDS = 30;
 const DEFAULT_TOKEN_LIFETIME_SECONDS = 3600;
-/** Product cache lifetime. Kept well under the 24 hour price freshness rule. */
 const PRODUCT_TTL_SECONDS = 6 * 60 * 60;
 const REQUEST_TIMEOUT_MS = 8000;
-const CACHE_PREFIX = "wow-forever-amazon";
+const CACHE_PREFIX = "wow-forever-amazon:v2";
 
 const PRODUCT_RESOURCES = [
   "images.primary.large",
   "itemInfo.title",
-  "offersV2.listings.price",
 ] as const;
 
 export interface AmazonProduct {
@@ -45,8 +42,6 @@ export interface AmazonProduct {
   imageUrl: string | null;
   imageWidth: number | null;
   imageHeight: number | null;
-  /** Localised price string as Amazon formatted it, e.g. "$19.99". */
-  price: string | null;
 }
 
 interface TokenCache {
@@ -78,13 +73,6 @@ const itemSchema = z.object({
   detailPageURL: z.string().optional(),
   images: z.object({ primary: z.object({ large: imageSizeSchema.optional() }).optional() }).optional(),
   itemInfo: z.object({ title: z.object({ displayValue: z.string().optional() }).optional() }).optional(),
-  offersV2: z
-    .object({
-      listings: z
-        .array(z.object({ price: z.object({ money: z.object({ displayAmount: z.string().optional() }).optional() }).optional() }))
-        .optional(),
-    })
-    .optional(),
 });
 
 const catalogResponseSchema = z.object({
@@ -107,7 +95,6 @@ function toProduct(item: CatalogItem): AmazonProduct | null {
     imageUrl: image?.url ?? null,
     imageWidth: image?.width ?? null,
     imageHeight: image?.height ?? null,
-    price: item.offersV2?.listings?.[0]?.price?.money?.displayAmount ?? null,
   };
 }
 
@@ -238,8 +225,20 @@ export async function getItemsByAsin(asins: string[], config: AmazonConfig) {
   return callCatalog(config, "getItems", { itemIds: asins });
 }
 
-export async function searchItems(keywords: string, itemCount: number, config: AmazonConfig) {
-  return callCatalog(config, "searchItems", { keywords, itemCount });
+export async function searchItems(keywords: string, itemCount: number, config: AmazonConfig, itemPage = 1) {
+  return callCatalog(config, "searchItems", { keywords, itemCount, itemPage });
+}
+
+async function searchPool(keywords: string, size: number, config: AmazonConfig) {
+  const products = new Map<string, AmazonProduct>();
+  const pageSize = Math.min(10, size);
+  for (let page = 1; page <= 10 && products.size < size; page += 1) {
+    const items = await searchItems(keywords, pageSize, config, page);
+    const previousSize = products.size;
+    for (const product of items) products.set(product.asin, product);
+    if (items.length < pageSize || products.size === previousSize) break;
+  }
+  return [...products.values()].slice(0, size);
 }
 
 /**
@@ -247,8 +246,8 @@ export async function searchItems(keywords: string, itemCount: number, config: A
  *
  * One pool is fetched per cache cycle and then sampled per request, which is
  * what lets the page vary products without spending an API call per view. The
- * pinned product is fetched separately so it survives a pool that does not
- * happen to contain it.
+ * pinned product is fetched separately for the general quiz pool. Result
+ * searches are a separate contextual pool without the generic pinned item.
  *
  * Returns an empty array whenever credentials are missing or Amazon is
  * unreachable, so an ad never takes the page down with it.
@@ -262,20 +261,28 @@ export async function getProductPool(overrideKeywords?: string): Promise<AmazonP
   // silently override a caller asking for something context-specific.
   const asins = overrideKeywords ? [] : configuredAsins;
   const keywords = overrideKeywords ?? defaultKeywords;
+  // A contextual result needs only four visible products. Limit each distinct
+  // class query to one catalog request so a popular result does not exhaust
+  // Amazon's search quota while still leaving products to rotate.
+  const searchSize = overrideKeywords ? Math.min(poolSize, 10) : poolSize;
   const poolKey = asins.length
     ? `${config.marketplace}:asins:${asins.join("-")}`
-    : `${config.marketplace}:search:${keywords}:${poolSize}`;
+    : `${config.marketplace}:search:${keywords}:${searchSize}`;
 
   try {
-    const [pool, pinned] = await Promise.all([
+    const [poolResult, pinnedResult] = await Promise.allSettled([
       cached(poolKey, () =>
-        asins.length ? getItemsByAsin(asins, config) : searchItems(keywords, poolSize, config),
+        asins.length ? getItemsByAsin(asins, config) : searchPool(keywords, searchSize, config),
       ),
-      pinnedAsin
+      pinnedAsin && !overrideKeywords
         ? cached(`${config.marketplace}:pinned:${pinnedAsin}`, () => getItemsByAsin([pinnedAsin], config))
         : Promise.resolve([]),
     ]);
 
+    if (poolResult.status === "rejected") console.error("Amazon search pool fetch failed", poolResult.reason);
+    if (pinnedResult.status === "rejected") console.error("Amazon pinned product fetch failed", pinnedResult.reason);
+    const pool = poolResult.status === "fulfilled" ? poolResult.value : [];
+    const pinned = pinnedResult.status === "fulfilled" ? pinnedResult.value : [];
     // The pinned product leads and must not also appear further down the list.
     const rest = pool.filter((product) => product.asin !== pinnedAsin);
     return [...pinned, ...rest];
@@ -286,7 +293,8 @@ export async function getProductPool(overrideKeywords?: string): Promise<AmazonP
 }
 
 /** Whether the first pool entry is the configured evergreen product. */
-function hasPinned(pool: AmazonProduct[]) {
+function hasPinned(pool: AmazonProduct[], keywords?: string) {
+  if (keywords) return false;
   const { pinnedAsin } = adSelection();
   return Boolean(pinnedAsin) && pool[0]?.asin === pinnedAsin;
 }
@@ -319,12 +327,15 @@ function shuffle<T>(items: T[]): T[] {
  * Shuffling happens here on the server; doing it in a client component would
  * desynchronise the markup React hydrates against.
  */
-export async function getBannerProducts(limit: number, keywords?: string): Promise<AmazonProduct[]> {
+export async function getBannerProducts(limit: number, keywords?: string, focusTerm?: string): Promise<AmazonProduct[]> {
   const pool = await getProductPool(keywords);
   if (!pool.length) return [];
+  const relevant = focusTerm
+    ? pool.filter((product) => product.title.toLowerCase().includes(focusTerm.toLowerCase()))
+    : pool;
 
-  if (!hasPinned(pool)) return shuffle(pool).slice(0, limit);
-  const [pinned, ...rest] = pool;
+  if (!hasPinned(relevant, keywords)) return shuffle(relevant).slice(0, limit);
+  const [pinned, ...rest] = relevant;
   return [pinned, ...shuffle(rest).slice(0, Math.max(0, limit - 1))];
 }
 
@@ -333,11 +344,12 @@ export async function getBannerProducts(limit: number, keywords?: string): Promi
  *
  * Deterministic by seed rather than random: this reads as part of the prose,
  * so it must not change between a reload and a revisit of the same permalink.
- * The pinned product is skipped here, since it already has the banner slot.
+ * The generic pinned product is skipped when it already has the quiz banner slot.
  */
-export async function getContextualProduct(seed: string, keywords?: string): Promise<AmazonProduct | null> {
+export async function getContextualProduct(seed: string, keywords?: string, focusTerm?: string): Promise<AmazonProduct | null> {
   const pool = await getProductPool(keywords);
-  const candidates = hasPinned(pool) ? pool.slice(1) : pool;
+  const candidates = (hasPinned(pool, keywords) ? pool.slice(1) : pool)
+    .filter((product) => !focusTerm || product.title.toLowerCase().includes(focusTerm.toLowerCase()));
   if (!candidates.length) return null;
   return candidates[hashSeed(seed) % candidates.length];
 }

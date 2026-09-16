@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { questions, QUIZ_VERSION, type QuizOption } from "@/data/questions";
@@ -23,8 +23,10 @@ export default function QuizFlow() {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [submitting, setSubmitting] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
   const [error, setError] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const advanceLockRef = useRef(false);
   const progressRef = useRef({ started: false, index: 0, completed: false });
 
   useEffect(() => {
@@ -73,12 +75,9 @@ export default function QuizFlow() {
   }, []);
 
   const question = questions[index];
+  const maxRank = question.maxRank ?? 3;
   const selected = answers[question.id] ?? [];
-  const faction = answers.q2?.[0];
-  const availableOptions = useMemo(() => {
-    if (question.id !== "q11" || (faction !== "alliance" && faction !== "horde")) return question.options;
-    return question.options.filter((option) => !option.factions || option.factions.includes(faction));
-  }, [faction, question]);
+  const availableOptions = question.options;
 
   const setSelection = (option: QuizOption) => {
     setError("");
@@ -89,23 +88,13 @@ export default function QuizFlow() {
         next = [option.id];
       } else if (current.includes(option.id)) {
         next = current.filter((id) => id !== option.id);
-      } else if (current.length < 3) {
+      } else if (current.length < maxRank) {
         next = [...current, option.id];
       } else {
         return previous;
       }
 
-      const updated = { ...previous, [question.id]: next };
-      if (question.id === "q2") {
-        const selectedFaction = next[0];
-        const validRaceIds = new Set(
-          questions[10].options
-            .filter((item) => !item.factions || selectedFaction === "either" || item.factions.includes(selectedFaction as "alliance" | "horde"))
-            .map((item) => item.id),
-        );
-        if (updated.q11) updated.q11 = updated.q11.filter((id) => validRaceIds.has(id));
-      }
-      return updated;
+      return { ...previous, [question.id]: next };
     });
   };
 
@@ -121,10 +110,13 @@ export default function QuizFlow() {
   };
 
   const continueQuiz = async () => {
+    if (advanceLockRef.current) return;
     if (!selected.length) {
       setError("Choose at least one answer to continue.");
       return;
     }
+    advanceLockRef.current = true;
+    setAdvancing(true);
     trackEvent("quiz_question_complete", {
       question_id: question.id,
       step_number: index + 1,
@@ -132,7 +124,7 @@ export default function QuizFlow() {
     });
 
     if (index < questions.length - 1) {
-      setIndex((value) => value + 1);
+      setIndex(index + 1);
       return;
     }
 
@@ -145,7 +137,7 @@ export default function QuizFlow() {
         body: JSON.stringify({ answers }),
       });
       const body = await response.json();
-      if (!response.ok || !body.id) {
+      if (!response.ok || !body.id || !body.receipt) {
         trackEvent("quiz_submit_error", {
           status: response.status,
           rate_limited: response.status === 429,
@@ -154,11 +146,14 @@ export default function QuizFlow() {
       }
       progressRef.current = { ...progressRef.current, completed: true };
       trackEvent("quiz_complete", { result_id: body.id });
+      sessionStorage.setItem(`wow-forever-completion:${body.id}`, body.receipt);
       sessionStorage.removeItem(storageKey);
       router.push(`/result/${body.id}`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to create your result.");
       setSubmitting(false);
+      advanceLockRef.current = false;
+      setAdvancing(false);
     }
   };
 
@@ -169,14 +164,17 @@ export default function QuizFlow() {
 
   if (!started) {
     return (
-      <section id="quiz" className="flex w-full justify-center" aria-label="Start the WoW Forever race and class quiz">
-        <button onClick={start} className="btn focus-ring">Start the quiz</button>
+      <section id="quiz" className="w-full" aria-label="Start the WoW Forever race and class quiz">
+        <div className="mb-8 flex justify-center"><button onClick={start} className="btn focus-ring">Start the quiz</button></div>
+        <QuizBanner questionIndex={-1} />
       </section>
     );
   }
 
   return (
     <section id="quiz" className="w-full" aria-label="WoW Forever race and class quiz">
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="min-w-0">
       <div className="t-label mb-3 flex items-center justify-between text-[var(--dim)]">
         <span>Question {index + 1} of {questions.length}</span>
         <span>{Math.round(((index + 1) / questions.length) * 100)}%</span>
@@ -185,7 +183,10 @@ export default function QuizFlow() {
         <motion.div className="h-full bg-gradient-to-r from-[var(--plum)] to-[var(--bronze)]" animate={{ width: `${((index + 1) / questions.length) * 100}%` }} transition={{ duration: reduceMotion ? 0 : 0.35 }} />
       </div>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" onExitComplete={() => {
+        advanceLockRef.current = false;
+        setAdvancing(false);
+      }}>
         <motion.div
           key={question.id}
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 32 }}
@@ -194,8 +195,7 @@ export default function QuizFlow() {
           transition={{ duration: reduceMotion ? 0 : 0.24 }}
           className="surface p-6 sm:p-9"
         >
-          <p className="t-label text-[var(--bronze)]">{question.eyebrow}</p>
-          <h2 ref={headingRef} tabIndex={-1} className="t-question mt-3 outline-none">{question.prompt}</h2>
+          <h2 ref={headingRef} tabIndex={-1} className="t-question outline-none">{question.prompt}</h2>
           {question.helper && <p className="t-small mt-3 text-[var(--dim)]">{question.helper}</p>}
 
           {question.type === "ranked" && selected.length > 0 && (
@@ -223,7 +223,7 @@ export default function QuizFlow() {
             {availableOptions.map((option) => {
               const rank = selected.indexOf(option.id);
               const active = rank >= 0;
-              const disabled = question.type === "ranked" && selected.length >= 3 && !active;
+              const disabled = question.type === "ranked" && selected.length >= maxRank && !active;
               return (
                 <button
                   key={option.id}
@@ -246,15 +246,19 @@ export default function QuizFlow() {
           </div>
 
           <div className="mt-7 flex items-center justify-between gap-4">
-            <button type="button" onClick={() => index === 0 ? setStarted(false) : setIndex((value) => value - 1)} className="btn-quiet focus-ring">← Back</button>
-            <button type="button" onClick={continueQuiz} disabled={!selected.length || submitting} className="btn focus-ring">
+            <button type="button" onClick={() => index === 0 ? setStarted(false) : setIndex((value) => value - 1)} disabled={advancing || submitting} className="btn-quiet focus-ring">← Back</button>
+            <button type="button" onClick={continueQuiz} disabled={!selected.length || advancing || submitting} className="btn focus-ring">
               {submitting ? "Finding your match…" : index === questions.length - 1 ? "Reveal my pick" : "Continue"}
             </button>
           </div>
           {error && <p role="alert" className="t-small mt-5 text-[var(--warn)]">{error}</p>}
         </motion.div>
       </AnimatePresence>
-      <QuizBanner questionIndex={index} />
+      </div>
+      <div className="lg:sticky lg:top-6">
+        <QuizBanner questionIndex={index} layout="sidebar" />
+      </div>
+      </div>
     </section>
   );
 }

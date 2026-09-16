@@ -22,7 +22,7 @@ export default function AdSlot({ placement, href, headline, body }: AdSlotProps)
   return (
     <aside className={`${size} flex w-full items-center justify-center border border-dashed border-[var(--line)] p-5 text-center`} aria-label="Advertisement">
       {href && headline ? (
-        <a href={href} target="_blank" rel="sponsored nofollow" onClick={trackClick} className="focus-ring t-small">
+        <a href={href} target="_blank" rel="sponsored nofollow noopener" onClick={trackClick} className="focus-ring t-small">
           <span className="t-label block text-[var(--dim)]">Advertisement</span>
           <strong className="t-card mt-3 block text-[var(--bronze)]">{headline}</strong>
           {body && <span className="t-small mt-2 block text-[var(--dim)]">{body}</span>}

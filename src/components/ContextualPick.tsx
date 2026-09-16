@@ -11,6 +11,7 @@ interface ContextualPickProps {
   seed: string;
   /** Overrides the configured pool query, e.g. to match a quiz result. */
   keywords?: string;
+  focusTerm?: string;
 }
 
 /**
@@ -20,8 +21,8 @@ interface ContextualPickProps {
  * format that actually converts for affiliates. This renders nothing when there
  * is no product to show, so the surrounding prose is never left dangling.
  */
-export default async function ContextualPick({ lead, seed, keywords }: ContextualPickProps) {
-  const product = await getContextualProduct(seed, keywords);
+export default async function ContextualPick({ lead, seed, keywords, focusTerm }: ContextualPickProps) {
+  const product = await getContextualProduct(seed, keywords, focusTerm);
   if (!product) return null;
 
   return (
@@ -35,7 +36,6 @@ export default async function ContextualPick({ lead, seed, keywords }: Contextua
       >
         {product.title}
       </AmazonProductLink>
-      {product.price && <span> — {product.price}</span>}
       <span className="t-label mt-1 block text-[var(--dim)] opacity-60">
         Paid link · As an Amazon Associate this site earns from qualifying purchases
       </span>

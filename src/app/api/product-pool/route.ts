@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProductPool } from "@/lib/amazon";
+import { adSelection } from "@/lib/amazon-config";
 
 /**
  * Serves the affiliate product pool to the browser.
@@ -20,12 +21,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const products = await getProductPool();
   return NextResponse.json(
-    { products },
+    { products, pinnedAsin: adSelection().pinnedAsin },
     {
       headers: {
-        // Prices must stay inside Amazon's 24 hour freshness rule, and the
-        // server-side pool already refreshes every six.
-        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=21600",
+        // Redis caches the shared pool for six hours. Do not cache this HTTP
+        // response too, or it could outlive the pool's freshness window.
+        "Cache-Control": "no-store",
       },
     },
   );

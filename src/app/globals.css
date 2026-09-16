@@ -98,7 +98,7 @@ button { font: inherit; }
   font-weight: 400;
   font-size: clamp(1.375rem, 3.4vw, 1.5625rem);
   line-height: 1.22;
-  text-wrap: balance;
+  text-wrap: wrap;
 }
 
 .t-body { font-size: 1.09375rem; line-height: 1.6; text-wrap: pretty; }

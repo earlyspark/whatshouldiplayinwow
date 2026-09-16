@@ -1,6 +1,4 @@
-import type { Faction } from "@/data/forever";
-
-export const QUIZ_VERSION = "1.0.0";
+export const QUIZ_VERSION = "1.9.0";
 
 export type QuestionId = `q${number}`;
 
@@ -8,35 +6,33 @@ export interface QuizOption {
   id: string;
   label: string;
   description?: string;
-  factions?: Faction[];
 }
 
 export interface QuizQuestion {
   id: QuestionId;
   prompt: string;
-  eyebrow: string;
   type: "single" | "ranked";
+  maxRank?: 2 | 3;
   helper?: string;
   options: QuizOption[];
 }
 
 export const questions: QuizQuestion[] = [
   {
-    id: "q1", eyebrow: "Your history", type: "single",
+    id: "q1", type: "single",
     prompt: "When did you first start playing WoW?",
-    helper: "This helps us understand what kind of toolkit may feel natural—not how skilled you are.",
     options: [
-      { id: "never", label: "Never", description: "Forever would be my first adventure in Azeroth." },
-      { id: "modern", label: "Modern WoW", description: "Dragonflight, The War Within, Midnight, or recently." },
+      { id: "original-cata", label: "Vanilla WoW through Cataclysm", description: "Vanilla, The Burning Crusade, Wrath of the Lich King, Cataclysm." },
+      { id: "mists-legion", label: "Mists of Pandaria through Legion", description: "Mists of Pandaria, Warlords of Draenor, Legion." },
       { id: "bfa-shadowlands", label: "Battle for Azeroth or Shadowlands" },
-      { id: "mists-legion", label: "Mists of Pandaria through Legion" },
-      { id: "original-cata", label: "Original WoW through Cataclysm" },
-      { id: "many-eras", label: "Across several eras", description: "I have played different versions over the years." },
+      { id: "modern", label: "Modern WoW", description: "Dragonflight, The War Within, Midnight, or recently." },
+      { id: "never", label: "Never", description: "Forever would be my first adventure in Azeroth." },
     ],
   },
   {
-    id: "q2", eyebrow: "Your banner", type: "single",
-    prompt: "Where do you want to play?",
+    id: "q2", type: "single",
+    prompt: "Which faction do you lean toward?",
+    helper: "We'll favor your choice, but a strong match on the other side can still win.",
     options: [
       { id: "alliance", label: "Alliance", description: "Honor, tradition, and hard-won unity." },
       { id: "horde", label: "Horde", description: "Strength, survival, and chosen bonds." },
@@ -44,7 +40,7 @@ export const questions: QuizQuestion[] = [
     ],
   },
   {
-    id: "q3", eyebrow: "Your priorities", type: "ranked",
+    id: "q3", type: "ranked",
     prompt: "Rank up to three parts of Forever you’re most excited about.",
     helper: "Choose in order. Your first pick matters most.",
     options: [
@@ -52,12 +48,13 @@ export const questions: QuizQuestion[] = [
       { id: "dungeons", label: "Dungeons" },
       { id: "raids", label: "Raids" },
       { id: "pvp", label: "PvP" },
-      { id: "professions", label: "Professions & the economy" },
+      { id: "professions", label: "Crafting & the economy" },
       { id: "exploration", label: "Exploration, lore & collecting" },
+      { id: "vibes", label: "Community & the vibes", description: "Hanging out, finding my people, and feeling at home in Azeroth." },
     ],
   },
   {
-    id: "q4", eyebrow: "Your contribution", type: "ranked",
+    id: "q4", type: "ranked",
     prompt: "Rank up to three contributions you’d most enjoy making to a group.",
     helper: "You can stop after one if there is a clear winner.",
     options: [
@@ -69,7 +66,7 @@ export const questions: QuizQuestion[] = [
     ],
   },
   {
-    id: "q5", eyebrow: "Your combat", type: "ranked",
+    id: "q5", type: "ranked",
     prompt: "Rank up to three ways you’d most enjoy fighting.",
     options: [
       { id: "heavy-melee", label: "Heavy, durable melee" },
@@ -80,18 +77,18 @@ export const questions: QuizQuestion[] = [
     ],
   },
   {
-    id: "q6", eyebrow: "Your instinct", type: "single",
-    prompt: "When a fight breaks out, what feels most natural?",
+    id: "q6", type: "single",
+    prompt: "When a fight gets unpredictable, how do you respond?",
     options: [
-      { id: "dive", label: "Dive into the fray", description: "Act quickly and create momentum." },
-      { id: "measured-close", label: "Read it, then get close", description: "Commit once I understand the situation." },
-      { id: "second-line", label: "Stay just behind the frontline", description: "Watch, react, and support." },
-      { id: "backline", label: "Hang back and act deliberately", description: "I want room to read the whole fight." },
-      { id: "shift", label: "Move wherever I’m needed", description: "Change position as the fight changes." },
+      { id: "act-fast", label: "Act fast and create an opening", description: "I trust my instincts and like to set the pace." },
+      { id: "wait-opening", label: "Wait for the right moment", description: "I watch for an opportunity before committing." },
+      { id: "help-ally", label: "Help whoever needs me most", description: "I react to what my teammates need." },
+      { id: "stick-plan", label: "Stay steady and stick to the plan", description: "I prefer a deliberate approach when things get messy." },
+      { id: "improvise", label: "Adapt as the fight changes", description: "I enjoy switching tactics on the fly." },
     ],
   },
   {
-    id: "q7", eyebrow: "Your company", type: "single",
+    id: "q7", type: "single",
     prompt: "How do you feel about pets or summoned companions?",
     options: [
       { id: "central", label: "They’re central to the fantasy" },
@@ -100,7 +97,7 @@ export const questions: QuizQuestion[] = [
     ],
   },
   {
-    id: "q8", eyebrow: "Your journey", type: "ranked",
+    id: "q8", type: "ranked",
     prompt: "Rank up to three adventures that sound most satisfying.",
     options: [
       { id: "solo", label: "Quiet progress at my own pace" },
@@ -111,21 +108,18 @@ export const questions: QuizQuestion[] = [
     ],
   },
   {
-    id: "q9", eyebrow: "Your fantasy", type: "ranked",
-    prompt: "Rank up to three class fantasies that pull you in most.",
+    id: "q9", type: "ranked", maxRank: 2,
+    prompt: "Rank up to two character fantasies that pull you in most.",
     options: [
-      { id: "martial", label: "Weapons & armor" },
-      { id: "ranger", label: "Wilderness ranger" },
-      { id: "nature", label: "Nature & shapeshifting" },
-      { id: "elements", label: "Elements & totems" },
-      { id: "holy", label: "Holy devotion" },
-      { id: "arcane", label: "Arcane knowledge" },
-      { id: "shadow", label: "Shadow & demons" },
-      { id: "stealth", label: "Stealth & cunning" },
+      { id: "martial", label: "Steel & daring", description: "Weapons, courage, and taking action." },
+      { id: "wilds", label: "Wilds & primal forces", description: "Living lands, storms, and untamed power." },
+      { id: "holy", label: "Faith & conviction", description: "Belief, purpose, and standing for something." },
+      { id: "arcane", label: "Magic & knowledge", description: "Learning secrets and mastering powerful ideas." },
+      { id: "secrets", label: "Shadows & secrets", description: "Mystery, cunning, and hidden power." },
     ],
   },
   {
-    id: "q10", eyebrow: "Under pressure", type: "single",
+    id: "q10", type: "single",
     prompt: "Your plan starts falling apart. What do you instinctively try first?",
     options: [
       { id: "finish", label: "Create an opening and finish it quickly" },
@@ -137,33 +131,25 @@ export const questions: QuizQuestion[] = [
     ],
   },
   {
-    id: "q11", eyebrow: "Your people", type: "ranked",
-    prompt: "Rank up to three peoples you can most imagine your character belonging to.",
-    helper: "Choose by identity and fantasy, not racial math.",
+    id: "q11", type: "single",
+    prompt: "Which atmosphere appeals to you most?",
     options: [
-      { id: "human", label: "Human", description: "Versatile, determined, and classically heroic.", factions: ["alliance"] },
-      { id: "dwarf", label: "Dwarf", description: "Stout, industrious, and grounded in tradition.", factions: ["alliance"] },
-      { id: "night-elf", label: "Night Elf", description: "Ancient, graceful, and bound to the wilds.", factions: ["alliance"] },
-      { id: "gnome", label: "Gnome", description: "Inventive, curious, and underestimated.", factions: ["alliance"] },
-      { id: "orc", label: "Orc", description: "Direct, resilient, and fiercely honorable.", factions: ["horde"] },
-      { id: "undead", label: "Undead", description: "Defiant, dark, and impossible to keep down.", factions: ["horde"] },
-      { id: "tauren", label: "Tauren", description: "Grounded, powerful, and close to the natural world.", factions: ["horde"] },
-      { id: "troll", label: "Troll", description: "Cunning, relentless, and steeped in old magic.", factions: ["horde"] },
-      { id: "skyborne", label: "Skyborne", description: "New, windswept, and shaped by elemental or arcane traditions.", factions: ["alliance", "horde"] },
-      { id: "no-race-preference", label: "No strong preference", description: "Let my playstyle decide." },
+      { id: "woodland-mystery", label: "Forests & winding paths" },
+      { id: "mountain-outposts", label: "Snowy mountains & bustling outposts" },
+      { id: "open-frontier", label: "Open horizons & rugged frontiers" },
+      { id: "no-zone-preference", label: "No strong preference" },
     ],
   },
   {
-    id: "q12", eyebrow: "Your dealbreaker", type: "single",
-    prompt: "Which drawback would bother you most?",
+    id: "q12", type: "single",
+    prompt: "What annoys you the most?",
     options: [
-      { id: "responsibility", label: "Being expected to tank or heal" },
-      { id: "companion", label: "Relying on a pet or minion" },
-      { id: "melee", label: "Being mostly in melee range" },
-      { id: "casting", label: "Standing back to cast" },
-      { id: "forms", label: "Managing forms or different modes" },
-      { id: "setup", label: "Relying on stealth or setup" },
-      { id: "none", label: "None of these is a dealbreaker" },
+      { id: "downtime", label: "Stopping to recover after just a few fights" },
+      { id: "prep", label: "Doing a lot of setup before the fun starts" },
+      { id: "cornered", label: "Feeling stuck when a fight goes sideways" },
+      { id: "repetition", label: "Doing the same thing in every fight" },
+      { id: "juggling", label: "Keeping track of too many things at once" },
+      { id: "none", label: "None of these really bother me" },
     ],
   },
 ];
