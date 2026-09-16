@@ -250,7 +250,6 @@ export default function QuizFlow() {
           className="surface p-6 sm:p-9"
         >
           <h2 ref={headingRef} tabIndex={-1} className="t-question outline-none">{question.prompt}</h2>
-          {question.helper && <p className="t-small mt-3 text-[var(--dim)]">{question.helper}</p>}
 
           <div className="mt-6 grid gap-3">
             {availableOptions.map((option) => {

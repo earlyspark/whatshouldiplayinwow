@@ -13,7 +13,6 @@ export interface QuizQuestion {
   prompt: string;
   type: "single" | "ranked";
   maxRank?: 2 | 3;
-  helper?: string;
   options: QuizOption[];
 }
 
@@ -21,7 +20,6 @@ export const questions: QuizQuestion[] = [
   {
     id: "q1", type: "single",
     prompt: "When did you first start playing WoW?",
-    helper: "Some racials need timing, and some classes offer an easier start. This is a small clue, not a skill test.",
     options: [
       { id: "vanilla-wrath", label: "Vanilla WoW through Wrath of the Lich King", description: "Vanilla, The Burning Crusade, Wrath of the Lich King." },
       { id: "cata-legion", label: "Cataclysm through Legion", description: "Cataclysm, Mists of Pandaria, Warlords of Draenor, Legion." },
@@ -33,7 +31,6 @@ export const questions: QuizQuestion[] = [
   {
     id: "q2", type: "single",
     prompt: "Which faction do you lean toward?",
-    helper: "We'll favor your choice, but a strong match on the other side can still win.",
     options: [
       { id: "alliance", label: "Alliance", description: "Light be with you" },
       { id: "horde", label: "Horde", description: "Go with honor" },
@@ -43,7 +40,6 @@ export const questions: QuizQuestion[] = [
   {
     id: "q3", type: "ranked",
     prompt: "Rank up to three parts of Forever you’re most excited about.",
-    helper: "Choose in order. Your first pick matters most.",
     options: [
       { id: "leveling", label: "Questing & leveling" },
       { id: "dungeons", label: "Dungeons" },
@@ -57,7 +53,6 @@ export const questions: QuizQuestion[] = [
   {
     id: "q4", type: "ranked",
     prompt: "Rank up to three contributions you’d most enjoy making to a group.",
-    helper: "You can stop after one if there is a clear winner.",
     options: [
       { id: "protect", label: "Protect others", description: "Take hits, shield allies, or have a companion draw danger away." },
       { id: "heal", label: "Keep allies alive" },
@@ -145,7 +140,6 @@ export const questions: QuizQuestion[] = [
   {
     id: "q12", type: "ranked",
     prompt: "Rank up to three things that would annoy you most.",
-    helper: "Choose in order. Pick “None of these” on its own if nothing stands out.",
     options: [
       { id: "downtime", label: "Stopping to recover after just a few fights" },
       { id: "prep", label: "Doing a lot of setup before the fun starts" },
