@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DATA_CHECKED_LABEL, DATA_SOURCES, classes, races } from "@/data/forever";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+import { siteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "Quiz methodology and Forever data",
