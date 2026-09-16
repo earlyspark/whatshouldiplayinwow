@@ -168,25 +168,20 @@ export default function QuizFlow() {
 
   if (!started) {
     return (
-      <section id="quiz" className="glass-panel mx-auto max-w-3xl rounded-[2rem] px-5 py-8 text-center sm:px-10 sm:py-12" aria-labelledby="quiz-start-title">
-        <p className="eyebrow">12 questions · about 3 minutes</p>
-        <h2 id="quiz-start-title" className="display-font mt-4 text-3xl sm:text-4xl">Find the character that feels like yours.</h2>
-        <p className="mx-auto mt-4 max-w-xl leading-7 text-[var(--muted)]">Rank what matters, follow your instincts, and get one clear recommendation with two close alternatives.</p>
-        <button onClick={start} className="focus-ring mt-8 min-h-12 cursor-pointer rounded-full bg-[var(--gold)] px-8 py-3 font-bold text-[#172022] transition hover:bg-[var(--gold-bright)]">
-          Start the quiz
-        </button>
+      <section id="quiz" className="flex w-full justify-center" aria-label="Start the WoW Forever race and class quiz">
+        <button onClick={start} className="btn focus-ring">Start the quiz</button>
       </section>
     );
   }
 
   return (
-    <section id="quiz" className="mx-auto max-w-3xl" aria-label="WoW Forever race and class quiz">
-      <div className="mb-5 flex items-center justify-between text-xs font-bold uppercase tracking-[0.15em] text-[var(--muted)]">
+    <section id="quiz" className="w-full" aria-label="WoW Forever race and class quiz">
+      <div className="t-label mb-3 flex items-center justify-between text-[var(--dim)]">
         <span>Question {index + 1} of {questions.length}</span>
         <span>{Math.round(((index + 1) / questions.length) * 100)}%</span>
       </div>
-      <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/8" role="progressbar" aria-valuemin={1} aria-valuemax={questions.length} aria-valuenow={index + 1}>
-        <motion.div className="h-full rounded-full bg-gradient-to-r from-[var(--teal)] to-[var(--gold)]" animate={{ width: `${((index + 1) / questions.length) * 100}%` }} transition={{ duration: reduceMotion ? 0 : 0.35 }} />
+      <div className="mb-8 h-[3px] bg-[var(--line)]" role="progressbar" aria-valuemin={1} aria-valuemax={questions.length} aria-valuenow={index + 1}>
+        <motion.div className="h-full bg-gradient-to-r from-[var(--plum)] to-[var(--bronze)]" animate={{ width: `${((index + 1) / questions.length) * 100}%` }} transition={{ duration: reduceMotion ? 0 : 0.35 }} />
       </div>
 
       <AnimatePresence mode="wait">
@@ -196,26 +191,26 @@ export default function QuizFlow() {
           animate={{ opacity: 1, x: 0 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -24 }}
           transition={{ duration: reduceMotion ? 0 : 0.24 }}
-          className="glass-panel rounded-[2rem] p-5 sm:p-9"
+          className="surface p-6 sm:p-9"
         >
-          <p className="eyebrow">{question.eyebrow}</p>
-          <h2 ref={headingRef} tabIndex={-1} className="display-font mt-3 text-3xl leading-tight outline-none sm:text-4xl">{question.prompt}</h2>
-          {question.helper && <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{question.helper}</p>}
+          <p className="t-label text-[var(--bronze)]">{question.eyebrow}</p>
+          <h2 ref={headingRef} tabIndex={-1} className="t-question mt-3 outline-none">{question.prompt}</h2>
+          {question.helper && <p className="t-small mt-3 text-[var(--dim)]">{question.helper}</p>}
 
           {question.type === "ranked" && selected.length > 0 && (
-            <div className="mt-6 rounded-2xl border border-[var(--line)] bg-black/15 p-3" aria-label="Your current ranking">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Your ranking</p>
+            <div className="inset mt-6 p-4" aria-label="Your current ranking">
+              <p className="t-label mb-3 text-[var(--dim)]">Your ranking</p>
               <ol className="space-y-2">
                 {selected.map((id, rank) => {
                   const option = availableOptions.find((item) => item.id === id);
                   if (!option) return null;
                   return (
-                    <li key={id} className="flex min-h-11 items-center gap-3 rounded-xl bg-white/6 px-3 py-2">
-                      <span className="w-8 text-sm font-bold text-[var(--gold-bright)]">{rankLabel(rank)}</span>
-                      <span className="min-w-0 flex-1 text-sm">{option.label}</span>
-                      <button type="button" onClick={() => moveRank(id, -1)} disabled={rank === 0} className="focus-ring cursor-pointer rounded p-2 text-sm disabled:cursor-not-allowed disabled:opacity-25" aria-label={`Move ${option.label} up`}>↑</button>
-                      <button type="button" onClick={() => moveRank(id, 1)} disabled={rank === selected.length - 1} className="focus-ring cursor-pointer rounded p-2 text-sm disabled:cursor-not-allowed disabled:opacity-25" aria-label={`Move ${option.label} down`}>↓</button>
-                      <button type="button" onClick={() => setSelection(option)} className="focus-ring cursor-pointer rounded p-2 text-lg text-[var(--muted)]" aria-label={`Remove ${option.label}`}>×</button>
+                    <li key={id} className="flex min-h-11 items-center gap-3 bg-[var(--raised)] px-3 py-2">
+                      <span className="t-label w-8 text-[var(--bronze)]">{rankLabel(rank)}</span>
+                      <span className="t-small min-w-0 flex-1">{option.label}</span>
+                      <button type="button" onClick={() => moveRank(id, -1)} disabled={rank === 0} className="focus-ring cursor-pointer p-2 text-[var(--dim)] hover:text-[var(--bone)] disabled:cursor-not-allowed disabled:opacity-25" aria-label={`Move ${option.label} up`}>↑</button>
+                      <button type="button" onClick={() => moveRank(id, 1)} disabled={rank === selected.length - 1} className="focus-ring cursor-pointer p-2 text-[var(--dim)] hover:text-[var(--bone)] disabled:cursor-not-allowed disabled:opacity-25" aria-label={`Move ${option.label} down`}>↓</button>
+                      <button type="button" onClick={() => setSelection(option)} className="focus-ring cursor-pointer p-2 text-lg leading-none text-[var(--dim)] hover:text-[var(--bone)]" aria-label={`Remove ${option.label}`}>×</button>
                     </li>
                   );
                 })}
@@ -235,14 +230,14 @@ export default function QuizFlow() {
                   disabled={disabled}
                   onClick={() => setSelection(option)}
                   aria-pressed={active}
-                  className={`focus-ring flex min-h-14 cursor-pointer items-center gap-4 rounded-2xl border px-4 py-3 text-left transition ${active ? "border-[var(--gold)] bg-[rgba(215,173,97,.12)]" : "border-[var(--line)] bg-white/[.025] hover:border-[rgba(100,189,186,.55)] hover:bg-white/[.05]"} disabled:cursor-not-allowed disabled:opacity-35`}
+                  className={`focus-ring flex min-h-14 cursor-pointer items-center gap-4 border px-4 py-3 text-left transition ${active ? "border-[var(--bronze)] bg-[rgba(200,150,74,.1)]" : "border-[var(--line)] bg-[var(--raised)] hover:border-[var(--bronze-dim)]"} disabled:cursor-not-allowed disabled:opacity-35`}
                 >
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-extrabold ${active ? "border-[var(--gold)] bg-[var(--gold)] text-[#172022]" : "border-white/20 text-[var(--muted)]"}`}>
+                  <span className={`t-label flex h-7 w-7 shrink-0 items-center justify-center border tracking-normal ${active ? "border-[var(--bronze)] bg-[var(--bronze)] text-[#1d1608]" : "border-[var(--line)] text-[var(--dim)]"}`}>
                     {active ? (question.type === "ranked" ? rank + 1 : "✓") : ""}
                   </span>
                   <span>
                     <span className="block font-semibold">{option.label}</span>
-                    {option.description && <span className="mt-0.5 block text-sm leading-5 text-[var(--muted)]">{option.description}</span>}
+                    {option.description && <span className="t-small mt-0.5 block text-[var(--dim)]">{option.description}</span>}
                   </span>
                 </button>
               );
@@ -250,12 +245,12 @@ export default function QuizFlow() {
           </div>
 
           <div className="mt-7 flex items-center justify-between gap-4">
-            <button type="button" onClick={() => index === 0 ? setStarted(false) : setIndex((value) => value - 1)} className="focus-ring min-h-12 cursor-pointer rounded-full px-4 text-sm font-bold text-[var(--muted)] hover:text-white">← Back</button>
-            <button type="button" onClick={continueQuiz} disabled={!selected.length || submitting} className="focus-ring min-h-12 cursor-pointer rounded-full bg-[var(--gold)] px-6 py-3 font-bold text-[#172022] transition hover:bg-[var(--gold-bright)] disabled:cursor-not-allowed disabled:opacity-40">
+            <button type="button" onClick={() => index === 0 ? setStarted(false) : setIndex((value) => value - 1)} className="btn-quiet focus-ring">← Back</button>
+            <button type="button" onClick={continueQuiz} disabled={!selected.length || submitting} className="btn focus-ring">
               {submitting ? "Finding your match…" : index === questions.length - 1 ? "Reveal my pick" : "Continue"}
             </button>
           </div>
-          {error && <p role="alert" className="mt-4 text-center text-sm text-[#ff9b82]">{error}</p>}
+          {error && <p role="alert" className="t-small mt-5 text-[var(--warn)]">{error}</p>}
         </motion.div>
       </AnimatePresence>
     </section>

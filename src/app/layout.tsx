@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { body, display, mono } from "./fonts";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -7,33 +8,33 @@ import "./globals.css";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#071012",
+  themeColor: "#171220",
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "What Should I Pick? WoW Forever Race & Class Quiz", template: "%s | What Should I Pick?" },
-  description: "Answer 12 playstyle questions to discover which World of Warcraft: Forever race and class you should pick.",
-  applicationName: "What Should I Pick?",
+  title: { default: "What Should I Play? WoW Forever Race & Class Quiz", template: "%s | What Should I Play?" },
+  description: "Answer 12 playstyle questions to discover which World of Warcraft: Forever race and class you should play.",
+  applicationName: "What Should I Play?",
   openGraph: {
     type: "website",
-    siteName: "What Should I Pick?",
-    title: "What Should I Pick? WoW Forever Race & Class Quiz",
+    siteName: "What Should I Play?",
+    title: "What Should I Play? WoW Forever Race & Class Quiz",
     description: "Find the WoW Forever race and class that fits the way you want to play.",
     url: siteUrl,
   },
   twitter: {
     card: "summary_large_image",
-    title: "What Should I Pick? WoW Forever Race & Class Quiz",
+    title: "What Should I Play? WoW Forever Race & Class Quiz",
     description: "Find the WoW Forever race and class that fits the way you want to play.",
   },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
-        <a href="#main-content" className="focus-ring fixed left-3 top-3 z-50 -translate-y-24 rounded-md bg-white px-4 py-2 text-sm text-black focus:translate-y-0">
+        <a href="#main-content" className="focus-ring fixed left-3 top-3 z-50 -translate-y-24 bg-[var(--bone)] px-4 py-2 text-sm font-semibold text-[var(--ground)] focus:translate-y-0">
           Skip to content
         </a>
         {children}

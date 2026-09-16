@@ -1,4 +1,4 @@
-# What Should I Pick?
+# What Should I Play?
 
 A deterministic, shareable World of Warcraft: Forever race and class quiz.
 

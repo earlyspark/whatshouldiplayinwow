@@ -20,17 +20,17 @@ export default function AdSlot({ placement, href, headline, body }: AdSlotProps)
   };
 
   return (
-    <aside className={`${size} flex w-full items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[.02] p-5 text-center`} aria-label="Advertisement">
+    <aside className={`${size} flex w-full items-center justify-center border border-dashed border-[var(--line)] p-5 text-center`} aria-label="Advertisement">
       {href && headline ? (
-        <a href={href} target="_blank" rel="sponsored nofollow" onClick={trackClick} className="focus-ring rounded-lg text-sm hover:text-white">
-          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">Advertisement</span>
-          <strong className="mt-3 block text-[var(--gold-bright)]">{headline}</strong>
-          {body && <span className="mt-2 block leading-6 text-[var(--muted)]">{body}</span>}
+        <a href={href} target="_blank" rel="sponsored nofollow" onClick={trackClick} className="focus-ring t-small">
+          <span className="t-label block text-[var(--dim)]">Advertisement</span>
+          <strong className="t-card mt-3 block text-[var(--bronze)]">{headline}</strong>
+          {body && <span className="t-small mt-2 block text-[var(--dim)]">{body}</span>}
         </a>
       ) : (
         <div>
-          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">Advertisement</span>
-          <span className="mt-2 block text-xs text-white/25">Reserved ad space</span>
+          <span className="t-label block text-[var(--dim)]">Advertisement</span>
+          <span className="t-small mt-2 block text-[var(--dim)] opacity-50">Reserved ad space</span>
         </div>
       )}
     </aside>

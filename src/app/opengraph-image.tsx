@@ -1,52 +1,60 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-export const alt = "What Should I Pick? WoW Forever Race & Class Quiz";
+export const alt = "What Should I Play? WoW Forever Race & Class Quiz";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+// Read once at module scope so nothing is re-read per request.
+const [crest, marcellus, garamond, plexMono] = await Promise.all([
+  readFile(join(process.cwd(), "assets/crest.png")),
+  readFile(join(process.cwd(), "assets/fonts/marcellus.ttf")),
+  readFile(join(process.cwd(), "assets/fonts/ebgaramond.ttf")),
+  readFile(join(process.cwd(), "assets/fonts/plexmono.ttf")),
+]);
+const crestSrc = `data:image/png;base64,${crest.toString("base64")}`;
+
+// Satori cannot read next/font, so the faces are passed as binaries.
+const fonts = [
+  { name: "Marcellus", data: marcellus, style: "normal" as const, weight: 400 as const },
+  { name: "EB Garamond", data: garamond, style: "normal" as const, weight: 400 as const },
+  { name: "IBM Plex Mono", data: plexMono, style: "normal" as const, weight: 400 as const },
+];
 
 export default function OpenGraphImage() {
   return new ImageResponse(
     (
       <div
         style={{
-          alignItems: "stretch",
-          background: "linear-gradient(135deg, #071012 0%, #10292c 58%, #23170d 100%)",
-          color: "#eef4f5",
+          alignItems: "center",
+          background: "#171220",
+          color: "#f0e9dd",
           display: "flex",
+          gap: 58,
           height: "100%",
-          padding: "58px",
+          padding: "0 86px",
           width: "100%",
         }}
       >
-        <div
-          style={{
-            border: "2px solid rgba(215, 173, 97, .55)",
-            borderRadius: "32px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "54px 62px",
-            width: "100%",
-          }}
-        >
-          <div style={{ color: "#f0cc83", display: "flex", fontSize: 24, fontWeight: 700, letterSpacing: 4 }}>
-            WHAT SHOULD I PICK?
+        <img src={crestSrc} alt="" width={232} height={238} />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+          <div style={{ color: "#c8964a", display: "flex", fontSize: 23, fontFamily: "IBM Plex Mono", letterSpacing: 5 }}>
+            WORLD OF WARCRAFT: FOREVER
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-            <div style={{ display: "flex", fontFamily: "Georgia", fontSize: 70, fontWeight: 700, lineHeight: 1.04, maxWidth: 980 }}>
-              Find your WoW Forever race &amp; class.
-            </div>
-            <div style={{ color: "#b7c7c9", display: "flex", fontSize: 29 }}>
-              12 playstyle questions. One clear recommendation.
-            </div>
+          <div style={{ display: "flex", fontFamily: "Marcellus", fontSize: 74, lineHeight: 1.08, maxWidth: 700 }}>
+            Which race and class should you play?
           </div>
-          <div style={{ alignItems: "center", display: "flex", fontSize: 22, justifyContent: "space-between" }}>
-            <span style={{ color: "#64bdba" }}>Playstyle over tier lists</span>
-            <span style={{ color: "#b7c7c9" }}>whatshouldiplayinwowforever.com</span>
+          <div style={{ color: "#a79cb0", display: "flex", fontSize: 29, maxWidth: 660 }}>
+            Take this quiz to find out and share with your friends!
+          </div>
+          <div style={{ color: "#8fa68e", display: "flex", fontFamily: "IBM Plex Mono", fontSize: 20, letterSpacing: 1, marginTop: 8 }}>
+            whatshouldiplayinwowforever.com
           </div>
         </div>
       </div>
     ),
-    size,
+    { ...size, fonts },
   );
 }

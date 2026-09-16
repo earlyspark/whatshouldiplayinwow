@@ -25,9 +25,9 @@ export default function ResultActions({ title }: { title: string }) {
 
   return (
     <div className="flex flex-wrap gap-3">
-      <button onClick={share} className="focus-ring min-h-12 cursor-pointer rounded-full bg-[var(--gold)] px-6 py-3 font-bold text-[#172022] hover:bg-[var(--gold-bright)]">Share result</button>
-      <button onClick={copy} className="focus-ring min-h-12 cursor-pointer rounded-full border border-[var(--line)] px-6 py-3 font-bold hover:bg-white/5">{copied ? "Link copied" : "Copy link"}</button>
-      <Link href="/#quiz" onClick={() => trackEvent("quiz_retake")} className="focus-ring inline-flex min-h-12 items-center rounded-full px-5 py-3 font-bold text-[var(--muted)] hover:text-white">Retake quiz</Link>
+      <button onClick={share} className="btn focus-ring">Share result</button>
+      <button onClick={copy} className="btn-outline focus-ring">{copied ? "Link copied" : "Copy link"}</button>
+      <Link href="/#quiz" onClick={() => trackEvent("quiz_retake")} className="btn-quiet focus-ring">Retake quiz</Link>
     </div>
   );
 }

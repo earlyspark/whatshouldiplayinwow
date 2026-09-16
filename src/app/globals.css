@@ -1,80 +1,216 @@
 @import "tailwindcss";
 
+/*
+ * Candlelit Vellum — inscriptional display type on a plum-black ground.
+ * Three text roles (bone, dim, bronze) with plum reserved for progress and
+ * rules, sage reserved for data and freshness. Committed dark identity.
+ */
 :root {
-  --ink: #eef4f5;
-  --muted: #9eafb2;
-  --deep: #071012;
-  --panel: #0d1a1d;
-  --panel-soft: #122326;
-  --line: rgba(154, 196, 199, 0.18);
-  --gold: #d7ad61;
-  --gold-bright: #f0cc83;
-  --teal: #64bdba;
-  --ember: #b95d3b;
+  --ground: #171220;
+  --surface: #211a2c;
+  --raised: #2a2136;
+  --line: #342a42;
+
+  --bone: #f0e9dd;
+  --dim: #a79cb0;
+  --bronze: #c8964a;
+  --bronze-dim: rgba(200, 150, 74, 0.4);
+  --plum: #8c3555;
+  --sage: #8fa68e;
+  --warn: #e0876b;
 }
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
 
 body {
   margin: 0;
-  color: var(--ink);
-  background:
-    radial-gradient(circle at 50% -10%, rgba(53, 134, 134, 0.22), transparent 34rem),
-    linear-gradient(180deg, #091719 0%, var(--deep) 48%, #050b0c 100%);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100vh;
+  background: var(--ground);
+  color: var(--bone);
+  /* EB Garamond thins out reversed on dark, so body sits at 500. */
+  font-family: var(--font-body);
+  font-size: 17.5px;
+  font-weight: 500;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* A quiet fixed emblem behind the page, echoing the earlyspark.com backdrop. */
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
+  top: -6vh;
+  right: -22vw;
+  width: min(115vw, 1000px);
+  aspect-ratio: 1;
+  background: url("/forever-astrolabe-bg.webp") no-repeat center / contain;
+  mix-blend-mode: screen;
+  opacity: 0.14;
   pointer-events: none;
-  opacity: 0.22;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.13'/%3E%3C/svg%3E");
-  z-index: -1;
+  z-index: 0;
+}
+
+body > main { position: relative; z-index: 1; }
+
+@media (max-width: 640px) {
+  body::before { right: -38vw; opacity: 0.1; }
 }
 
 a { color: inherit; }
 button { font: inherit; }
 
-.display-font {
-  font-family: Georgia, "Times New Roman", serif;
-  letter-spacing: -0.025em;
+/* ---------- type scale: six steps, used everywhere ---------- */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  /* Sized so the headline holds one line down to ~600px: it needs about
+     17.2x its font size in width, and the column is 100vw minus gutters,
+     capped at 78rem. Below the floor it wraps, which is right on phones. */
+  font-size: clamp(2rem, calc((min(100vw, 78rem) - 4rem) / 17.6), 4.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
 }
 
-.eyebrow {
-  color: var(--gold-bright);
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.18em;
+.t-section {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.t-card {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+.t-question {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.375rem, 3.4vw, 1.5625rem);
+  line-height: 1.22;
+  text-wrap: balance;
+}
+
+.t-body { font-size: 1.09375rem; line-height: 1.6; text-wrap: pretty; }
+
+.t-small { font-size: 0.9375rem; line-height: 1.5; }
+
+.t-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.glass-panel {
-  background: linear-gradient(145deg, rgba(18, 35, 38, 0.95), rgba(8, 18, 20, 0.96));
+/* Hero eyebrow: same treatment as a label, sized to carry the headline. */
+.t-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ---------- surfaces ---------- */
+.surface {
+  background: var(--surface);
   border: 1px solid var(--line);
-  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34), inset 0 1px rgba(255, 255, 255, 0.04);
 }
 
-.gold-rule {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(215, 173, 97, 0.75), transparent);
+.inset {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
 }
 
-.focus-ring:focus-visible {
-  outline: 3px solid rgba(100, 189, 186, 0.9);
+/* ---------- controls ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.75rem;
+  border: 0;
+  background: var(--bronze);
+  color: #1d1608;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.btn:hover:not(:disabled) { background: #d7a55c; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.75rem 0.25rem;
+  background: transparent;
+  border: 0;
+  color: var(--dim);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+.btn-quiet:hover { color: var(--bone); }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 1px solid var(--bronze-dim);
+  color: var(--bronze);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.18s ease;
+}
+.btn-outline:hover { border-color: var(--bronze); }
+
+/* ---------- data stamp ---------- */
+.stamp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--sage);
+  border-left: 2px solid var(--sage);
+  padding: 0.1875rem 0 0.1875rem 0.75rem;
+}
+
+.link-bronze {
+  color: var(--bronze);
+  border-bottom: 1px solid var(--bronze-dim);
+  padding-bottom: 1px;
+}
+.link-bronze:hover { border-bottom-color: var(--bronze); }
+
+/* ---------- focus ---------- */
+.focus-ring:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--bronze);
   outline-offset: 3px;
 }
 
-::selection { background: rgba(100, 189, 186, 0.3); }
+::selection { background: rgba(200, 150, 74, 0.28); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
-    scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
