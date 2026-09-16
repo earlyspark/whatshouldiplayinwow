@@ -1,6 +1,6 @@
 # What Should I Play?
 
-A 13-question quiz that suggests a race and class for *World of Warcraft: Forever*. It asks how you like to play, and gives you one main pick plus two alternatives you can share with friends.
+A quiz that asks questions about how you like to play and suggests a race and class for *World of Warcraft: Forever*. It gives you one main pick plus two alternatives you can share with friends.
 
 ![The quiz landing page](docs/screenshots/home.png)
 

@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: "What Should I Play? WoW Forever Race & Class Quiz", template: "%s | What Should I Play?" },
-  description: "Answer 12 playstyle questions to discover which World of Warcraft: Forever race and class you should play.",
+  description: "Answer playstyle questions to discover which World of Warcraft: Forever race and class you should play.",
   applicationName: "What Should I Play?",
   openGraph: {
     type: "website",

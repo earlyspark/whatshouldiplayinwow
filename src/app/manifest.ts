@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "What Should I Play? WoW Forever Race & Class Quiz",
     short_name: "What Should I Play?",
-    description: "Answer 12 playstyle questions to discover which World of Warcraft: Forever race and class you should play.",
+    description: "Answer playstyle questions to discover which World of Warcraft: Forever race and class you should play.",
     start_url: "/",
     display: "standalone",
     background_color: "#171220",
