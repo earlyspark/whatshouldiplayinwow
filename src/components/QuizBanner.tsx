@@ -22,7 +22,7 @@ export default function QuizBanner({ questionIndex }: QuizBannerProps) {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/ads/pool")
+    fetch("/api/product-pool")
       .then((response) => (response.ok ? response.json() : { products: [] }))
       .then((data) => {
         if (active) setProducts(data.products ?? []);

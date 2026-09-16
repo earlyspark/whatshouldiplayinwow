@@ -103,7 +103,7 @@ freshness window required by the Associates Program Operating Agreement.
 | `/result/[id]` | In-content text links | Searched on the recommended class |
 
 The quiz is a client-side stepper on a statically rendered page, so it reads the
-pool from `/api/ads/pool` rather than taking server props, which keeps the
+pool from `/api/product-pool` rather than taking server props, which keeps the
 landing page static. That route serves public catalog data only and reads the
 same six hour cache, so it costs no extra Amazon calls.
 

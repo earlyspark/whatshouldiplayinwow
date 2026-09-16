@@ -10,6 +10,10 @@ import { getProductPool } from "@/lib/amazon";
  *
  * Only public catalog data crosses the wire; credentials stay on the server.
  * The pool is already cached for six hours, so this costs no Amazon calls.
+ *
+ * The path deliberately avoids the word "ads": blocklists match URL substrings
+ * like /ads/ and /ad/, which would make this route fail for a large share of
+ * readers before any of the ad markup is even reached.
  */
 export const dynamic = "force-dynamic";
 
