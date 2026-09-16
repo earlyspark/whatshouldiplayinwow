@@ -100,16 +100,16 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
       )}
 
       {choice !== undefined && (choice === null || settingsOpen) && (
-        <section aria-labelledby="analytics-consent-title" className="fixed inset-x-0 bottom-0 z-50 p-4 sm:p-6">
+        <section aria-labelledby="cookie-consent-title" className="fixed inset-x-0 bottom-0 z-50 p-4 sm:p-6">
           <div className="surface mx-auto max-w-3xl border-[var(--bronze-dim)] bg-[var(--surface)] p-5 shadow-2xl sm:p-6">
-            <h2 id="analytics-consent-title" className="t-card">Analytics choice</h2>
+            <h2 id="cookie-consent-title" className="t-card">Cookie consent</h2>
             <p className="t-small mt-2 text-[var(--dim)]">
-              May we use Google Analytics to understand visits and improve this site? It uses cookies and records quiz and affiliate-link interactions. The quiz works if you decline. Read more in{" "}
+              Use Google Analytics cookies to measure visits, quiz interactions, and affiliate-link clicks. The quiz works if you decline. Read more in{" "}
               <Link href="/methodology#privacy" className="link-bronze focus-ring">privacy and cookies</Link>.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <button ref={declineRef} type="button" onClick={() => choose("declined")} className="btn-outline focus-ring">Decline analytics</button>
-              <button type="button" onClick={() => choose("accepted")} className="btn focus-ring">Accept analytics</button>
+              <button type="button" onClick={() => choose("accepted")} className="btn focus-ring">Accept</button>
+              <button ref={declineRef} type="button" onClick={() => choose("declined")} className="btn-outline focus-ring">Decline</button>
               {settingsOpen && choice !== null && <button type="button" onClick={closeSettings} className="btn-quiet focus-ring">Cancel</button>}
             </div>
           </div>
