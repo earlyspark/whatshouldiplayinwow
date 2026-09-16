@@ -2,16 +2,16 @@ import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { hasRedisConfig, redisConfig } from "@/lib/redis-config";
 import { answersSchema } from "@/lib/result-schema";
 import { createSavedResult, validateAnswers } from "@/lib/scoring";
-import { hasRedisConfig, saveResult } from "@/lib/result-store";
+import { saveResult } from "@/lib/result-store";
 
 function rateLimiter() {
-  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
+  const config = redisConfig();
+  if (!config) return null;
   return new Ratelimit({
-    redis: new Redis({ url, token }),
+    redis: new Redis(config),
     limiter: Ratelimit.slidingWindow(20, "1 h"),
     prefix: "ratelimit:wow-forever-results",
   });

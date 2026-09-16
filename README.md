@@ -17,8 +17,8 @@ Set these environment variables:
 
 ```text
 NEXT_PUBLIC_SITE_URL=https://whatshouldiplayinwowforever.com
-KV_REST_API_URL=
-KV_REST_API_TOKEN=
+WOWFOREVER_KV_REST_API_URL=
+WOWFOREVER_KV_REST_API_TOKEN=
 CRON_SECRET=
 NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG=
 ```

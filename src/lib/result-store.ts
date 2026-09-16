@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { redisConfig } from "@/lib/redis-config";
 import { savedResultSchema, type SavedResult } from "@/lib/result-schema";
 
 const prefix = "wow-forever-result";
@@ -9,16 +10,6 @@ declare global {
 
 const memory = globalThis.__wowForeverResults ?? new Map<string, SavedResult>();
 if (process.env.NODE_ENV !== "production") globalThis.__wowForeverResults = memory;
-
-function redisConfig() {
-  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
-  return url && token ? { url, token } : null;
-}
-
-export function hasRedisConfig() {
-  return Boolean(redisConfig());
-}
 
 function redis() {
   const config = redisConfig();
