@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { track } from "@vercel/analytics";
 import { questions, QUIZ_VERSION, type QuizOption } from "@/data/questions";
 
 type Answers = Record<string, string[]>;
@@ -103,7 +102,6 @@ export default function QuizFlow() {
       setError("Choose at least one answer to continue.");
       return;
     }
-    track("quiz_question_completed", { question: question.id, choices: selected.length });
     if (index < questions.length - 1) {
       setIndex((value) => value + 1);
       return;
@@ -119,7 +117,6 @@ export default function QuizFlow() {
       });
       const body = await response.json();
       if (!response.ok || !body.id) throw new Error(body.error ?? "Unable to create your result.");
-      track("quiz_result_created");
       sessionStorage.removeItem(storageKey);
       router.push(`/result/${body.id}`);
     } catch (caught) {
@@ -128,10 +125,7 @@ export default function QuizFlow() {
     }
   };
 
-  const start = () => {
-    setStarted(true);
-    track("quiz_started");
-  };
+  const start = () => setStarted(true);
 
   if (!started) {
     return (
