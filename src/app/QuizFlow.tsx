@@ -210,6 +210,18 @@ export default function QuizFlow() {
     setIndex((value) => Math.max(0, value - 1));
   };
 
+  const restartQuiz = () => {
+    if (advanceLockRef.current || submitting) return;
+    progressRef.current = { started: true, index: 0, completed: false };
+    setIndex(0);
+    setAnswers({});
+    setError("");
+    setAnnouncement("");
+    try { sessionStorage.setItem(storageKey, JSON.stringify({ started: true, index: 0, answers: {} })); }
+    catch { /* The quiz still restarts when browser storage is unavailable. */ }
+    if (index === 0) headingRef.current?.focus();
+  };
+
   if (!started) {
     return (
       <section id="quiz" className="w-full" aria-label="Start the WoW Forever race and class quiz">
@@ -227,12 +239,18 @@ export default function QuizFlow() {
         <QuizBanner questionIndex={index} layout="sidebar" {...productPool} />
       </div>
       <div className="min-w-0 lg:col-start-1 lg:row-start-1">
-      <div className="t-label mb-3 flex items-center justify-between text-[var(--dim)]">
-        <span>Question {index + 1} of {questions.length}</span>
-        <span>{Math.round(((index + 1) / questions.length) * 100)}%</span>
-      </div>
-      <div className="mb-8 h-[3px] bg-[var(--line)]" role="progressbar" aria-label="Quiz progress" aria-valuetext={`Question ${index + 1} of ${questions.length}`} aria-valuemin={1} aria-valuemax={questions.length} aria-valuenow={index + 1}>
-        <motion.div className="h-full bg-gradient-to-r from-[var(--plum)] to-[var(--bronze)]" animate={{ width: `${((index + 1) / questions.length) * 100}%` }} transition={{ duration: reduceMotion ? 0 : 0.35 }} />
+      <div className="t-label mb-1 text-[var(--dim)]">Question {index + 1} of {questions.length}</div>
+      <div className="mb-8 flex items-center gap-3">
+        <div className="h-[3px] min-w-0 flex-1 bg-[var(--line)]" role="progressbar" aria-label="Quiz progress" aria-valuetext={`Question ${index + 1} of ${questions.length}`} aria-valuemin={1} aria-valuemax={questions.length} aria-valuenow={index + 1}>
+          <motion.div className="h-full bg-gradient-to-r from-[var(--plum)] to-[var(--bronze)]" animate={{ width: `${((index + 1) / questions.length) * 100}%` }} transition={{ duration: reduceMotion ? 0 : 0.35 }} />
+        </div>
+        <span className="t-label shrink-0 text-[var(--dim)]">{Math.round(((index + 1) / questions.length) * 100)}%</span>
+        <button type="button" onClick={restartQuiz} disabled={advancing || submitting} aria-label="Restart quiz and clear all answers" title="Restart quiz" className="focus-ring flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center border border-[var(--control-line)] text-[var(--dim)] transition hover:border-[var(--bronze)] hover:text-[var(--bone)] disabled:cursor-not-allowed disabled:opacity-35">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        </button>
       </div>
 
       <AnimatePresence mode="wait" onExitComplete={() => {
