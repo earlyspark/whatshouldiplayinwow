@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { body, display, mono } from "./fonts";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import PrivacySafeSpeedInsights from "@/components/PrivacySafeSpeedInsights";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to content
         </a>
         {children}
-        <SpeedInsights />
+        <PrivacySafeSpeedInsights />
         <GoogleAnalytics />
       </body>
     </html>

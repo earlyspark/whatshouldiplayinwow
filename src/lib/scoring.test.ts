@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { classes, isValidCombination, raceById, races } from "@/data/forever";
 import { questions } from "@/data/questions";
-import { scoring } from "@/data/scoring-config";
+import { questionWeights, scoring } from "@/data/scoring-config";
 import { normalizedRankFactors, scoreQuiz } from "@/lib/scoring";
 import type { QuizAnswers } from "@/lib/result-schema";
 
 const frontline: QuizAnswers = {
-  q1: ["original-cata"],
+  q1: ["vanilla-wrath"],
   q2: ["horde"],
   q3: ["dungeons", "raids", "pvp"],
   q4: ["protect", "damage", "adapt"],
@@ -18,6 +18,7 @@ const frontline: QuizAnswers = {
   q10: ["endure"],
   q11: ["open-frontier"],
   q12: ["juggling"],
+  q13: ["focused"],
 };
 
 const backline: QuizAnswers = {
@@ -33,10 +34,11 @@ const backline: QuizAnswers = {
   q10: ["finish"],
   q11: ["mountain-outposts"],
   q12: ["cornered"],
+  q13: ["focused"],
 };
 
 const neutralBase: QuizAnswers = {
-  q1: ["original-cata"],
+  q1: ["vanilla-wrath"],
   q2: ["either"],
   q3: ["dungeons"],
   q4: ["damage"],
@@ -48,6 +50,7 @@ const neutralBase: QuizAnswers = {
   q10: ["reposition"],
   q11: ["no-zone-preference"],
   q12: ["none"],
+  q13: ["either"],
 };
 
 function persona(overrides: Partial<QuizAnswers>): QuizAnswers {
@@ -58,7 +61,7 @@ const classPersonas: { name: string; classId: (typeof classes)[number]["id"]; an
   {
     name: "adaptive explorer",
     classId: "druid",
-    answers: persona({ q3: ["exploration", "leveling", "dungeons"], q4: ["adapt", "heal", "protect"], q5: ["adaptable", "ranged-magic", "quick-melee"], q6: ["improvise"], q8: ["solo", "open-world", "small-group"], q9: ["wilds", "arcane"], q12: ["downtime"] }),
+    answers: persona({ q3: ["exploration", "leveling", "dungeons"], q4: ["adapt", "heal", "protect"], q5: ["adaptable", "ranged-magic", "quick-melee"], q6: ["improvise"], q8: ["solo", "open-world", "small-group"], q9: ["wilds", "arcane"], q12: ["downtime"], q13: ["flexible"] }),
   },
   {
     name: "companion-oriented solo explorer",
@@ -73,12 +76,12 @@ const classPersonas: { name: string; classId: (typeof classes)[number]["id"]; an
   {
     name: "durable holy protector",
     classId: "paladin",
-    answers: persona({ q2: ["alliance"], q3: ["dungeons", "raids", "leveling"], q4: ["protect", "heal", "adapt"], q5: ["heavy-melee", "adaptable"], q6: ["help-ally"], q7: ["none"], q8: ["small-group", "duo", "large-group"], q9: ["holy", "martial"], q11: ["woodland-mystery"], q12: ["juggling"] }),
+    answers: persona({ q2: ["alliance"], q3: ["dungeons", "raids", "leveling"], q4: ["protect", "heal", "adapt"], q5: ["heavy-melee", "adaptable"], q6: ["help-ally"], q7: ["none"], q8: ["small-group", "duo", "large-group"], q9: ["holy", "martial"], q11: ["woodland-mystery"], q12: ["juggling"], q13: ["flexible"] }),
   },
   {
     name: "backline group healer",
     classId: "priest",
-    answers: persona({ q3: ["raids", "dungeons", "pvp"], q4: ["heal", "control", "adapt"], q5: ["ranged-magic"], q6: ["help-ally"], q7: ["none"], q8: ["large-group", "small-group", "duo"], q9: ["holy", "secrets"], q12: ["prep"] }),
+    answers: persona({ q3: ["raids", "dungeons", "pvp"], q4: ["heal", "control", "adapt"], q5: ["ranged-magic"], q6: ["help-ally"], q7: ["none"], q8: ["large-group", "small-group", "duo"], q9: ["holy", "secrets"], q12: ["prep"], q13: ["flexible"] }),
   },
   {
     name: "fast stealth disruptor",
@@ -88,7 +91,7 @@ const classPersonas: { name: string; classId: (typeof classes)[number]["id"]; an
   {
     name: "reactive elemental supporter",
     classId: "shaman",
-    answers: persona({ q3: ["dungeons", "raids", "leveling"], q4: ["adapt", "heal", "control"], q5: ["adaptable", "ranged-magic", "heavy-melee"], q6: ["help-ally"], q7: ["none"], q8: ["small-group", "open-world", "duo"], q9: ["wilds", "arcane"], q12: ["prep"] }),
+    answers: persona({ q3: ["dungeons", "raids", "leveling"], q4: ["adapt", "heal", "control"], q5: ["adaptable", "ranged-magic", "heavy-melee"], q6: ["help-ally"], q7: ["none"], q8: ["small-group", "open-world", "duo"], q9: ["wilds", "arcane"], q12: ["prep"], q13: ["flexible"] }),
   },
   {
     name: "methodical summoned-power player",
@@ -104,24 +107,40 @@ const classPersonas: { name: string; classId: (typeof classes)[number]["id"]; an
 
 const answersByClass = Object.fromEntries(classPersonas.map(({ classId, answers }) => [classId, answers])) as Record<(typeof classes)[number]["id"], QuizAnswers>;
 const racePersonas: { name: string; raceId: (typeof races)[number]["id"]; answers: QuizAnswers }[] = [
-  { name: "Human woodland starter", raceId: "human", answers: persona({ ...answersByClass.paladin, q1: ["original-cata"], q2: ["alliance"], q10: ["break-free"], q11: ["woodland-mystery"] }) },
-  { name: "Dwarf mountain starter", raceId: "dwarf", answers: persona({ ...answersByClass.paladin, q1: ["original-cata"], q2: ["alliance"], q10: ["resource"], q11: ["mountain-outposts"] }) },
+  { name: "Human woodland starter", raceId: "human", answers: persona({ ...answersByClass.paladin, q1: ["vanilla-wrath"], q2: ["alliance"], q10: ["break-free"], q11: ["woodland-mystery"] }) },
+  { name: "Dwarf mountain starter", raceId: "dwarf", answers: persona({ ...answersByClass.paladin, q1: ["vanilla-wrath"], q2: ["alliance"], q10: ["resource"], q11: ["mountain-outposts"] }) },
   { name: "Night Elf mystical woodland starter", raceId: "night-elf", answers: persona({ ...answersByClass.druid, q1: ["bfa-shadowlands"], q2: ["alliance"], q10: ["finish"], q11: ["woodland-mystery"] }) },
   { name: "Gnome mountain inventor", raceId: "gnome", answers: persona({ ...answersByClass.mage, q1: ["modern"], q2: ["alliance"], q10: ["resource"], q11: ["mountain-outposts"] }) },
-  { name: "Orc frontier starter", raceId: "orc", answers: persona({ ...answersByClass.warrior, q1: ["original-cata"], q2: ["horde"], q10: ["finish"], q11: ["open-frontier"] }) },
-  { name: "Undead eerie starter", raceId: "undead", answers: persona({ ...answersByClass.warlock, q1: ["original-cata"], q2: ["horde"], q10: ["break-free"], q11: ["woodland-mystery"] }) },
+  { name: "Orc frontier starter", raceId: "orc", answers: persona({ ...answersByClass.warrior, q1: ["vanilla-wrath"], q2: ["horde"], q10: ["finish"], q11: ["open-frontier"] }) },
+  { name: "Undead eerie starter", raceId: "undead", answers: persona({ ...answersByClass.warlock, q1: ["vanilla-wrath"], q2: ["horde"], q10: ["break-free"], q11: ["haunted-glades"] }) },
   { name: "Tauren open-sky starter", raceId: "tauren", answers: persona({ ...answersByClass.druid, q1: ["never"], q2: ["horde"], q10: ["resource"], q11: ["open-frontier"] }) },
-  { name: "Troll frontier starter", raceId: "troll", answers: persona({ ...answersByClass.shaman, q1: ["original-cata"], q2: ["horde"], q10: ["recover"], q11: ["open-frontier"] }) },
+  { name: "Troll frontier starter", raceId: "troll", answers: persona({ ...answersByClass.shaman, q1: ["vanilla-wrath"], q2: ["horde"], q10: ["recover"], q11: ["open-frontier"] }) },
   { name: "High Order Skyborne sky starter", raceId: "skyborne-alliance", answers: persona({ ...answersByClass.druid, q1: ["modern"], q2: ["alliance"], q10: ["reposition"], q11: ["open-frontier"] }) },
   { name: "Windshaper Skyborne sky starter", raceId: "skyborne-horde", answers: persona({ ...answersByClass.shaman, q1: ["modern"], q2: ["horde"], q3: ["raids"], q8: ["open-world"], q10: ["reposition"], q11: ["open-frontier"] }) },
 ];
 
 describe("quiz definition", () => {
-  it("contains twelve questions and five ranked questions", () => {
-    expect(questions).toHaveLength(12);
-    expect(questions.filter((question) => question.type === "ranked")).toHaveLength(5);
+  it("places Cataclysm in the second era and keeps era a light class cue", () => {
+    const [classic, later] = questions[0].options;
+    expect(classic.id).toBe("vanilla-wrath");
+    expect(classic.description).toContain("Wrath of the Lich King");
+    expect(classic.description).not.toContain("Cataclysm");
+    expect(later.id).toBe("cata-legion");
+    expect(later.description).toContain("Cataclysm");
+    expect(later.description).toContain("Legion");
+    expect(questionWeights.q1.class).toBeLessThan(questionWeights.q3.class);
+    expect(questionWeights.q1.race).toBeLessThan(questionWeights.q2.race);
+    expect(() => scoreQuiz(persona({ q1: ["original-cata"] }))).toThrow("invalid answer");
+  });
+
+  it("contains thirteen questions and six ranked questions", () => {
+    expect(questions).toHaveLength(13);
+    expect(questions.filter((question) => question.type === "ranked")).toHaveLength(6);
     expect(questions.find((question) => question.id === "q9")?.maxRank).toBe(2);
     expect(questions.find((question) => question.id === "q11")?.type).toBe("single");
+    expect(questions.find((question) => question.id === "q12")?.type).toBe("ranked");
+    expect(questions.at(-1)?.id).toBe("q13");
+    expect(questions.at(-1)?.type).toBe("single");
   });
 
   it("normalizes ranked influence", () => {
@@ -142,19 +161,71 @@ describe("scoring", () => {
   });
 
   it("favors the chosen faction when no starting-area atmosphere is preferred", () => {
-    const alliance = scoreQuiz(persona({ q2: ["alliance"] }));
-    const horde = scoreQuiz(persona({ q2: ["horde"] }));
-    expect(raceById[alliance.primary.raceId as keyof typeof raceById].faction).toBe("alliance");
-    expect(raceById[horde.primary.raceId as keyof typeof raceById].faction).toBe("horde");
+    for (const era of questions[0].options) {
+      const alliance = scoreQuiz(persona({ q1: [era.id], q2: ["alliance"] }));
+      const horde = scoreQuiz(persona({ q1: [era.id], q2: ["horde"] }));
+      expect(raceById[alliance.primary.raceId as keyof typeof raceById].faction).toBe("alliance");
+      expect(raceById[horde.primary.raceId as keyof typeof raceById].faction).toBe("horde");
+    }
   });
 
-  it("maps each starting-area mood to multiple races across factions", () => {
+  it("uses start era as a gradual racial timing cue", () => {
+    const early = scoring.q1["vanilla-wrath"].races!;
+    const middle = scoring.q1["bfa-shadowlands"].races!;
+    const newPlayer = scoring.q1.never.races!;
+    expect(early.human).toBeGreaterThan(early["skyborne-horde"] ?? 0);
+    expect(newPlayer["skyborne-horde"]).toBeGreaterThan(newPlayer.human ?? 0);
+    expect(early.human).toBeGreaterThan(middle.human ?? 0);
+    expect(middle.human).toBeGreaterThan(newPlayer.human ?? 0);
+    expect(early["skyborne-horde"]).toBeLessThan(middle["skyborne-horde"] ?? 0);
+    expect(middle["skyborne-horde"]).toBeLessThan(newPlayer["skyborne-horde"] ?? 0);
+    for (const era of questions[0].options) {
+      expect(Object.keys(scoring.q1[era.id].races ?? {})).toHaveLength(races.length);
+    }
+  });
+
+  it("favors forgiving starting classes for newer players without excluding nostalgic Hunters", () => {
+    const classic = scoring.q1["vanilla-wrath"].classes!;
+    const cata = scoring.q1["cata-legion"].classes!;
+    const modern = scoring.q1.modern.classes!;
+    const firstTime = scoring.q1.never.classes!;
+    expect(classic.hunter).toBeGreaterThan(0);
+    expect(classic.paladin).toBeUndefined();
+    expect(firstTime.hunter).toBeGreaterThan(modern.hunter ?? 0);
+    expect(modern.hunter).toBeGreaterThan(cata.hunter ?? 0);
+    expect(firstTime.hunter).toBeGreaterThan(firstTime.paladin ?? 0);
+    expect(firstTime.paladin).toBeGreaterThan(firstTime.warlock ?? 0);
+    expect(questionWeights.q1.class * firstTime.hunter!).toBeLessThan(questionWeights.q5.class);
+  });
+
+  it("keeps each starting-area mood open to both factions", () => {
     for (const option of questions.find((question) => question.id === "q11")!.options.filter((item) => item.id !== "no-zone-preference")) {
       const raceScores = scoring.q11[option.id].races ?? {};
       const favored = Object.keys(raceScores) as (keyof typeof raceById)[];
-      expect(favored.length).toBeGreaterThanOrEqual(3);
+      expect(favored.length).toBeGreaterThanOrEqual(2);
       expect(new Set(favored.map((raceId) => raceById[raceId].faction)).size).toBe(2);
     }
+  });
+
+  it("separates living forests from haunted glades and gives dark class fantasies a small boost", () => {
+    const forest = scoring.q11["woodland-mystery"];
+    const haunted = scoring.q11["haunted-glades"];
+    expect(forest.races?.["night-elf"]).toBeGreaterThan(haunted.races?.["night-elf"] ?? 0);
+    expect(forest.races?.undead ?? 0).toBe(0);
+    expect(haunted.races?.undead).toBeGreaterThan(haunted.races?.["night-elf"] ?? 0);
+    expect(haunted.classes?.warlock).toBeGreaterThan(haunted.classes?.rogue ?? 0);
+    expect(haunted.classes?.rogue).toBeGreaterThan(0);
+    expect(scoring.q11["no-zone-preference"].classes).toBeUndefined();
+  });
+
+  it("changes a warlock's race match when only the woodland mood changes", () => {
+    const answers = persona({ ...answersByClass.warlock, q2: ["either"], q10: ["break-free"] });
+    const living = scoreQuiz({ ...answers, q11: ["woodland-mystery"] });
+    const haunted = scoreQuiz({ ...answers, q11: ["haunted-glades"] });
+    expect(living.primary.classId).toBe("warlock");
+    expect(haunted.primary.classId).toBe("warlock");
+    expect(living.primary.raceId).toBe("human");
+    expect(haunted.primary.raceId).toBe("undead");
   });
 
   it("distinguishes frontline and deliberate ranged preferences", () => {
@@ -162,6 +233,47 @@ describe("scoring", () => {
     const backResult = scoreQuiz(backline);
     expect(["warrior", "paladin", "rogue", "shaman", "druid"]).toContain(frontResult.primary.classId);
     expect(["mage", "warlock", "priest", "hunter"]).toContain(backResult.primary.classId);
+  });
+
+  it("lets a focused preference move a mixed profile away from Druid", () => {
+    const mixed = persona({
+      q3: ["exploration", "dungeons"], q4: ["adapt", "damage"],
+      q5: ["adaptable", "quick-melee"], q7: ["none"],
+      q8: ["solo", "small-group"], q9: ["wilds", "martial"],
+      q10: ["endure"],
+    });
+    expect(scoreQuiz({ ...mixed, q13: ["either"] }).primary.classId).toBe("druid");
+    expect(scoreQuiz({ ...mixed, q13: ["flexible"] }).primary.classId).toBe("druid");
+    expect(scoreQuiz({ ...mixed, q13: ["focused"] }).primary.classId).toBe("rogue");
+    expect(scoring.q13.focused.classes?.druid).toBeLessThan(0);
+    expect(scoring.q13.focused.races).toBeUndefined();
+  });
+
+  it("can still recommend Druid when nature and role switching are strong despite a focused answer", () => {
+    const nature = persona({
+      q3: ["exploration", "leveling", "dungeons"], q4: ["adapt", "heal", "protect"],
+      q5: ["adaptable", "ranged-magic", "quick-melee"], q7: ["none"],
+      q8: ["solo", "open-world", "small-group"], q9: ["wilds", "arcane"],
+      q10: ["endure"], q12: ["downtime"], q13: ["focused"],
+    });
+    expect(scoreQuiz(nature).primary.classId).toBe("druid");
+  });
+
+  it("chooses the class before applying faction or racial utility", () => {
+    for (const { answers } of classPersonas) {
+      const expectedClass = scoreQuiz(answers).primary.classId;
+      for (const faction of ["alliance", "horde", "either"]) {
+        for (const utility of questions.find((question) => question.id === "q10")!.options) {
+          const result = scoreQuiz({ ...answers, q2: [faction], q10: [utility.id] });
+          expect(result.primary.classId).toBe(expectedClass);
+          expect(result.alternatives[0].classId).toBe(expectedClass);
+          expect(result.alternatives[1].classId).not.toBe(expectedClass);
+          for (const candidate of [result.primary, ...result.alternatives]) {
+            expect(isValidCombination(candidate.raceId as keyof typeof raceById, candidate.classId as (typeof classes)[number]["id"])).toBe(true);
+          }
+        }
+      }
+    }
   });
 
   it("uses question 6 for decision style rather than repeating combat range", () => {
@@ -186,6 +298,17 @@ describe("scoring", () => {
     expect(scoring.q12.downtime.races?.undead).toBeGreaterThan(0);
     expect(scoring.q12.cornered.races?.gnome).toBeGreaterThan(0);
     expect(scoring.q12.juggling.classes?.druid).toBeLessThan(0);
+  });
+
+  it("splits the frustration question weight across ranked picks", () => {
+    const factors = normalizedRankFactors(3);
+    expect(factors).toHaveLength(3);
+    expect(factors[0]).toBeGreaterThan(factors[1]);
+    expect(factors[1]).toBeGreaterThan(factors[2]);
+    expect(factors.reduce((sum, factor) => sum + factor * questionWeights.q12.class, 0)).toBeCloseTo(questionWeights.q12.class);
+    expect(() => scoreQuiz(persona({ q12: ["downtime", "prep", "juggling"] }))).not.toThrow();
+    expect(() => scoreQuiz(persona({ q12: ["downtime", "prep", "juggling", "cornered"] }))).toThrow("q12 accepts up to 3 answers");
+    expect(() => scoreQuiz(persona({ q12: ["none", "downtime"] }))).toThrow("q12 cannot combine");
   });
 
   it("returns one same-class race alternative and one different class", () => {
@@ -226,5 +349,9 @@ describe("scoring", () => {
 
   it("rejects multiple starting atmospheres", () => {
     expect(() => scoreQuiz(persona({ q11: ["woodland-mystery", "open-frontier"] }))).toThrow("q11 accepts one answer");
+  });
+
+  it("rejects multiple answers to the focused or flexible question", () => {
+    expect(() => scoreQuiz(persona({ q13: ["focused", "flexible"] }))).toThrow("q13 accepts one answer");
   });
 });

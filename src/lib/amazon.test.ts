@@ -206,6 +206,30 @@ describe("getBannerProducts", () => {
     expect(await getBannerProducts(1)).toEqual([]);
   });
 
+  it("cools down after a catalog failure before trying Amazon again", async () => {
+    const fetchMock = stubAmazon({ message: "unavailable" }, 503);
+    vi.stubGlobal("fetch", fetchMock);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const clock = vi.spyOn(Date, "now");
+    const start = 1_800_000_000_000;
+    clock.mockReturnValue(start);
+    expect(await getProductPool()).toEqual([]);
+    expect(await getProductPool()).toEqual([]);
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("/catalog/v1/"))).toHaveLength(1);
+    clock.mockReturnValue(start + 91_000);
+    expect(await getProductPool()).toEqual([]);
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("/catalog/v1/"))).toHaveLength(2);
+    clock.mockRestore();
+    vi.restoreAllMocks();
+  });
+
+  it("shares a simultaneous cache miss within the same server process", async () => {
+    const fetchMock = stubAmazon();
+    vi.stubGlobal("fetch", fetchMock);
+    await Promise.all([getProductPool(), getProductPool(), getProductPool()]);
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("/catalog/v1/"))).toHaveLength(1);
+  });
+
   it("drops items that have no title or link", async () => {
     vi.stubGlobal("fetch", stubAmazon({ itemsResult: { items: [{ asin: "B0NOTITLE" }] } }));
     expect(await getBannerProducts(1)).toEqual([]);

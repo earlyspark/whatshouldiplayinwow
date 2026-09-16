@@ -1,3 +1,5 @@
+import { redactedPageUrl } from "@/lib/analytics-url";
+
 /**
  * Google Analytics event helpers.
  *
@@ -16,7 +18,7 @@ export type EventParams = Record<string, string | number | boolean | undefined>;
 
 function send(command: string, name: string, params: EventParams) {
   if (typeof window === "undefined" || typeof window.gtag !== "function") return;
-  window.gtag(command, name, { ...params, transport_type: "beacon" });
+  window.gtag(command, name, { ...params, page_location: redactedPageUrl(window.location.href).toString(), transport_type: "beacon" });
 }
 
 export function trackEvent(name: string, params: EventParams = {}) {
@@ -24,10 +26,10 @@ export function trackEvent(name: string, params: EventParams = {}) {
 }
 
 export function trackPageView(measurementId: string, pathname: string) {
+  const safePath = typeof window === "undefined" ? pathname : redactedPageUrl(window.location.href).pathname;
   send("event", "page_view", {
     send_to: measurementId,
-    page_path: pathname,
-    page_location: typeof window === "undefined" ? undefined : window.location.href,
+    page_path: safePath,
     page_title: typeof document === "undefined" ? undefined : document.title,
   });
 }

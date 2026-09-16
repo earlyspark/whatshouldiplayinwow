@@ -30,7 +30,7 @@ export default function AdSlot({ placement, href, headline, body }: AdSlotProps)
       ) : (
         <div>
           <span className="t-label block text-[var(--dim)]">Advertisement</span>
-          <span className="t-small mt-2 block text-[var(--dim)] opacity-50">Reserved ad space</span>
+          <span className="t-small mt-2 block text-[var(--dim)]">Reserved ad space</span>
         </div>
       )}
     </aside>

@@ -65,7 +65,7 @@ export default async function AmazonBanner({ placement, keywords, focusTerm }: A
         ))}
       </div>
 
-      <p className="t-small mt-4 text-[var(--dim)] opacity-70">
+      <p className="t-small mt-4 text-[var(--dim)]">
         Ads help me pay the bills for this site, thanks for supporting a small creator! As an Amazon Associate, this site earns from qualifying purchases.
       </p>
     </aside>

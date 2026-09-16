@@ -1,4 +1,4 @@
-export const QUIZ_VERSION = "1.9.0";
+export const QUIZ_VERSION = "1.14.0";
 
 export type QuestionId = `q${number}`;
 
@@ -21,9 +21,10 @@ export const questions: QuizQuestion[] = [
   {
     id: "q1", type: "single",
     prompt: "When did you first start playing WoW?",
+    helper: "Some racials need timing, and some classes offer an easier start. This is a small clue, not a skill test.",
     options: [
-      { id: "original-cata", label: "Vanilla WoW through Cataclysm", description: "Vanilla, The Burning Crusade, Wrath of the Lich King, Cataclysm." },
-      { id: "mists-legion", label: "Mists of Pandaria through Legion", description: "Mists of Pandaria, Warlords of Draenor, Legion." },
+      { id: "vanilla-wrath", label: "Vanilla WoW through Wrath of the Lich King", description: "Vanilla, The Burning Crusade, Wrath of the Lich King." },
+      { id: "cata-legion", label: "Cataclysm through Legion", description: "Cataclysm, Mists of Pandaria, Warlords of Draenor, Legion." },
       { id: "bfa-shadowlands", label: "Battle for Azeroth or Shadowlands" },
       { id: "modern", label: "Modern WoW", description: "Dragonflight, The War Within, Midnight, or recently." },
       { id: "never", label: "Never", description: "Forever would be my first adventure in Azeroth." },
@@ -34,8 +35,8 @@ export const questions: QuizQuestion[] = [
     prompt: "Which faction do you lean toward?",
     helper: "We'll favor your choice, but a strong match on the other side can still win.",
     options: [
-      { id: "alliance", label: "Alliance", description: "Honor, tradition, and hard-won unity." },
-      { id: "horde", label: "Horde", description: "Strength, survival, and chosen bonds." },
+      { id: "alliance", label: "Alliance", description: "Light be with you" },
+      { id: "horde", label: "Horde", description: "Go with honor" },
       { id: "either", label: "No preference", description: "Let the rest of my answers decide." },
     ],
   },
@@ -50,7 +51,7 @@ export const questions: QuizQuestion[] = [
       { id: "pvp", label: "PvP" },
       { id: "professions", label: "Crafting & the economy" },
       { id: "exploration", label: "Exploration, lore & collecting" },
-      { id: "vibes", label: "Community & the vibes", description: "Hanging out, finding my people, and feeling at home in Azeroth." },
+      { id: "vibes", label: "Community & the vibes" },
     ],
   },
   {
@@ -61,7 +62,7 @@ export const questions: QuizQuestion[] = [
       { id: "protect", label: "Protect others", description: "Hold enemies’ attention and take the pressure." },
       { id: "heal", label: "Keep allies alive" },
       { id: "damage", label: "Deal heavy damage" },
-      { id: "control", label: "Control enemies & support teammates" },
+      { id: "control", label: "Disrupt enemies and create openings" },
       { id: "adapt", label: "Adapt to whatever the group needs" },
     ],
   },
@@ -134,15 +135,17 @@ export const questions: QuizQuestion[] = [
     id: "q11", type: "single",
     prompt: "Which atmosphere appeals to you most?",
     options: [
-      { id: "woodland-mystery", label: "Forests & winding paths" },
+      { id: "woodland-mystery", label: "Living forests & moonlit groves", description: "Green trails, ancient trees, and nature magic." },
+      { id: "haunted-glades", label: "Haunted glades & shadowed ruins", description: "Ghostly woods, graveyards, and forbidden magic." },
       { id: "mountain-outposts", label: "Snowy mountains & bustling outposts" },
       { id: "open-frontier", label: "Open horizons & rugged frontiers" },
       { id: "no-zone-preference", label: "No strong preference" },
     ],
   },
   {
-    id: "q12", type: "single",
-    prompt: "What annoys you the most?",
+    id: "q12", type: "ranked",
+    prompt: "Rank up to three things that would annoy you most.",
+    helper: "Choose in order. Pick “None of these” on its own if nothing stands out.",
     options: [
       { id: "downtime", label: "Stopping to recover after just a few fights" },
       { id: "prep", label: "Doing a lot of setup before the fun starts" },
@@ -150,6 +153,15 @@ export const questions: QuizQuestion[] = [
       { id: "repetition", label: "Doing the same thing in every fight" },
       { id: "juggling", label: "Keeping track of too many things at once" },
       { id: "none", label: "None of these really bother me" },
+    ],
+  },
+  {
+    id: "q13", type: "single",
+    prompt: "What matters more in the class you play?",
+    options: [
+      { id: "focused", label: "A defined playstyle with clear strengths and limits, even if I cannot fill many jobs" },
+      { id: "flexible", label: "Room to change jobs or tactics as the group and fight change, even if there is more to manage" },
+      { id: "either", label: "I could enjoy either" },
     ],
   },
 ];

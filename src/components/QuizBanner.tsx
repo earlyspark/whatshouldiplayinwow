@@ -8,6 +8,9 @@ interface QuizBannerProps {
   /** Zero-based question index. Advancing the quiz advances the product. */
   questionIndex: number;
   layout?: "banner" | "sidebar";
+  pool: ProductPoolResponse;
+  visitOffset: number;
+  loaded: boolean;
 }
 
 interface ProductPoolResponse {
@@ -15,8 +18,8 @@ interface ProductPoolResponse {
   pinnedAsin: string | null;
 }
 
-/** A six-hour search pool, with a stable rotation during this page visit. */
-export default function QuizBanner({ questionIndex, layout = "banner" }: QuizBannerProps) {
+/** Load the shared pool once, even though mobile and desktop have separate placements. */
+export function useQuizProductPool() {
   const [pool, setPool] = useState<ProductPoolResponse>({ products: [], pinnedAsin: null });
   const [visitOffset, setVisitOffset] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -40,6 +43,11 @@ export default function QuizBanner({ questionIndex, layout = "banner" }: QuizBan
     };
   }, []);
 
+  return { pool, visitOffset, loaded };
+}
+
+/** A six-hour search pool, with a stable rotation during this page visit. */
+export default function QuizBanner({ questionIndex, layout = "banner", pool, visitOffset, loaded }: QuizBannerProps) {
   const pinned = pool.products.find((product) => product.asin === pool.pinnedAsin);
   const rotating = pool.products.filter((product) => product.asin !== pool.pinnedAsin);
   const step = Math.max(0, questionIndex + 1);
@@ -76,12 +84,12 @@ export default function QuizBanner({ questionIndex, layout = "banner" }: QuizBan
         </div>
       ) : (
         <div className="mt-4 flex min-h-36 items-center justify-center text-center">
-          <span className="t-small text-[var(--dim)] opacity-60">
+          <span className="t-small text-[var(--dim)]">
             {loaded ? "Product picks unavailable right now" : "Loading product picks…"}
           </span>
         </div>
       )}
-      <p className="t-small mt-4 text-[var(--dim)] opacity-70">
+      <p className="t-small mt-4 text-[var(--dim)]">
         Ads help me pay the bills for this site, thanks for supporting a small creator! As an Amazon Associate, this site earns from qualifying purchases.
       </p>
     </aside>

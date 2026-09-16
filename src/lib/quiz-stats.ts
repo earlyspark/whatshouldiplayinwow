@@ -2,6 +2,7 @@ import { Redis } from "@upstash/redis";
 import { questions } from "@/data/questions";
 import { redisConfig } from "@/lib/redis-config";
 import type { SavedResult } from "@/lib/result-schema";
+import { resultExpiresAt } from "@/lib/result-retention";
 
 export interface MonthlyQuizStats {
   month: string;
@@ -12,7 +13,8 @@ const statsPrefix = "wow-forever:quiz-stats:v1";
 const completionScript = `
   if redis.call("EXISTS", KEYS[1]) == 1 then return 0 end
   redis.call("SET", KEYS[1], "1")
-  for i = 2, #ARGV, 2 do
+  redis.call("EXPIRE", KEYS[1], tonumber(ARGV[2]))
+  for i = 3, #ARGV, 2 do
     redis.call("HINCRBY", KEYS[2], ARGV[i], tonumber(ARGV[i + 1]))
   end
   redis.call("SADD", KEYS[3], ARGV[1])
@@ -53,7 +55,8 @@ export async function recordQuizCompletion(result: SavedResult): Promise<boolean
   const month = result.createdAt.slice(0, 7);
   const increments = completionIncrements(result);
   const client = statsRedis();
-  const args = [month, ...Object.entries(increments).flatMap(([field, value]) => [field, String(value)])];
+  const markerTtl = Math.max(1, Math.ceil((resultExpiresAt(result.createdAt) - Date.now()) / 1000));
+  const args = [month, String(markerTtl), ...Object.entries(increments).flatMap(([field, value]) => [field, String(value)])];
   const added = await client.eval<string[], number>(
     completionScript,
     [`${statsPrefix}:counted:${result.id}`, `${statsPrefix}:month:${month}`, `${statsPrefix}:months`],

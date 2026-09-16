@@ -8,28 +8,51 @@ export interface OptionScore {
   races?: ScoreMap<RaceId>;
 }
 
+// This describes how much combat timing a race's racial kit asks of the player,
+// not player skill. Every race still has active and passive benefits.
+const racialTimingDemand: Record<RaceId, 1 | 2 | 3> = {
+  human: 3, dwarf: 3, "night-elf": 3, gnome: 3,
+  orc: 3, undead: 3, tauren: 2, troll: 3,
+  "skyborne-alliance": 2, "skyborne-horde": 1,
+};
+
+function racialTimingScores(preferredDemand: number): ScoreMap<RaceId> {
+  return Object.fromEntries(
+    Object.entries(racialTimingDemand).map(([raceId, demand]) => [raceId, 2 - Math.abs(demand - preferredDemand)]),
+  ) as ScoreMap<RaceId>;
+}
+
+// A small beginner-friendly nudge based on forgiving solo play, not a claim
+// that other classes require a particular skill level. Direct preferences win.
+function newcomerClassScores(strength: number): ScoreMap<ClassId> {
+  return { hunter: 3 * strength, paladin: 2 * strength, warlock: strength };
+}
+
 export const questionWeights: Record<QuestionId, { class: number; race: number }> = {
-  q1: { class: 0, race: 0.5 },
+  q1: { class: 0.5, race: 0.8 },
   q2: { class: 0, race: 2.5 },
-  q3: { class: 1.2, race: 1.2 },
+  q3: { class: 0.8, race: 1.2 },
   q4: { class: 2, race: 0 },
-  q5: { class: 2, race: 0 },
-  q6: { class: 3, race: 0 },
+  q5: { class: 3, race: 0 },
+  q6: { class: 2.5, race: 0 },
   q7: { class: 1.5, race: 0 },
-  q8: { class: 1.7, race: 0.3 },
-  q9: { class: 2.5, race: 0 },
+  q8: { class: 1, race: 0.3 },
+  q9: { class: 3, race: 0 },
   q10: { class: 0, race: 2.2 },
-  q11: { class: 0, race: 3 },
-  q12: { class: 2.2, race: 0.6 },
+  q11: { class: 0.3, race: 3 },
+  q12: { class: 1.5, race: 0.6 },
+  q13: { class: 2, race: 0 },
 };
 
 export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   q1: {
-    never: { races: { dwarf: 2, tauren: 2, troll: 2, undead: 2, human: 1, "night-elf": 1 } },
-    modern: { races: { gnome: 2, human: 2, "skyborne-alliance": 2, "skyborne-horde": 2, "night-elf": 1 } },
-    "bfa-shadowlands": { races: { gnome: 2, human: 2, "night-elf": 2, troll: 1, orc: 1 } },
-    "mists-legion": { races: { human: 2, orc: 2, troll: 2, "night-elf": 2, undead: 1 } },
-    "original-cata": { races: { dwarf: 2, human: 2, orc: 2, undead: 2, troll: 2 } },
+    // Era is only a weak proxy for comfort with timing extra abilities or
+    // interest in a forgiving first class; it does not measure player skill.
+    "vanilla-wrath": { classes: { hunter: 0.75 }, races: racialTimingScores(3) },
+    "cata-legion": { classes: newcomerClassScores(0.25), races: racialTimingScores(2.5) },
+    "bfa-shadowlands": { classes: newcomerClassScores(0.5), races: racialTimingScores(2) },
+    modern: { classes: newcomerClassScores(0.75), races: racialTimingScores(1.5) },
+    never: { classes: newcomerClassScores(1), races: racialTimingScores(1) },
   },
   q2: {
     alliance: { races: { human: 3, dwarf: 3, "night-elf": 3, gnome: 3, "skyborne-alliance": 3 } },
@@ -118,7 +141,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     wilds: { classes: { druid: 3, shaman: 3, hunter: 3, mage: 1 } },
     holy: { classes: { paladin: 3, priest: 3, shaman: 1 } },
     arcane: { classes: { mage: 3, warlock: 2, priest: 2, shaman: 1, druid: 1 } },
-    secrets: { classes: { rogue: 3, warlock: 3, priest: 2, druid: 2, hunter: 1, mage: 1 } },
+    secrets: { classes: { rogue: 3, warlock: 3, priest: 2, hunter: 1, mage: 1 } },
   },
   q10: {
     finish: { races: { orc: 3, troll: 3, "night-elf": 3, gnome: 2, "skyborne-alliance": 2, "skyborne-horde": 2 } },
@@ -129,11 +152,24 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     resource: { races: { tauren: 3, gnome: 3, dwarf: 3, "skyborne-alliance": 2, "skyborne-horde": 2 } },
   },
   q11: {
-    // These evoke the verified starting areas, but overlap deliberately:
-    // Elwynn, Dun Morogh, Teldrassil, Durotar, Mulgore, Tirisfal, Zephras Isle.
-    "woodland-mystery": { races: { human: 3, "night-elf": 3, undead: 3, "skyborne-alliance": 1, "skyborne-horde": 1, tauren: 1 } },
-    "mountain-outposts": { races: { dwarf: 3, gnome: 3, human: 1, orc: 1, "skyborne-alliance": 1, "skyborne-horde": 1 } },
-    "open-frontier": { races: { tauren: 3, orc: 3, troll: 3, "skyborne-alliance": 2, "skyborne-horde": 2, dwarf: 1, undead: 1 } },
+    // Living forests evoke Elwynn and Teldrassil; haunted woods evoke Tirisfal.
+    // Class points are a small fantasy cue beside the stronger playstyle signals.
+    "woodland-mystery": {
+      classes: { druid: 3, hunter: 2, rogue: 1 },
+      races: { human: 3, "night-elf": 3, tauren: 1, troll: 1 },
+    },
+    "haunted-glades": {
+      classes: { warlock: 3, rogue: 2, priest: 1 },
+      races: { undead: 3, "night-elf": 1 },
+    },
+    "mountain-outposts": {
+      classes: { warrior: 2, hunter: 1, mage: 1 },
+      races: { dwarf: 3, gnome: 3, human: 1, orc: 1, "skyborne-alliance": 1, "skyborne-horde": 1 },
+    },
+    "open-frontier": {
+      classes: { shaman: 2, warrior: 2, hunter: 1, druid: 1 },
+      races: { tauren: 3, orc: 3, troll: 3, "skyborne-alliance": 2, "skyborne-horde": 2, dwarf: 1, undead: 1 },
+    },
     "no-zone-preference": {},
   },
   q12: {
@@ -149,5 +185,10 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     repetition: { classes: { druid: 3, shaman: 3, rogue: 2, hunter: 2, mage: 2, warlock: 2, paladin: 2, priest: 2, warrior: 1 } },
     juggling: { classes: { druid: -3, shaman: -2, warlock: -2, hunter: -1, rogue: -1, mage: -1 } },
     none: {},
+  },
+  q13: {
+    focused: { classes: { warrior: 3, rogue: 3, mage: 3, hunter: 3, warlock: 2, priest: 1, paladin: -1, shaman: -2, druid: -3 } },
+    flexible: { classes: { druid: 3, shaman: 3, paladin: 2, priest: 2, hunter: 1, warlock: 1 } },
+    either: {},
   },
 };

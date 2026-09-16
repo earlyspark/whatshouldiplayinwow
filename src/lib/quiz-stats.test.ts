@@ -17,7 +17,7 @@ describe("completion statistics", () => {
     const saved = result();
     const counts = completionIncrements(saved);
     expect(counts.total).toBe(1);
-    expect(counts["answer:q1:original-cata"]).toBe(1);
+    expect(counts["answer:q1:vanilla-wrath"]).toBe(1);
     expect(counts["answer:q3:leveling"]).toBe(1);
     expect(counts["answer:q3:dungeons"]).toBe(1);
     expect(counts["first:q3:leveling"]).toBe(1);

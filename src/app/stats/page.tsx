@@ -7,6 +7,11 @@ import { readMonthlyQuizStats, type MonthlyQuizStats } from "@/lib/quiz-stats";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Quiz stats", robots: { index: false, follow: false } };
 
+const earlierEraOptions = [
+  { id: "original-cata", label: "Vanilla WoW through Cataclysm (earlier quiz)" },
+  { id: "mists-legion", label: "Mists of Pandaria through Legion (earlier quiz)" },
+];
+
 function percent(count: number, total: number) {
   return total ? `${Math.round((count / total) * 100)}%` : "0%";
 }
@@ -29,7 +34,7 @@ function StatsSection({ title, counts }: { title: string; counts: Record<string,
         <div key={question.id} className="mt-8">
           <h3 className="t-card">{question.prompt}</h3>
           <div className="mt-3 space-y-2">
-            {question.options.map((option) => {
+            {[...question.options, ...(question.id === "q1" ? earlierEraOptions.filter((option) => counts[`answer:q1:${option.id}`]) : [])].map((option) => {
               const count = counts[`answer:${question.id}:${option.id}`] ?? 0;
               const first = counts[`first:${question.id}:${option.id}`] ?? 0;
               return (

@@ -24,9 +24,9 @@ export async function GET() {
     { products, pinnedAsin: adSelection().pinnedAsin },
     {
       headers: {
-        // Redis caches the shared pool for six hours. Do not cache this HTTP
-        // response too, or it could outlive the pool's freshness window.
-        "Cache-Control": "no-store",
+        // The public, shared pool may be reused briefly at the CDN to spare
+        // Redis reads and absorb spikes. Redis refreshes it every six hours.
+        "Cache-Control": "public, s-maxage=60",
       },
     },
   );

@@ -1,9 +1,12 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { keepStoreAlive } from "@/lib/result-store";
 
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+  const actual = Buffer.from(request.headers.get("authorization") ?? "");
+  const expected = Buffer.from(`Bearer ${secret ?? ""}`);
+  if (!secret || actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

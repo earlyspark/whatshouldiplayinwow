@@ -36,7 +36,7 @@ export default async function ContextualPick({ lead, seed, keywords, focusTerm }
       >
         {product.title}
       </AmazonProductLink>
-      <span className="t-label mt-1 block text-[var(--dim)] opacity-60">
+      <span className="t-label mt-1 block text-[var(--dim)]">
         Paid link · As an Amazon Associate this site earns from qualifying purchases
       </span>
     </p>

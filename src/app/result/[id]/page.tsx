@@ -11,6 +11,7 @@ import WowheadTooltips from "@/components/WowheadTooltips";
 import crest from "../../../../assets/crest.png";
 import { withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
+import { QUIZ_VERSION } from "@/data/questions";
 import { getResult } from "@/lib/result-store";
 import { wowheadRacialUrl } from "@/lib/wowhead-tooltips";
 import ResultActions from "./ResultActions";
@@ -41,7 +42,8 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const { id } = await params;
   const result = await getCachedResult(id);
   if (!result) notFound();
-  const isOutdated = result.dataVersion !== DATA_VERSION;
+  const dataChanged = result.dataVersion !== DATA_VERSION;
+  const quizChanged = result.quizVersion !== QUIZ_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;
   const summary = `This pick balances ${result.primary.classTagline} with ${result.primary.raceTagline}.`;
   // Ties the result page ads to the pick the reader just received, rather than
@@ -63,9 +65,11 @@ export default async function ResultPage({ params }: ResultPageProps) {
             <h1 className="t-display">{title}</h1>
             <p className="t-body text-[var(--dim)]">{summary}</p>
           </div>
-          {isOutdated && (
+          {(dataChanged || quizChanged) && (
             <div className="t-small mt-6 border-l-2 border-[var(--bronze)] bg-[rgba(200,150,74,.08)] px-4 py-3">
-              This result used data checked {result.dataCheckedLabel}. Newer information is available; <Link href="/" className="link-bronze focus-ring">retake the quiz</Link> for a current recommendation.
+              {dataChanged && <>This result used data checked {result.dataCheckedLabel}. Newer game information is available. </>}
+              {quizChanged && <>The quiz questions or scoring have changed since this result was created. </>}
+              <Link href="/" className="link-bronze focus-ring">Retake the quiz</Link> for a current recommendation.
             </div>
           )}
         </header>
@@ -125,6 +129,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
 
             <section className="surface p-6 sm:p-8">
               <h2 className="t-section">Share the results with your friends</h2>
+              <p className="t-body mt-3 text-[var(--dim)]">These results are based on your answers, but the most important thing is having fun with your character. In the end, choose whatever you think you&apos;ll enjoy playing!</p>
               <div className="mt-6"><ResultActions /></div>
             </section>
           </div>

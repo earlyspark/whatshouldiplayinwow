@@ -1,6 +1,6 @@
 # What Should I Play?
 
-A 12-question quiz that suggests a race and class for *World of Warcraft: Forever*. It asks how you like to play, and gives you one main pick plus two alternatives you can share with friends.
+A 13-question quiz that suggests a race and class for *World of Warcraft: Forever*. It asks how you like to play, and gives you one main pick plus two alternatives you can share with friends.
 
 ![The quiz landing page](docs/screenshots/home.png)
 
@@ -29,10 +29,11 @@ The quiz covers:
 8. The kinds of adventures you enjoy (solo, duo, small or large groups, open world)
 9. Which character fantasy pulls you in
 10. What you do first when a plan falls apart
-11. Which starting-zone atmosphere appeals to you
-12. What annoys you the most
+11. Which atmosphere appeals to you, including a choice between living forests and haunted glades
+12. Up to three things that would annoy you most
+13. Whether you want a focused class identity or room to change jobs and tactics
 
-Some questions take a single answer. Others ask you to **rank** up to three picks (two for character fantasy).
+Some questions take a single answer. Others ask you to **rank** up to three picks (two for character fantasy). For question 12, “None of these” is a standalone answer.
 
 ## How scoring works
 
@@ -44,7 +45,7 @@ The quiz scores all 56 race and class combinations available in Forever and neve
 
 ### 2. Each answer gives points to classes and races
 
-Each answer adds 0 to 3 points to the classes and races it fits. For example, *Keep allies alive* favors Priest, Paladin and Shaman, while *Ranged weapons & a companion* favors Hunter and Warlock. Your answer to "What annoys you the most?" can also **subtract** points (up to −3) from classes that are known for that frustration, such as downtime between fights or juggling lots of buttons.
+Most answers add up to 3 points to the classes and races they fit. For example, *Keep allies alive* favors Priest, Paladin and Shaman, while *Ranged weapons & a companion* favors Hunter and Warlock. Questions 12 and 13 can also subtract points (as low as −3 before question and rank weights) when a class conflicts with a frustration or a preference for focused play.
 
 ### 3. Questions carry different weight
 
@@ -52,18 +53,21 @@ Some questions say more about class and others say more about race. Each questio
 
 | Question | Class weight | Race weight |
 | --- | :---: | :---: |
-| How you react when a fight gets unpredictable | 3 | — |
-| Starting-zone atmosphere | — | 3 |
-| Character fantasy | 2.5 | — |
+| Fighting style | 3 | — |
+| Character fantasy | 3 | — |
+| How you react when a fight gets unpredictable | 2.5 | — |
 | Faction | — | 2.5 |
-| What annoys you | 2.2 | 0.6 |
-| What you do when a plan falls apart | — | 2.2 |
+| Focused or flexible play | 2 | — |
 | Group contribution | 2 | — |
-| Fighting style | 2 | — |
-| Adventures you enjoy | 1.7 | 0.3 |
 | Pets and companions | 1.5 | — |
-| What you're excited about | 1.2 | 1.2 |
-| When you started playing | — | 0.5 |
+| Frustrations you rank | 1.5 | 0.6 |
+| What you do when a plan falls apart | — | 2.2 |
+| Adventures you enjoy | 1 | 0.3 |
+| What you're excited about | 0.8 | 1.2 |
+| When you started playing | 0.5 | 0.8 |
+| Atmosphere | 0.3 | 3 |
+
+The first question has a light effect on both scores. Earlier starts slightly favor racials that reward timed use, while recent or first-time play slightly favors lower-maintenance racials and classes with a forgiving solo start. Hunter gets a small boost at both ends: it is approachable for newcomers and evokes classic WoW for early players. These are soft preferences, not measures of skill; direct playstyle answers carry more weight. The Alliance and Horde descriptions are flavor text and do not change faction scoring.
 
 ### 4. Your first ranked pick counts most
 
@@ -76,29 +80,26 @@ For ranked questions, one question's worth of points is split across your picks:
 | 3 | 55.6% | 33.3% | 11.1% |
 
 If one option is a clear favorite, pick only that one and it gets the full weight.
+Question 12 uses these same factors, so ranking three frustrations splits its existing weight across them instead of tripling its influence.
 
-### 5. Class fit matters more than race fit
+### 5. Class fit comes first
 
-For each combination, the class total and race total are each scaled against the highest score possible. The final score is:
+The quiz first ranks classes by their class points. If classes tie, your first-ranked picks, then your answer about unpredictable fights, break the tie. It then ranks the playable races for the winning class by race points. A strong race match cannot change the class recommendation.
 
-```text
-score = 65% × class fit + 35% × race fit
-```
-
-Your race is still part of the result, but your class has more effect on how the game feels day to day.
+Saved results retain a combined numeric score for compatibility with older records, but that number does not choose the winner. The class and race rankings do.
 
 ### A few special rules
 
 - **Faction is just a preference.** Choosing Alliance or Horde gives that faction's races a large boost, but a strong enough match on the other side can still win.
-- **Community players get more say in atmosphere.** Ranking *Community & the vibes* doesn't favor either faction. Instead, it makes your starting-zone atmosphere answer count more: ×1.5 when ranked first, ×1.3 second, ×1.15 third.
-- **Ties are broken by your top priorities.** If two combinations have the same score, the quiz first compares how well each one matches your first-ranked picks, then how well each class fits your answer about unpredictable fights.
+- **Community players get more say in atmosphere.** Ranking *Community & the vibes* doesn't favor either faction. Instead, it makes the race and class points from your atmosphere answer count more: ×1.5 when ranked first, ×1.3 second, ×1.15 third. The class effect remains small compared with fighting style and character fantasy.
+- **Focused play is a strong preference, not an exclusion.** Choosing a defined playstyle boosts focused classes and lowers adaptable classes. Strong answers elsewhere can still favor an adaptable class.
 
 ### Picking the alternatives
 
 The alternatives aren't just the 2nd- and 3rd-highest scores, since those would often be near-duplicates of your main pick. Instead you get:
 
-- **The highest-scoring combination with the same class and a different race**, to show what changing only your race would do
-- **The highest-scoring combination with a different class**, if you want a different playstyle
+- **The next race for the winning class**, to show what changing only your race would do
+- **The next class with its best playable race**, if you want a different playstyle
 
 ## How the data is kept up to date
 
@@ -110,9 +111,12 @@ The race and class list, which combinations are allowed, and each race's racials
 
 Each review gets a data version and a "checked on" date, shown on the site's [How this works](https://www.whatshouldiplayinwowforever.com/methodology) page.
 
-**Shared results don't change.** Each result saves your answers and the data version it was scored with, so a link you shared keeps showing the same pick. If the data has changed since then, the result page says so and offers a retake with the current data.
+**Shared results stay the same for 12 months.** Each result saves your answers, quiz version, and data version, so a shared link shows the same pick until it expires 12 months after creation. If the game data or quiz scoring changes before then, the result page offers a retake with the current version. Expired links show a not-found page.
+
+New results receive a Redis expiry automatically. To apply the policy to results created before this change, run `node --env-file=.env.local scripts/backfill-result-retention.mjs` to preview the counts, then rerun with `--apply`. The script deletes already expired results and sets expiry dates on the rest. It also expires old completion markers; monthly aggregate statistics remain available.
 
 The recommendations are about what you might enjoy playing, not a prediction of the best build on launch day.
+General class descriptions help inform the quiz where Forever-specific details are not yet published; those fit judgments are provisional.
 
 ## Built with
 

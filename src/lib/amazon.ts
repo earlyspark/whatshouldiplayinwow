@@ -26,6 +26,7 @@ import {
 const TOKEN_EXPIRY_BUFFER_SECONDS = 30;
 const DEFAULT_TOKEN_LIFETIME_SECONDS = 3600;
 const PRODUCT_TTL_SECONDS = 6 * 60 * 60;
+const FAILURE_TTL_SECONDS = 90;
 const REQUEST_TIMEOUT_MS = 8000;
 const CACHE_PREFIX = "wow-forever-amazon:v2";
 
@@ -56,6 +57,7 @@ declare global {
 
 const memoryCache =
   globalThis.__amazonProducts ?? new Map<string, { value: AmazonProduct[]; expiresAt: number }>();
+const inFlight = new Map<string, Promise<AmazonProduct[]>>();
 if (process.env.NODE_ENV !== "production") globalThis.__amazonProducts = memoryCache;
 
 /* -------------------------------------------------------------------------- */
@@ -193,27 +195,39 @@ function redis() {
 async function cached(key: string, load: () => Promise<AmazonProduct[]>): Promise<AmazonProduct[]> {
   const client = redis();
   const cacheKey = `${CACHE_PREFIX}:${key}`;
+  const local = memoryCache.get(cacheKey);
+  if (local && Date.now() < local.expiresAt) return local.value;
 
   if (client) {
     const hit = await client.get<unknown>(cacheKey).catch(() => null);
-    if (hit) {
-      const value = typeof hit === "string" ? JSON.parse(hit) : hit;
-      const parsed = z.array(z.custom<AmazonProduct>()).safeParse(value);
-      if (parsed.success) return parsed.data;
+    try {
+      if (hit) {
+        const value = typeof hit === "string" ? JSON.parse(hit) : hit;
+        const parsed = z.array(z.custom<AmazonProduct>()).safeParse(value);
+        if (parsed.success) return parsed.data;
+      }
+    } catch { /* Refill a malformed cache entry. */ }
+  }
+
+  const pending = inFlight.get(cacheKey);
+  if (pending) return pending;
+  const request = (async () => {
+    let products: AmazonProduct[];
+    let ttl = PRODUCT_TTL_SECONDS;
+    try {
+      products = await load();
+    } catch (error) {
+      console.error("Amazon catalog fetch failed", error);
+      products = [];
+      ttl = FAILURE_TTL_SECONDS;
     }
-  } else {
-    const hit = memoryCache.get(cacheKey);
-    if (hit && Date.now() < hit.expiresAt) return hit.value;
-  }
-
-  const products = await load();
-
-  if (client) {
-    await client.set(cacheKey, JSON.stringify(products), { ex: PRODUCT_TTL_SECONDS }).catch(() => {});
-  } else {
-    memoryCache.set(cacheKey, { value: products, expiresAt: Date.now() + PRODUCT_TTL_SECONDS * 1000 });
-  }
-  return products;
+    memoryCache.set(cacheKey, { value: products, expiresAt: Date.now() + ttl * 1000 });
+    if (client) await client.set(cacheKey, JSON.stringify(products), { ex: ttl }).catch(() => {});
+    return products;
+  })();
+  inFlight.set(cacheKey, request);
+  try { return await request; }
+  finally { inFlight.delete(cacheKey); }
 }
 
 /* -------------------------------------------------------------------------- */

@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Answer 12 playstyle questions to discover which World of Warcraft: Forever race and class you should play.",
     start_url: "/",
     display: "standalone",
-    background_color: "#071012",
-    theme_color: "#071012",
+    background_color: "#171220",
+    theme_color: "#171220",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };
 }

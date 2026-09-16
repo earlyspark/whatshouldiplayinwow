@@ -26,7 +26,8 @@ interface CandidateScore {
   score: number;
   classScore: number;
   raceScore: number;
-  firstRankScore: number;
+  firstRankClassScore: number;
+  firstRankRaceScore: number;
   tempoScore: number;
   classSignals: { questionId: QuestionId; optionId: string; value: number }[];
   raceSignals: { questionId: QuestionId; optionId: string; value: number }[];
@@ -62,12 +63,17 @@ function joinSignals(signals: CandidateScore["classSignals"] | CandidateScore["r
 }
 
 export function validateAnswers(answers: QuizAnswers) {
+  const knownIds = new Set<string>(questions.map((question) => question.id));
+  if (Object.keys(answers).some((id) => !knownIds.has(id))) throw new Error("The quiz contains an invalid question.");
   for (const question of questions) {
     const chosen = answers[question.id];
     if (!chosen?.length) throw new Error(`Missing answer for ${question.id}.`);
     if (question.type === "single" && chosen.length !== 1) throw new Error(`${question.id} accepts one answer.`);
     if (question.type === "ranked" && chosen.length > (question.maxRank ?? 3)) {
       throw new Error(`${question.id} accepts up to ${question.maxRank ?? 3} answers.`);
+    }
+    if (question.id === "q12" && chosen.includes("none") && chosen.length > 1) {
+      throw new Error("q12 cannot combine 'None of these' with other answers.");
     }
     if (new Set(chosen).size !== chosen.length) throw new Error(`${question.id} contains duplicate answers.`);
     const validIds = new Set(question.options.map((option) => option.id));
@@ -78,7 +84,8 @@ export function validateAnswers(answers: QuizAnswers) {
 function scoreCandidate(raceId: RaceId, classId: ClassId, answers: QuizAnswers): CandidateScore {
   let classScore = 0;
   let raceScore = 0;
-  let firstRankScore = 0;
+  let firstRankClassScore = 0;
+  let firstRankRaceScore = 0;
   let tempoScore = 0;
   const classSignals: CandidateScore["classSignals"] = [];
   const raceSignals: CandidateScore["raceSignals"] = [];
@@ -93,13 +100,17 @@ function scoreCandidate(raceId: RaceId, classId: ClassId, answers: QuizAnswers):
     selections.forEach((optionId, index) => {
       const optionScore = scoring[question.id]?.[optionId];
       const factor = question.type === "ranked" ? factors[index] : 1;
-      const classValue = (optionScore?.classes?.[classId] ?? 0) * questionWeights[question.id].class * factor;
-      const raceValue = (optionScore?.races?.[raceId] ?? 0) * questionWeights[question.id].race * factor * (question.id === "q11" ? atmosphereWeight : 1);
+      const moodFactor = question.id === "q11" ? atmosphereWeight : 1;
+      const classValue = (optionScore?.classes?.[classId] ?? 0) * questionWeights[question.id].class * factor * moodFactor;
+      const raceValue = (optionScore?.races?.[raceId] ?? 0) * questionWeights[question.id].race * factor * moodFactor;
       classScore += classValue;
       raceScore += raceValue;
       classSignals.push({ questionId: question.id, optionId, value: classValue });
       raceSignals.push({ questionId: question.id, optionId, value: raceValue });
-      if (index === 0 && question.type === "ranked") firstRankScore += classValue * 0.65 + raceValue * 0.35;
+      if (index === 0 && question.type === "ranked") {
+        firstRankClassScore += classValue;
+        firstRankRaceScore += raceValue;
+      }
       if (question.id === "q6") tempoScore += classValue;
     });
   }
@@ -112,7 +123,8 @@ function scoreCandidate(raceId: RaceId, classId: ClassId, answers: QuizAnswers):
     score: normalizedClass * 0.65 + normalizedRace * 0.35,
     classScore,
     raceScore,
-    firstRankScore,
+    firstRankClassScore,
+    firstRankRaceScore,
     tempoScore,
     classSignals,
     raceSignals,
@@ -156,11 +168,15 @@ export function scoreQuiz(answers: QuizAnswers): ScoredResult {
 
   const classOrder = new Map(classes.map((item, index) => [item.id, index]));
   const raceOrder = new Map(races.map((item, index) => [item.id, index]));
+  // Select a class before a race. Race preferences cannot turn a stronger
+  // class match into a different class recommendation.
   candidates.sort((a, b) =>
-    b.score - a.score ||
-    b.firstRankScore - a.firstRankScore ||
+    b.classScore - a.classScore ||
+    b.firstRankClassScore - a.firstRankClassScore ||
     b.tempoScore - a.tempoScore ||
     (classOrder.get(a.classId) ?? 0) - (classOrder.get(b.classId) ?? 0) ||
+    b.raceScore - a.raceScore ||
+    b.firstRankRaceScore - a.firstRankRaceScore ||
     (raceOrder.get(a.raceId) ?? 0) - (raceOrder.get(b.raceId) ?? 0),
   );
 
