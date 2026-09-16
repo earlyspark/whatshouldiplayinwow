@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { questions, QUIZ_VERSION, type QuizOption } from "@/data/questions";
+import { trackEvent } from "@/lib/gtag";
 
 type Answers = Record<string, string[]>;
 
@@ -23,6 +24,7 @@ export default function QuizFlow() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const progressRef = useRef({ started: false, index: 0, completed: false });
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -48,6 +50,26 @@ export default function QuizFlow() {
   useEffect(() => {
     if (started) headingRef.current?.focus();
   }, [index, started]);
+
+  useEffect(() => {
+    progressRef.current = { ...progressRef.current, started, index };
+  }, [index, started]);
+
+  // Report where someone stopped. pagehide is used over beforeunload because
+  // mobile browsers frequently skip beforeunload when backgrounding a tab.
+  useEffect(() => {
+    const reportAbandonment = () => {
+      const { started: begun, index: step, completed } = progressRef.current;
+      if (!begun || completed) return;
+      trackEvent("quiz_abandon", {
+        step_number: step + 1,
+        question_id: questions[step].id,
+        questions_total: questions.length,
+      });
+    };
+    window.addEventListener("pagehide", reportAbandonment);
+    return () => window.removeEventListener("pagehide", reportAbandonment);
+  }, []);
 
   const question = questions[index];
   const selected = answers[question.id] ?? [];
@@ -102,6 +124,12 @@ export default function QuizFlow() {
       setError("Choose at least one answer to continue.");
       return;
     }
+    trackEvent("quiz_question_complete", {
+      question_id: question.id,
+      step_number: index + 1,
+      choice_count: selected.length,
+    });
+
     if (index < questions.length - 1) {
       setIndex((value) => value + 1);
       return;
@@ -116,7 +144,15 @@ export default function QuizFlow() {
         body: JSON.stringify({ answers }),
       });
       const body = await response.json();
-      if (!response.ok || !body.id) throw new Error(body.error ?? "Unable to create your result.");
+      if (!response.ok || !body.id) {
+        trackEvent("quiz_submit_error", {
+          status: response.status,
+          rate_limited: response.status === 429,
+        });
+        throw new Error(body.error ?? "Unable to create your result.");
+      }
+      progressRef.current = { ...progressRef.current, completed: true };
+      trackEvent("quiz_complete", { result_id: body.id });
       sessionStorage.removeItem(storageKey);
       router.push(`/result/${body.id}`);
     } catch (caught) {
@@ -125,7 +161,10 @@ export default function QuizFlow() {
     }
   };
 
-  const start = () => setStarted(true);
+  const start = () => {
+    setStarted(true);
+    trackEvent("quiz_start", { quiz_version: QUIZ_VERSION });
+  };
 
   if (!started) {
     return (

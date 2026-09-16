@@ -26,8 +26,16 @@ export async function POST(request: NextRequest) {
     const limiter = rateLimiter();
     if (limiter) {
       const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
-      const { success } = await limiter.limit(ip);
-      if (!success) return NextResponse.json({ error: "Too many results created. Please try again later." }, { status: 429 });
+      const { success, reset } = await limiter.limit(ip);
+      if (!success) {
+        // reset is an epoch timestamp for when the window frees up again.
+        const retryAfter = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
+        const minutes = Math.ceil(retryAfter / 60);
+        return NextResponse.json(
+          { error: `You have created several results in the last hour. Please try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`, retryAfter },
+          { status: 429, headers: { "Retry-After": String(retryAfter) } },
+        );
+      }
     }
 
     const body = await request.json();
