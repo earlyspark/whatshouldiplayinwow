@@ -172,6 +172,14 @@ describe("scoring", () => {
     expect(scoring.q4.control.classes?.druid).toBeGreaterThan(0);
   });
 
+  it("credits pet-based adaptability below classes that can switch group jobs", () => {
+    const adapt = scoring.q4.adapt.classes!;
+    expect(adapt.hunter).toBe(1);
+    expect(adapt.warlock).toBe(1);
+    expect(adapt.druid).toBeGreaterThan(adapt.hunter!);
+    expect(adapt.shaman).toBeGreaterThan(adapt.warlock!);
+  });
+
   it("makes healing plus damage a stronger Priest signal than either answer alone", () => {
     expect(q4CombinationBonus("priest", ["heal"])).toBeUndefined();
     const priest = q4CombinationBonus("priest", ["heal", "damage"]);

@@ -95,7 +95,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     // Shadow and Retribution can deal damage, while Discipline mixes damage with healing.
     damage: { classes: { mage: 3, rogue: 3, hunter: 3, warlock: 3, warrior: 2, shaman: 2, druid: 2, priest: 2, paladin: 2 } },
     control: { classes: { mage: 3, rogue: 3, warlock: 2, shaman: 2, hunter: 2, priest: 2, druid: 1 } },
-    adapt: { classes: { druid: 3, shaman: 3, paladin: 3, priest: 2, warrior: 1 } },
+    adapt: { classes: { druid: 3, shaman: 3, paladin: 3, priest: 2, warrior: 1, hunter: 1, warlock: 1 } },
   },
   q5: {
     "heavy-melee": { classes: { warrior: 3, paladin: 3, shaman: 2, druid: 1 } },

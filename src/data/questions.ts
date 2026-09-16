@@ -1,4 +1,4 @@
-export const QUIZ_VERSION = "1.15.0";
+export const QUIZ_VERSION = "1.16.0";
 
 export type QuestionId = `q${number}`;
 
@@ -63,7 +63,7 @@ export const questions: QuizQuestion[] = [
       { id: "heal", label: "Keep allies alive" },
       { id: "damage", label: "Deal heavy damage" },
       { id: "control", label: "Disrupt enemies and create openings" },
-      { id: "adapt", label: "Adapt to whatever the group needs", description: "Switch between damage, healing, or frontline jobs." },
+      { id: "adapt", label: "Adapt to whatever the group needs", description: "Switch roles or use a companion to change how I help." },
     ],
   },
   {

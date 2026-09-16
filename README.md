@@ -11,7 +11,7 @@ After the last question you land on a result page with its own shareable link:
 - **Your main pick**, such as *Tauren Shaman*, with a short explanation for the race and the class based on the answers
 - **The race's racial abilities**, so you can see what the race actually does for you
 - **Two alternatives**: one keeps your class with a different race, the other suggests a different class
-- A retake prompt if the game data has changed since you took the quiz
+- A retake prompt if the game data, quiz questions, or scoring have changed since you took the quiz
 
 <img src="docs/screenshots/result.png" alt="A result page recommending Tauren Shaman, with racials and two alternatives" width="600">
 
@@ -82,7 +82,7 @@ For ranked questions, one question's worth of points is split across your picks:
 
 If one option is a clear favorite, pick only that one and it gets the full weight.
 Question 12 uses these same factors, so ranking three frustrations splits its existing weight across them instead of tripling its influence.
-Question 4 also recognizes a few combinations. Ranking both healing and damage gives Priest an extra signal for a Discipline-style mix, with smaller bonuses for other hybrid classes. Protecting plus healing favors Priest, and protecting plus damage can favor a Hunter or Warlock whose pet takes pressure. Ranking protection and damage highest with disruption third gives Warlock a stronger signal for its pet and curses. Ranking adaptation instead favors classes that can change group jobs, particularly Druid, Paladin, and Shaman. A lower-ranked core answer reduces the bonus, and only the strongest matching combination applies. The bonus is capped below one full direct playstyle answer so it can break a close fit without overriding clearer preferences. These are provisional class-fit judgments until more Forever specialization details are published.
+Question 4 also recognizes a few combinations. Ranking both healing and damage gives Priest an extra signal for a Discipline-style mix, with smaller bonuses for other hybrid classes. Protecting plus healing favors Priest, and protecting plus damage can favor a Hunter or Warlock whose pet takes pressure. Ranking protection and damage highest with disruption third gives Warlock a stronger signal for its pet and curses. The adaptation answer favors classes that can change group jobs, particularly Druid, Paladin, and Shaman, while giving Hunter and Warlock a smaller cue for changing tactics through their pets. A lower-ranked core answer reduces the combination bonus, and only the strongest matching combination applies. The bonus is capped below one full direct playstyle answer so it can break a close fit without overriding clearer preferences. These are provisional class-fit judgments until more Forever specialization details are published.
 
 ### 5. Class fit comes first
 
@@ -95,7 +95,7 @@ Saved results retain a combined numeric score for compatibility with older recor
 - **Faction is just a preference.** Choosing Alliance or Horde gives that faction's races a large boost, but a strong enough match on the other side can still win.
 - **Community players get more say in atmosphere.** Ranking *Community & the vibes* doesn't favor either faction. Instead, it makes the race and class points from your atmosphere answer count more: ×1.5 when ranked first, ×1.3 second, ×1.15 third. The class effect remains small compared with fighting style and character fantasy.
 - **Focused play is a strong preference, not an exclusion.** Choosing a defined playstyle boosts focused classes and lowers adaptable classes. Strong answers elsewhere can still favor an adaptable class.
-- **Racial utility follows the actual kit.** Night Elf's Quickness gives a small endurance cue. Skyborne movement abilities do not receive crafting or resource-finding points; the Alliance Skyborne's Read Ley Line does receive a resource-finding cue. Both Skyborne variants have active movement abilities, so both receive a moderate timing score.
+- **Racial utility follows the actual kit.** Night Elf's Quickness gives a small endurance cue. Skyborne movement abilities do not receive crafting points; the Alliance Skyborne's Read Ley Line contributes to the answer about finding a useful resource or tool. Both Skyborne variants have active movement abilities, so both receive a moderate timing score.
 
 ### Picking the alternatives
 
@@ -112,9 +112,9 @@ The race and class list, which combinations are allowed, and each race's racials
 - Blizzard's [*Deep Dive* panel recap](https://worldofwarcraft.blizzard.com/en-us/news/24303313/world-of-warcraft-forever-deep-dive-panel-recap)
 - Wowhead's [racials and class-race combinations guide](https://www.wowhead.com/forever/guide/new-race-class-combinations)
 
-Each review gets a data version and a "checked on" date, shown on the site's [How this works](https://www.whatshouldiplayinwowforever.com/methodology) page.
+The site's [How this works](https://www.whatshouldiplayinwowforever.com/methodology) page shows when the game information was last checked. Saved results also record a data version, which can stay the same when a review finds no change to the game data.
 
-**Shared results stay the same for 12 months.** Each result saves your answers, quiz version, and data version, so a shared link shows the same pick until it expires 12 months after creation. If the game data or quiz scoring changes before then, the result page offers a retake with the current version. Expired links show a not-found page.
+**Shared results stay the same for 12 months.** Each result saves your answers, quiz version, and data version, so a shared link shows the same pick until it expires 12 months after creation. If the game data, quiz questions, or scoring changes before then, the result page offers a retake with the current version. Expired links show a not-found page.
 
 New results receive a Redis expiry automatically. To apply the policy to results created before this change, run `node --env-file=.env.local scripts/backfill-result-retention.mjs` to preview the counts, then rerun with `--apply`. The script deletes already expired results and sets expiry dates on the rest. It also expires old completion markers; monthly aggregate statistics remain available.
 
