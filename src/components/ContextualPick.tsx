@@ -9,6 +9,8 @@ interface ContextualPickProps {
    * same product, so a shared permalink reads the same on every visit.
    */
   seed: string;
+  /** Overrides the configured pool query, e.g. to match a quiz result. */
+  keywords?: string;
 }
 
 /**
@@ -18,8 +20,8 @@ interface ContextualPickProps {
  * format that actually converts for affiliates. This renders nothing when there
  * is no product to show, so the surrounding prose is never left dangling.
  */
-export default async function ContextualPick({ lead, seed }: ContextualPickProps) {
-  const product = await getContextualProduct(seed);
+export default async function ContextualPick({ lead, seed, keywords }: ContextualPickProps) {
+  const product = await getContextualProduct(seed, keywords);
   if (!product) return null;
 
   return (

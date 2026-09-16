@@ -4,6 +4,8 @@ import { getBannerProducts } from "@/lib/amazon";
 
 interface AmazonBannerProps {
   placement: "sidebar" | "inline";
+  /** Overrides the configured pool query, e.g. to match a quiz result. */
+  keywords?: string;
 }
 
 /**
@@ -16,9 +18,9 @@ interface AmazonBannerProps {
  *
  * Falls back to the reserved ad space whenever there is nothing to show.
  */
-export default async function AmazonBanner({ placement }: AmazonBannerProps) {
+export default async function AmazonBanner({ placement, keywords }: AmazonBannerProps) {
   const limit = placement === "sidebar" ? 1 : 3;
-  const products = await getBannerProducts(limit);
+  const products = await getBannerProducts(limit, keywords);
   if (!products.length) return <AdSlot placement={placement} />;
 
   const isSidebar = placement === "sidebar";

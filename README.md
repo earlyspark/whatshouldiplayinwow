@@ -94,7 +94,27 @@ unreachable, and `ContextualPick` renders nothing at all, so ads never break a
 page. Product data is cached for six hours, which keeps prices inside the 24 hour
 freshness window required by the Associates Program Operating Agreement.
 
+### Where the ads appear
+
+| Route | Format | Products |
+| --- | --- | --- |
+| `/` (quiz) | Banner under the question card | Generic `AMAZON_AD_KEYWORDS` pool, rotating one product per question |
+| `/result/[id]` | Sidebar and inline banners | Searched on the recommended class |
+| `/result/[id]` | In-content text links | Searched on the recommended class |
+
+The quiz is a client-side stepper on a statically rendered page, so it reads the
+pool from `/api/ads/pool` rather than taking server props, which keeps the
+landing page static. That route serves public catalog data only and reads the
+same six hour cache, so it costs no extra Amazon calls.
+
 ### Local development
 
 Put credentials in `.env.local` (gitignored). The same variables go into the
-Vercel dashboard for preview and production.
+Vercel dashboard for preview and production — tick Preview as well as
+Production so preview deploys show ads.
+
+Restart `npm run dev` after editing `.env.local`; Next reads the file at startup.
+
+Run `npm run amazon:check` to verify credentials without the app. It reports
+which step failed — token exchange, `searchItems`, or the pinned ASIN — rather
+than failing silently behind a placeholder ad slot.

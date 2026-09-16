@@ -37,6 +37,9 @@ export default async function ResultPage({ params }: ResultPageProps) {
   if (!result) notFound();
   const isOutdated = result.dataVersion !== DATA_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;
+  // Ties the result page ads to the pick the reader just received, rather than
+  // the generic pool the quiz pages rotate through.
+  const resultKeywords = `World of Warcraft ${result.primary.className}`;
 
   return (
     <main id="main-content" className="min-h-screen">
@@ -67,18 +70,18 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <h2 className="display-font mt-3 text-3xl">{result.primary.className}</h2>
               <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{result.primary.whyClass}</p>
               <Suspense fallback={null}>
-                <ContextualPick lead="Kitting out for the climb?" seed={`${id}:class`} />
+                <ContextualPick lead="Kitting out for the climb?" seed={`${id}:class`} keywords={resultKeywords} />
               </Suspense>
             </section>
 
-            <div className="lg:hidden"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" /></Suspense></div>
+            <div className="lg:hidden"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} /></Suspense></div>
 
             <section className="glass-panel rounded-3xl p-6 sm:p-8">
               <p className="eyebrow">Why the race fits</p>
               <h2 className="display-font mt-3 text-3xl">{result.primary.raceName}</h2>
               <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{result.primary.whyRace}</p>
               <Suspense fallback={null}>
-                <ContextualPick lead="Worth a look while you wait for launch:" seed={`${id}:race`} />
+                <ContextualPick lead="Worth a look while you wait for launch:" seed={`${id}:race`} keywords={resultKeywords} />
               </Suspense>
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 {result.primary.racials.map((racial) => (
@@ -91,7 +94,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <p className="mt-5 text-xs leading-5 text-[var(--muted)]">Forever is still evolving. Trait wording and values may change after this result’s {result.dataCheckedLabel} data review.</p>
             </section>
           </div>
-          <div className="hidden lg:sticky lg:top-6 lg:block"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" /></Suspense></div>
+          <div className="hidden lg:sticky lg:top-6 lg:block"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} /></Suspense></div>
         </div>
 
         <section className="mt-16" aria-labelledby="alternatives-title">
@@ -107,7 +110,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
           </div>
         </section>
 
-        <div className="mt-10"><Suspense fallback={<AdSlot placement="inline" />}><AmazonBanner placement="inline" /></Suspense></div>
+        <div className="mt-10"><Suspense fallback={<AdSlot placement="inline" />}><AmazonBanner placement="inline" keywords={resultKeywords} /></Suspense></div>
 
         <section className="mt-12 rounded-3xl border border-[var(--line)] bg-white/[.025] p-6 sm:p-8">
           <h2 className="display-font text-3xl">Take this pick with you</h2>

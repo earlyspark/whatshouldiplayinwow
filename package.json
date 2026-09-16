@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "amazon:check": "node scripts/check-amazon.mjs"
   },
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",

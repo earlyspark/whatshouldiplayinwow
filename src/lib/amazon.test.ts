@@ -343,3 +343,40 @@ describe("getContextualProduct", () => {
     expect(await getContextualProduct("seed")).toBeNull();
   });
 });
+
+describe("keyword overrides", () => {
+  it("searches the override query instead of the configured pool", async () => {
+    vi.stubEnv("AMAZON_AD_KEYWORDS", "World of Warcraft");
+    const fetchMock = stubAmazon(poolResponse(10));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getBannerProducts(3, "World of Warcraft Druid");
+
+    const [, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ keywords: "World of Warcraft Druid" });
+  });
+
+  it("caches each query separately", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    const fetchMock = stubAmazon(poolResponse(10));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getProductPool("World of Warcraft Druid");
+    await getProductPool("World of Warcraft Mage");
+    await getProductPool("World of Warcraft Druid"); // served from cache
+
+    const searches = fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"));
+    expect(searches).toHaveLength(2);
+  });
+
+  it("prefers an explicit query over a curated ASIN list", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "B0CURATED1");
+    const fetchMock = stubAmazon(poolResponse(10));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getProductPool("World of Warcraft Druid");
+
+    const [catalogUrl] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    expect(catalogUrl).toContain("searchItems");
+  });
+});

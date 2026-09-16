@@ -253,11 +253,15 @@ export async function searchItems(keywords: string, itemCount: number, config: A
  * Returns an empty array whenever credentials are missing or Amazon is
  * unreachable, so an ad never takes the page down with it.
  */
-export async function getProductPool(): Promise<AmazonProduct[]> {
+export async function getProductPool(overrideKeywords?: string): Promise<AmazonProduct[]> {
   const config = amazonConfig();
   if (!config) return [];
 
-  const { asins, keywords, pinnedAsin, poolSize } = adSelection();
+  const { asins: configuredAsins, keywords: defaultKeywords, pinnedAsin, poolSize } = adSelection();
+  // An explicit query always means a search, so a curated ASIN list does not
+  // silently override a caller asking for something context-specific.
+  const asins = overrideKeywords ? [] : configuredAsins;
+  const keywords = overrideKeywords ?? defaultKeywords;
   const poolKey = asins.length
     ? `${config.marketplace}:asins:${asins.join("-")}`
     : `${config.marketplace}:search:${keywords}:${poolSize}`;
@@ -315,8 +319,8 @@ function shuffle<T>(items: T[]): T[] {
  * Shuffling happens here on the server; doing it in a client component would
  * desynchronise the markup React hydrates against.
  */
-export async function getBannerProducts(limit: number): Promise<AmazonProduct[]> {
-  const pool = await getProductPool();
+export async function getBannerProducts(limit: number, keywords?: string): Promise<AmazonProduct[]> {
+  const pool = await getProductPool(keywords);
   if (!pool.length) return [];
 
   if (!hasPinned(pool)) return shuffle(pool).slice(0, limit);
@@ -331,8 +335,8 @@ export async function getBannerProducts(limit: number): Promise<AmazonProduct[]>
  * so it must not change between a reload and a revisit of the same permalink.
  * The pinned product is skipped here, since it already has the banner slot.
  */
-export async function getContextualProduct(seed: string): Promise<AmazonProduct | null> {
-  const pool = await getProductPool();
+export async function getContextualProduct(seed: string, keywords?: string): Promise<AmazonProduct | null> {
+  const pool = await getProductPool(keywords);
   const candidates = hasPinned(pool) ? pool.slice(1) : pool;
   if (!candidates.length) return null;
   return candidates[hashSeed(seed) % candidates.length];
