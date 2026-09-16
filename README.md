@@ -38,6 +38,7 @@ Some questions take a single answer. Others ask you to **rank** up to three pick
 ## How scoring works
 
 The scoring is deterministic. There's no randomness and no AI involved, so the same answers and the same game data always give the same result.
+The weights are bounded judgments checked against class roles, racial kits, and representative answer profiles. Aggregate completion counts do not tell us whether players liked their recommendations, so these weights cannot be fitted to an objective accuracy measure yet.
 
 ### 1. Every valid combination is scored
 
@@ -45,7 +46,7 @@ The quiz scores all 56 race and class combinations available in Forever and neve
 
 ### 2. Each answer gives points to classes and races
 
-Most answers add up to 3 points to the classes and races they fit. For example, *Keep allies alive* favors Priest, Paladin and Shaman, while *Ranged weapons & a companion* favors Hunter and Warlock. Questions 12 and 13 can also subtract points (as low as −3 before question and rank weights) when a class conflicts with a frustration or a preference for focused play.
+Most answers add up to 3 points to the classes and races they fit. For example, *Protect others* favors frontline tanks most, but also credits Priest shields and the protective pets of Warlocks and Hunters. *Keep allies alive* favors healers, while *Ranged weapons & a companion* favors Hunter and Warlock. Questions 12 and 13 can also subtract points (as low as −3 before question and rank weights) when a class conflicts with a frustration or a preference for focused play.
 
 ### 3. Questions carry different weight
 
@@ -81,6 +82,7 @@ For ranked questions, one question's worth of points is split across your picks:
 
 If one option is a clear favorite, pick only that one and it gets the full weight.
 Question 12 uses these same factors, so ranking three frustrations splits its existing weight across them instead of tripling its influence.
+Question 4 also recognizes a few combinations. Ranking both healing and damage gives Priest an extra signal for a Discipline-style mix, with smaller bonuses for other hybrid classes. Protecting plus healing favors Priest, and protecting plus damage can favor a Hunter or Warlock whose pet takes pressure. Ranking protection and damage highest with disruption third gives Warlock a stronger signal for its pet and curses. Ranking adaptation instead favors classes that can change group jobs, particularly Druid, Paladin, and Shaman. A lower-ranked core answer reduces the bonus, and only the strongest matching combination applies. The bonus is capped below one full direct playstyle answer so it can break a close fit without overriding clearer preferences. These are provisional class-fit judgments until more Forever specialization details are published.
 
 ### 5. Class fit comes first
 
@@ -93,6 +95,7 @@ Saved results retain a combined numeric score for compatibility with older recor
 - **Faction is just a preference.** Choosing Alliance or Horde gives that faction's races a large boost, but a strong enough match on the other side can still win.
 - **Community players get more say in atmosphere.** Ranking *Community & the vibes* doesn't favor either faction. Instead, it makes the race and class points from your atmosphere answer count more: ×1.5 when ranked first, ×1.3 second, ×1.15 third. The class effect remains small compared with fighting style and character fantasy.
 - **Focused play is a strong preference, not an exclusion.** Choosing a defined playstyle boosts focused classes and lowers adaptable classes. Strong answers elsewhere can still favor an adaptable class.
+- **Racial utility follows the actual kit.** Night Elf's Quickness gives a small endurance cue. Skyborne movement abilities do not receive crafting or resource-finding points; the Alliance Skyborne's Read Ley Line does receive a resource-finding cue. Both Skyborne variants have active movement abilities, so both receive a moderate timing score.
 
 ### Picking the alternatives
 

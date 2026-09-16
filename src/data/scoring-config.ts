@@ -13,7 +13,7 @@ export interface OptionScore {
 const racialTimingDemand: Record<RaceId, 1 | 2 | 3> = {
   human: 3, dwarf: 3, "night-elf": 3, gnome: 3,
   orc: 3, undead: 3, tauren: 2, troll: 3,
-  "skyborne-alliance": 2, "skyborne-horde": 1,
+  "skyborne-alliance": 2, "skyborne-horde": 2,
 };
 
 function racialTimingScores(preferredDemand: number): ScoreMap<RaceId> {
@@ -78,7 +78,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     },
     professions: {
       classes: { hunter: 1, druid: 1, mage: 1 },
-      races: { tauren: 3, gnome: 3, dwarf: 2, "skyborne-alliance": 1, "skyborne-horde": 1 },
+      races: { tauren: 3, gnome: 3, dwarf: 2 },
     },
     exploration: {
       classes: { druid: 3, hunter: 3, rogue: 2, mage: 2, shaman: 1, warlock: 1 },
@@ -89,10 +89,12 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     vibes: {},
   },
   q4: {
-    protect: { classes: { warrior: 3, paladin: 3, druid: 2, shaman: 1 } },
-    heal: { classes: { priest: 3, paladin: 3, shaman: 3, druid: 2 } },
-    damage: { classes: { mage: 3, rogue: 3, hunter: 3, warlock: 3, warrior: 2, shaman: 2, druid: 2 } },
-    control: { classes: { mage: 3, rogue: 3, warlock: 2, shaman: 2, hunter: 2, priest: 2 } },
+    // Frontline tanks lead; shields, totems, and protective pets also count.
+    protect: { classes: { warrior: 3, paladin: 3, druid: 3, priest: 2, shaman: 1, warlock: 1, hunter: 1 } },
+    heal: { classes: { priest: 3, paladin: 3, shaman: 3, druid: 3 } },
+    // Shadow and Retribution can deal damage, while Discipline mixes damage with healing.
+    damage: { classes: { mage: 3, rogue: 3, hunter: 3, warlock: 3, warrior: 2, shaman: 2, druid: 2, priest: 2, paladin: 2 } },
+    control: { classes: { mage: 3, rogue: 3, warlock: 2, shaman: 2, hunter: 2, priest: 2, druid: 1 } },
     adapt: { classes: { druid: 3, shaman: 3, paladin: 3, priest: 2, warrior: 1 } },
   },
   q5: {
@@ -145,11 +147,11 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   },
   q10: {
     finish: { races: { orc: 3, troll: 3, "night-elf": 3, gnome: 2, "skyborne-alliance": 2, "skyborne-horde": 2 } },
-    endure: { races: { dwarf: 3, tauren: 3, orc: 2, human: 2, troll: 1 } },
+    endure: { races: { dwarf: 3, tauren: 3, orc: 2, human: 2, troll: 1, "night-elf": 1 } },
     "break-free": { races: { undead: 3, gnome: 3, human: 3, dwarf: 3, orc: 2 } },
     reposition: { races: { gnome: 3, "skyborne-horde": 3, "skyborne-alliance": 2, "night-elf": 2, tauren: 2 } },
     recover: { races: { undead: 3, troll: 3, "skyborne-alliance": 3, tauren: 1 } },
-    resource: { races: { tauren: 3, gnome: 3, dwarf: 3, "skyborne-alliance": 2, "skyborne-horde": 2 } },
+    resource: { races: { tauren: 3, gnome: 3, dwarf: 3, "skyborne-alliance": 2 } },
   },
   q11: {
     // Living forests evoke Elwynn and Teldrassil; haunted woods evoke Tirisfal.

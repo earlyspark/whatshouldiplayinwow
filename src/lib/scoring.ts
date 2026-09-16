@@ -20,6 +20,29 @@ const RANK_FACTORS: Record<number, number[]> = {
   3: [5 / 9, 3 / 9, 1 / 9],
 };
 
+// Combination signals reward specific roles without making any one answer an
+// exclusion. The strongest bonus is 3.5 weighted points: below a full Q4
+// answer (6) and well below a direct fighting-style answer (9).
+const q4CombinationBonuses: {
+  choices: string[];
+  anchors?: [string, string];
+  label: string;
+  classes: Partial<Record<ClassId, number>>;
+}[] = [
+  { choices: ["heal", "damage"], label: "healing while dealing damage", classes: { priest: 1.5, paladin: 0.5, shaman: 0.5, druid: 0.5 } },
+  { choices: ["protect", "heal"], label: "protecting and healing allies", classes: { priest: 1.25, paladin: 0.5, druid: 0.5, shaman: 0.5 } },
+  { choices: ["protect", "damage"], label: "protecting allies while dealing damage", classes: { warlock: 0.75, hunter: 0.75, warrior: 0.25, paladin: 0.25, druid: 0.25 } },
+  { choices: ["protect", "damage", "control"], anchors: ["protect", "damage"], label: "protecting, damaging, and disrupting enemies", classes: { warlock: 1.75, hunter: 0.75, priest: 0.5, druid: 0.5, warrior: 0.25 } },
+  { choices: ["protect", "damage", "adapt"], anchors: ["protect", "damage"], label: "protecting, damaging, and changing roles", classes: { druid: 1.5, paladin: 1.25, shaman: 1.25, priest: 0.5, warrior: 0.5 } },
+];
+
+interface ScoreSignal {
+  questionId: QuestionId;
+  optionId: string;
+  value: number;
+  label?: string;
+}
+
 interface CandidateScore {
   raceId: RaceId;
   classId: ClassId;
@@ -29,8 +52,8 @@ interface CandidateScore {
   firstRankClassScore: number;
   firstRankRaceScore: number;
   tempoScore: number;
-  classSignals: { questionId: QuestionId; optionId: string; value: number }[];
-  raceSignals: { questionId: QuestionId; optionId: string; value: number }[];
+  classSignals: ScoreSignal[];
+  raceSignals: ScoreSignal[];
 }
 
 export interface ScoredResult {
@@ -38,7 +61,9 @@ export interface ScoredResult {
   alternatives: [CandidateSnapshot, CandidateSnapshot];
 }
 
-const classMaximum = Object.values(questionWeights).reduce((sum, weight) => sum + Math.max(weight.class, 0) * 3, 0);
+const maxQ4CombinationBonus = Math.max(...q4CombinationBonuses.flatMap((combination) => Object.values(combination.classes)));
+const classMaximum = Object.values(questionWeights).reduce((sum, weight) => sum + Math.max(weight.class, 0) * 3, 0)
+  + maxQ4CombinationBonus * questionWeights.q4.class;
 const raceMaximum = Object.values(questionWeights).reduce((sum, weight) => sum + Math.max(weight.race, 0) * 3, 0);
 
 export function normalizedRankFactors(count: number) {
@@ -54,12 +79,31 @@ function joinSignals(signals: CandidateScore["classSignals"] | CandidateScore["r
     .filter((signal) => signal.value > 0)
     .sort((a, b) => b.value - a.value)
     .slice(0, 3)
-    .map((signal) => selectedLabel(signal.questionId, signal.optionId).toLowerCase());
+    .map((signal) => (signal.label ?? selectedLabel(signal.questionId, signal.optionId)).toLowerCase());
 
   if (!labels.length) return fallback;
   if (labels.length === 1) return labels[0];
   if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
   return `${labels[0]}, ${labels[1]}, and ${labels[2]}`;
+}
+
+export function q4CombinationBonus(classId: ClassId, rankedChoices: string[]) {
+  const factors = normalizedRankFactors(rankedChoices.length);
+  let best: { value: number; label: string; includesFirst: boolean } | undefined;
+  for (const combination of q4CombinationBonuses) {
+    const choiceRanks = combination.choices.map((choice) => rankedChoices.indexOf(choice));
+    if (choiceRanks.some((rank) => rank < 0)) continue;
+    const anchors = combination.anchors ?? [combination.choices[0], combination.choices[1]];
+    const anchorRanks = anchors.map((choice) => rankedChoices.indexOf(choice));
+    const anchorBaseline = combination.choices.length === 3 ? RANK_FACTORS[3][1] : RANK_FACTORS[2][1];
+    const rankStrength = Math.min(...anchorRanks.map((rank) => factors[rank])) / anchorBaseline;
+    const rawBonus = combination.classes[classId] ?? 0;
+    const value = rawBonus * questionWeights.q4.class * rankStrength;
+    if (value > (best?.value ?? 0)) {
+      best = { value, label: combination.label, includesFirst: choiceRanks.includes(0) };
+    }
+  }
+  return best;
 }
 
 export function validateAnswers(answers: QuizAnswers) {
@@ -113,6 +157,14 @@ function scoreCandidate(raceId: RaceId, classId: ClassId, answers: QuizAnswers):
       }
       if (question.id === "q6") tempoScore += classValue;
     });
+  }
+
+  const bestCombination = q4CombinationBonus(classId, answers.q4);
+  // Use the strongest matching combination rather than stacking overlaps.
+  if (bestCombination) {
+    classScore += bestCombination.value;
+    if (bestCombination.includesFirst) firstRankClassScore += bestCombination.value;
+    classSignals.push({ questionId: "q4", optionId: "combination", label: bestCombination.label, value: bestCombination.value });
   }
 
   const normalizedClass = Math.max(0, classScore) / classMaximum;

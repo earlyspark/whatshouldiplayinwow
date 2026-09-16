@@ -1,4 +1,4 @@
-export const QUIZ_VERSION = "1.14.0";
+export const QUIZ_VERSION = "1.15.0";
 
 export type QuestionId = `q${number}`;
 
@@ -59,11 +59,11 @@ export const questions: QuizQuestion[] = [
     prompt: "Rank up to three contributions you’d most enjoy making to a group.",
     helper: "You can stop after one if there is a clear winner.",
     options: [
-      { id: "protect", label: "Protect others", description: "Hold enemies’ attention and take the pressure." },
+      { id: "protect", label: "Protect others", description: "Take hits, shield allies, or have a companion draw danger away." },
       { id: "heal", label: "Keep allies alive" },
       { id: "damage", label: "Deal heavy damage" },
       { id: "control", label: "Disrupt enemies and create openings" },
-      { id: "adapt", label: "Adapt to whatever the group needs" },
+      { id: "adapt", label: "Adapt to whatever the group needs", description: "Switch between damage, healing, or frontline jobs." },
     ],
   },
   {

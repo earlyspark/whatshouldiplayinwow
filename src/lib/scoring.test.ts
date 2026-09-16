@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { classes, isValidCombination, raceById, races } from "@/data/forever";
+import { classes, isValidCombination, raceById, races, type ClassId } from "@/data/forever";
 import { questions } from "@/data/questions";
 import { questionWeights, scoring } from "@/data/scoring-config";
-import { normalizedRankFactors, scoreQuiz } from "@/lib/scoring";
+import { normalizedRankFactors, q4CombinationBonus, scoreQuiz } from "@/lib/scoring";
 import type { QuizAnswers } from "@/lib/result-schema";
 
 const frontline: QuizAnswers = {
@@ -55,6 +55,13 @@ const neutralBase: QuizAnswers = {
 
 function persona(overrides: Partial<QuizAnswers>): QuizAnswers {
   return { ...neutralBase, ...overrides } as QuizAnswers;
+}
+
+function groupContributionScore(classId: ClassId, picks: string[]) {
+  const factors = normalizedRankFactors(picks.length);
+  const answers = picks.reduce((total, option, index) =>
+    total + (scoring.q4[option].classes?.[classId] ?? 0) * factors[index] * questionWeights.q4.class, 0);
+  return answers + (q4CombinationBonus(classId, picks)?.value ?? 0);
 }
 
 const classPersonas: { name: string; classId: (typeof classes)[number]["id"]; answers: QuizAnswers }[] = [
@@ -153,6 +160,84 @@ describe("quiz definition", () => {
 });
 
 describe("scoring", () => {
+  it("credits several ways to protect others without treating pets as full tanks", () => {
+    const protect = scoring.q4.protect.classes!;
+    expect(protect.warrior).toBeGreaterThan(protect.priest!);
+    expect(protect.priest).toBeGreaterThan(protect.warlock!);
+    expect(protect.paladin).toBeGreaterThan(protect.hunter!);
+    expect(protect.druid).toBe(protect.warrior);
+    expect(scoring.q4.heal.classes?.druid).toBe(3);
+    expect(scoring.q4.damage.classes?.priest).toBeGreaterThan(0);
+    expect(scoring.q4.damage.classes?.paladin).toBeGreaterThan(0);
+    expect(scoring.q4.control.classes?.druid).toBeGreaterThan(0);
+  });
+
+  it("makes healing plus damage a stronger Priest signal than either answer alone", () => {
+    expect(q4CombinationBonus("priest", ["heal"])).toBeUndefined();
+    const priest = q4CombinationBonus("priest", ["heal", "damage"]);
+    expect(priest?.label).toBe("healing while dealing damage");
+    expect(priest!.value).toBeGreaterThan(q4CombinationBonus("paladin", ["heal", "damage"])!.value);
+    expect(priest!.value).toBeGreaterThan(q4CombinationBonus("shaman", ["heal", "damage"])!.value);
+    expect(priest!.value).toBeGreaterThan(q4CombinationBonus("druid", ["heal", "damage"])!.value);
+    expect(q4CombinationBonus("priest", ["heal", "protect", "damage"])!.value).toBeLessThan(priest!.value);
+    expect(q4CombinationBonus("priest", ["heal", "damage", "protect"])!.value).toBeLessThan(priest!.value);
+  });
+
+  it("recognizes damage-dealing protective pets and a Priest's shields", () => {
+    const petPair = ["protect", "damage"];
+    expect(q4CombinationBonus("warlock", petPair)?.value).toBeGreaterThan(0);
+    expect(q4CombinationBonus("hunter", petPair)?.value).toBeGreaterThan(0);
+    expect(q4CombinationBonus("warlock", ["protect"])).toBeUndefined();
+    expect(q4CombinationBonus("priest", ["protect", "heal"])?.value).toBeGreaterThan(0);
+  });
+
+  it("favors Warlock for disruption and role-switching classes for adaptation", () => {
+    const control = q4CombinationBonus("warlock", ["protect", "damage", "control"])!;
+    const adapt = q4CombinationBonus("druid", ["protect", "damage", "adapt"])!;
+    expect(control.value).toBeGreaterThan(q4CombinationBonus("hunter", ["protect", "damage", "control"])!.value);
+    expect(adapt.value).toBeGreaterThan(q4CombinationBonus("warlock", ["protect", "damage", "adapt"])!.value);
+    expect(control.value).toBeGreaterThan(q4CombinationBonus("warlock", ["control", "protect", "damage"])!.value);
+    expect(adapt.value).toBeGreaterThan(q4CombinationBonus("druid", ["adapt", "protect", "damage"])!.value);
+    expect(control.label).toContain("disrupting");
+    expect(adapt.label).toContain("changing roles");
+  });
+
+  it("keeps combination weights proportional to the ranked group preference", () => {
+    expect(groupContributionScore("warrior", ["protect"])).toBeGreaterThan(groupContributionScore("warlock", ["protect"]));
+    expect(groupContributionScore("warrior", ["protect", "damage"])).toBeGreaterThan(groupContributionScore("warlock", ["protect", "damage"]));
+    expect(groupContributionScore("warlock", ["damage", "protect"])).toBeGreaterThan(groupContributionScore("warrior", ["damage", "protect"]));
+    expect(groupContributionScore("priest", ["heal", "damage"])).toBeGreaterThan(groupContributionScore("paladin", ["heal", "damage"]));
+    expect(groupContributionScore("warlock", ["protect", "damage", "control"])).toBeGreaterThan(groupContributionScore("druid", ["protect", "damage", "control"]));
+    expect(groupContributionScore("druid", ["protect", "damage", "adapt"])).toBeGreaterThan(groupContributionScore("warlock", ["protect", "damage", "adapt"]));
+    const largestBonus = Math.max(...classes.flatMap(({ id }) => [
+      q4CombinationBonus(id, ["protect", "damage", "control"])?.value ?? 0,
+      q4CombinationBonus(id, ["protect", "damage", "adapt"])?.value ?? 0,
+      q4CombinationBonus(id, ["heal", "damage"])?.value ?? 0,
+    ]));
+    expect(largestBonus).toBeLessThan(questionWeights.q5.class * 3);
+  });
+
+  it("recommends Warlock for a protective companion caster and Priest for damage-healing support", () => {
+    const petCaster = persona({
+      q4: ["protect", "damage", "control"], q5: ["ranged-companion", "ranged-magic"],
+      q6: ["stick-plan"], q7: ["central"], q9: ["secrets", "arcane"],
+    });
+    const damageHealer = persona({
+      q4: ["heal", "damage", "protect"], q5: ["ranged-magic"],
+      q6: ["help-ally"], q7: ["none"], q9: ["holy", "secrets"],
+    });
+    expect(scoreQuiz(petCaster).primary.classId).toBe("warlock");
+    expect(scoreQuiz(damageHealer).primary.classId).toBe("priest");
+  });
+
+  it("keeps racial utility tied to the relevant racial kit", () => {
+    expect(scoring.q10.endure.races?.["night-elf"]).toBeGreaterThan(0);
+    expect(scoring.q10.resource.races?.["skyborne-alliance"]).toBeGreaterThan(0);
+    expect(scoring.q10.resource.races?.["skyborne-horde"]).toBeUndefined();
+    expect(scoring.q3.professions.races?.["skyborne-alliance"]).toBeUndefined();
+    expect(scoring.q3.professions.races?.["skyborne-horde"]).toBeUndefined();
+  });
+
   it("only recommends playable race and class combinations", () => {
     const result = scoreQuiz(frontline);
     for (const candidate of [result.primary, ...result.alternatives]) {
@@ -178,7 +263,8 @@ describe("scoring", () => {
     expect(early.human).toBeGreaterThan(middle.human ?? 0);
     expect(middle.human).toBeGreaterThan(newPlayer.human ?? 0);
     expect(early["skyborne-horde"]).toBeLessThan(middle["skyborne-horde"] ?? 0);
-    expect(middle["skyborne-horde"]).toBeLessThan(newPlayer["skyborne-horde"] ?? 0);
+    expect(middle["skyborne-horde"]).toBeGreaterThan(newPlayer["skyborne-horde"] ?? 0);
+    expect(newPlayer["skyborne-horde"]).toBe(newPlayer["skyborne-alliance"]);
     for (const era of questions[0].options) {
       expect(Object.keys(scoring.q1[era.id].races ?? {})).toHaveLength(races.length);
     }

@@ -1,5 +1,5 @@
 export const DATA_VERSION = "2026-09";
-export const DATA_CHECKED_AT = "2026-09-15";
+export const DATA_CHECKED_AT = "2026-09-16";
 export const DATA_CHECKED_LABEL = "September 2026";
 
 export const DATA_SOURCES = [
