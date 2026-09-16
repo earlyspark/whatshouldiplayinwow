@@ -76,9 +76,19 @@ export function hasAmazonConfig() {
   return Boolean(amazonConfig());
 }
 
+/** searchItems accepts an itemCount between 1 and 100. */
+const MAX_POOL_SIZE = 100;
+const DEFAULT_POOL_SIZE = 50;
+
 /**
- * Products the banner promotes. ASINs win when set; otherwise the banner falls
- * back to a keyword search so the slot still fills before a curated list exists.
+ * Which products fill the rotation pool.
+ *
+ * A pool is fetched once per cache cycle and then sampled per request, so
+ * variety costs no extra API calls. An explicit ASIN list wins when set;
+ * otherwise a keyword search fills the pool.
+ *
+ * The pinned ASIN is separate: it always occupies the first slot, so an
+ * evergreen product is guaranteed a placement no matter what the pool holds.
  */
 export function adSelection() {
   const asins = (value("AMAZON_AD_ASINS") ?? "")
@@ -86,8 +96,16 @@ export function adSelection() {
     .map((asin) => asin.trim().toUpperCase())
     .filter(Boolean)
     .slice(0, 10); // getItems accepts at most 10 item ids per request
+
+  const requestedPool = Number(value("AMAZON_AD_POOL_SIZE") ?? DEFAULT_POOL_SIZE);
+  const poolSize = Number.isFinite(requestedPool)
+    ? Math.min(Math.max(Math.trunc(requestedPool), 1), MAX_POOL_SIZE)
+    : DEFAULT_POOL_SIZE;
+
   return {
     asins,
     keywords: value("AMAZON_AD_KEYWORDS") ?? "World of Warcraft",
+    pinnedAsin: value("AMAZON_AD_PINNED_ASIN")?.toUpperCase() ?? null,
+    poolSize,
   };
 }

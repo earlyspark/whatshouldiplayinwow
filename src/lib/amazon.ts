@@ -243,27 +243,97 @@ export async function searchItems(keywords: string, itemCount: number, config: A
 }
 
 /**
- * Products for an ad placement, cached and fail-safe.
+ * The pool every placement draws from, cached and fail-safe.
+ *
+ * One pool is fetched per cache cycle and then sampled per request, which is
+ * what lets the page vary products without spending an API call per view. The
+ * pinned product is fetched separately so it survives a pool that does not
+ * happen to contain it.
  *
  * Returns an empty array whenever credentials are missing or Amazon is
- * unreachable, so a banner never takes the page down with it.
+ * unreachable, so an ad never takes the page down with it.
  */
-export async function getBannerProducts(limit: number): Promise<AmazonProduct[]> {
+export async function getProductPool(): Promise<AmazonProduct[]> {
   const config = amazonConfig();
   if (!config) return [];
 
-  const { asins, keywords } = adSelection();
-  const key = asins.length
+  const { asins, keywords, pinnedAsin, poolSize } = adSelection();
+  const poolKey = asins.length
     ? `${config.marketplace}:asins:${asins.join("-")}`
-    : `${config.marketplace}:search:${keywords}:${limit}`;
+    : `${config.marketplace}:search:${keywords}:${poolSize}`;
 
   try {
-    const products = await cached(key, () =>
-      asins.length ? getItemsByAsin(asins, config) : searchItems(keywords, limit, config),
-    );
-    return products.slice(0, limit);
+    const [pool, pinned] = await Promise.all([
+      cached(poolKey, () =>
+        asins.length ? getItemsByAsin(asins, config) : searchItems(keywords, poolSize, config),
+      ),
+      pinnedAsin
+        ? cached(`${config.marketplace}:pinned:${pinnedAsin}`, () => getItemsByAsin([pinnedAsin], config))
+        : Promise.resolve([]),
+    ]);
+
+    // The pinned product leads and must not also appear further down the list.
+    const rest = pool.filter((product) => product.asin !== pinnedAsin);
+    return [...pinned, ...rest];
   } catch (error) {
-    console.error("Amazon banner fetch failed", error);
+    console.error("Amazon product fetch failed", error);
     return [];
   }
+}
+
+/** Whether the first pool entry is the configured evergreen product. */
+function hasPinned(pool: AmazonProduct[]) {
+  const { pinnedAsin } = adSelection();
+  return Boolean(pinnedAsin) && pool[0]?.asin === pinnedAsin;
+}
+
+/** Stable 32-bit hash, so a given seed always yields the same pick. */
+function hashSeed(seed: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash ^= seed.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash);
+}
+
+/** Fisher-Yates, so every product has an equal chance of a placement. */
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+/**
+ * Products for a banner placement.
+ *
+ * The pinned product keeps the first slot and the remaining slots are drawn
+ * fresh per request, so a repeat visitor does not see the same banner twice.
+ * Shuffling happens here on the server; doing it in a client component would
+ * desynchronise the markup React hydrates against.
+ */
+export async function getBannerProducts(limit: number): Promise<AmazonProduct[]> {
+  const pool = await getProductPool();
+  if (!pool.length) return [];
+
+  if (!hasPinned(pool)) return shuffle(pool).slice(0, limit);
+  const [pinned, ...rest] = pool;
+  return [pinned, ...shuffle(rest).slice(0, Math.max(0, limit - 1))];
+}
+
+/**
+ * One product for an in-content text link.
+ *
+ * Deterministic by seed rather than random: this reads as part of the prose,
+ * so it must not change between a reload and a revisit of the same permalink.
+ * The pinned product is skipped here, since it already has the banner slot.
+ */
+export async function getContextualProduct(seed: string): Promise<AmazonProduct | null> {
+  const pool = await getProductPool();
+  const candidates = hasPinned(pool) ? pool.slice(1) : pool;
+  if (!candidates.length) return null;
+  return candidates[hashSeed(seed) % candidates.length];
 }

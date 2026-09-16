@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
 import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
+import ContextualPick from "@/components/ContextualPick";
 import { indefiniteArticle, withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
 import { getResult } from "@/lib/result-store";
@@ -65,6 +66,9 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <p className="eyebrow">Why the class fits</p>
               <h2 className="display-font mt-3 text-3xl">{result.primary.className}</h2>
               <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{result.primary.whyClass}</p>
+              <Suspense fallback={null}>
+                <ContextualPick lead="Kitting out for the climb?" seed={`${id}:class`} />
+              </Suspense>
             </section>
 
             <div className="lg:hidden"><Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" /></Suspense></div>
@@ -73,6 +77,9 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <p className="eyebrow">Why the race fits</p>
               <h2 className="display-font mt-3 text-3xl">{result.primary.raceName}</h2>
               <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{result.primary.whyRace}</p>
+              <Suspense fallback={null}>
+                <ContextualPick lead="Worth a look while you wait for launch:" seed={`${id}:race`} />
+              </Suspense>
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 {result.primary.racials.map((racial) => (
                   <article key={racial.name} className="rounded-2xl border border-[var(--line)] bg-black/15 p-4">

@@ -28,6 +28,8 @@ AMAZON_CREATORS_VERSION=3.1
 AMAZON_CREATORS_MARKETPLACE=www.amazon.com
 AMAZON_AD_ASINS=
 AMAZON_AD_KEYWORDS=World of Warcraft
+AMAZON_AD_PINNED_ASIN=
+AMAZON_AD_POOL_SIZE=50
 ```
 
 The Upstash aliases `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are also supported. Connect the repository to Vercel and provision Upstash from the Vercel Marketplace. `vercel.json` schedules the authenticated daily keepalive route.
@@ -57,11 +59,42 @@ marketplaces the credential can query:
 | `3.3` | Login with Amazon | JP, IN, AU |
 | `2.1` / `2.2` / `2.3` | Cognito | Legacy equivalents of the above |
 
-Set `AMAZON_AD_ASINS` to a comma-separated list of up to ten ASINs to promote a
-curated set of products. When it is empty the banner falls back to a keyword
-search using `AMAZON_AD_KEYWORDS`.
+### Pool, pinning and rotation
+
+Products are fetched once per cache cycle into a **pool**, then sampled per
+request. Variety therefore costs no extra API calls: one pool refresh every six
+hours is four requests per day against a starting budget of 8,640.
+
+- `AMAZON_AD_ASINS` — a comma-separated list of up to ten ASINs to use as the
+  pool. When empty, the pool is filled by a keyword search.
+- `AMAZON_AD_KEYWORDS` — the search that fills the pool.
+- `AMAZON_AD_POOL_SIZE` — how many products to pull, 1 to 100 (`searchItems`
+  caps `itemCount` at 100). Clamped to that range.
+- `AMAZON_AD_PINNED_ASIN` — an evergreen product that always takes the first
+  banner slot. It is fetched separately, so it appears even when the pool does
+  not contain it, and it is never duplicated further down.
+
+Banner slots after the pinned one are shuffled per request, so a repeat visitor
+does not see the same banner twice. Shuffling happens on the server; doing it in
+a client component would desynchronise the markup React hydrates against.
+
+### Two ad formats
+
+`AmazonBanner` fills the sidebar and inline slots. `ContextualPick` renders an
+in-content text link inside the result prose — the format that actually converts
+for affiliates, since it sits next to the content rather than in a banner slot.
+
+Contextual picks are **deterministic by seed** rather than shuffled, so a shared
+permalink reads the same on every visit. They also skip the pinned product,
+which already has the banner slot. Both formats draw from the same pool, so
+adding the second format costs no additional API calls.
 
 `AdSlot` renders reserved ad space whenever credentials are absent or Amazon is
-unreachable, so a banner never breaks a page. Product data is fetched on the
-server and cached for six hours, which keeps prices inside the 24 hour freshness
-window required by the Associates Program Operating Agreement.
+unreachable, and `ContextualPick` renders nothing at all, so ads never break a
+page. Product data is cached for six hours, which keeps prices inside the 24 hour
+freshness window required by the Associates Program Operating Agreement.
+
+### Local development
+
+Put credentials in `.env.local` (gitignored). The same variables go into the
+Vercel dashboard for preview and production.

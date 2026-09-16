@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { amazonConfig, partnerTag } from "@/lib/amazon-config";
-import { clearAmazonToken, getBannerProducts } from "@/lib/amazon";
+import { clearAmazonToken, getBannerProducts, getContextualProduct, getProductPool } from "@/lib/amazon";
 
 const TOKEN_RESPONSE = { access_token: "token-abc", expires_in: 3600 };
 
@@ -24,7 +24,7 @@ function jsonResponse(body: unknown, status = 200) {
 
 /** Answers the token endpoint and the catalog endpoint from one stub. */
 function stubAmazon(catalog: unknown = CATALOG_RESPONSE, catalogStatus = 200) {
-  return vi.fn(async (input: string | URL | Request, _init?: RequestInit) => {
+  return vi.fn(async (input: string | URL | Request) => {
     const url = typeof input === "string" ? input : input.toString();
     if (url.includes("/auth/o2/token") || url.includes("amazoncognito.com")) return jsonResponse(TOKEN_RESPONSE);
     return jsonResponse(catalog, catalogStatus);
@@ -37,6 +37,7 @@ beforeEach(() => {
   vi.stubEnv("AMAZON_CREATORS_CREDENTIAL_SECRET", "amzn1.oa2-cs.v1.test");
   vi.stubEnv("AMAZON_ASSOCIATE_TAG", "wowforever-20");
   vi.stubEnv("AMAZON_AD_ASINS", "B0TESTASIN");
+  vi.stubEnv("AMAZON_AD_PINNED_ASIN", "");
   // Keep the Redis-backed cache out of the way so tests exercise the API path.
   vi.stubEnv("WOWFOREVER_KV_REST_API_URL", "");
   vi.stubEnv("WOWFOREVER_KV_REST_API_TOKEN", "");
@@ -147,7 +148,8 @@ describe("getBannerProducts", () => {
 
     const [catalogUrl, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
     expect(catalogUrl).toBe("https://creatorsapi.amazon/catalog/v1/searchItems");
-    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ keywords: "warcraft mousepad", itemCount: 3 });
+    // The search now fills the rotation pool, not just the visible slots.
+    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ keywords: "warcraft mousepad", itemCount: 50 });
     expect(products).toHaveLength(1);
   });
 
@@ -194,5 +196,150 @@ describe("getBannerProducts", () => {
   it("drops items that have no title or link", async () => {
     vi.stubGlobal("fetch", stubAmazon({ itemsResult: { items: [{ asin: "B0NOTITLE" }] } }));
     expect(await getBannerProducts(1)).toEqual([]);
+  });
+});
+
+/** Builds a search response with a predictable pool of products. */
+function poolResponse(count: number) {
+  return {
+    searchResult: {
+      items: Array.from({ length: count }, (_, index) => ({
+        asin: `B0POOL${String(index).padStart(3, "0")}`,
+        detailPageURL: `https://www.amazon.com/dp/B0POOL${index}?tag=wowforever-20`,
+        itemInfo: { title: { displayValue: `Pool product ${index}` } },
+      })),
+    },
+  };
+}
+
+describe("pool, pinning and rotation", () => {
+  it("puts the pinned product first and fills the rest from the pool", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
+
+    const fetchMock = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("/auth/o2/token")) return jsonResponse(TOKEN_RESPONSE);
+      if (url.includes("getItems")) {
+        return jsonResponse({
+          itemsResult: {
+            items: [
+              {
+                asin: "B0PINNED01",
+                detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
+                itemInfo: { title: { displayValue: "Evergreen pick" } },
+              },
+            ],
+          },
+        });
+      }
+      return jsonResponse(poolResponse(20));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const products = await getBannerProducts(3);
+    expect(products).toHaveLength(3);
+    expect(products[0].asin).toBe("B0PINNED01");
+    // The pinned product must not be duplicated further down the banner.
+    expect(products.slice(1).some((product) => product.asin === "B0PINNED01")).toBe(false);
+  });
+
+  it("varies the rotating slots across renders without new API calls", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    const fetchMock = stubAmazon(poolResponse(40));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const renders = new Set<string>();
+    for (let i = 0; i < 12; i += 1) {
+      const products = await getBannerProducts(3);
+      renders.add(products.map((product) => product.asin).join(","));
+    }
+
+    // A 40 product pool shuffled 12 times should not land on one arrangement.
+    expect(renders.size).toBeGreaterThan(1);
+
+    const catalogCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes("/catalog/v1/"));
+    expect(catalogCalls).toHaveLength(1);
+  });
+
+  it("keeps the pool within the requested size", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubEnv("AMAZON_AD_POOL_SIZE", "25");
+    const fetchMock = stubAmazon(poolResponse(25));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getProductPool();
+
+    const [, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ itemCount: 25 });
+  });
+
+  it("clamps an out-of-range pool size to what searchItems accepts", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubEnv("AMAZON_AD_POOL_SIZE", "500");
+    const fetchMock = stubAmazon(poolResponse(10));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getProductPool();
+
+    const [, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    expect(JSON.parse(catalogInit.body as string)).toMatchObject({ itemCount: 100 });
+  });
+});
+
+describe("getContextualProduct", () => {
+  it("returns the same product for the same seed", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubGlobal("fetch", stubAmazon(poolResponse(30)));
+
+    const first = await getContextualProduct("result-123:class");
+    const second = await getContextualProduct("result-123:class");
+    expect(first?.asin).toBe(second?.asin);
+  });
+
+  it("returns different products for different seeds", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubGlobal("fetch", stubAmazon(poolResponse(30)));
+
+    const seeds = ["a:class", "b:class", "c:class", "d:race", "e:race", "f:race"];
+    const picks = new Set<string>();
+    for (const seed of seeds) picks.add((await getContextualProduct(seed))!.asin);
+    expect(picks.size).toBeGreaterThan(1);
+  });
+
+  it("never offers the pinned product, which already has the banner slot", async () => {
+    vi.stubEnv("AMAZON_AD_ASINS", "");
+    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL | Request) => {
+        const url = String(input);
+        if (url.includes("/auth/o2/token")) return jsonResponse(TOKEN_RESPONSE);
+        if (url.includes("getItems")) {
+          return jsonResponse({
+            itemsResult: {
+              items: [
+                {
+                  asin: "B0PINNED01",
+                  detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
+                  itemInfo: { title: { displayValue: "Evergreen pick" } },
+                },
+              ],
+            },
+          });
+        }
+        return jsonResponse(poolResponse(15));
+      }),
+    );
+
+    for (const seed of ["one", "two", "three", "four", "five"]) {
+      expect((await getContextualProduct(seed))?.asin).not.toBe("B0PINNED01");
+    }
+  });
+
+  it("returns null when there is nothing to show", async () => {
+    vi.stubEnv("AMAZON_CREATORS_CREDENTIAL_ID", "");
+    expect(await getContextualProduct("seed")).toBeNull();
   });
 });
