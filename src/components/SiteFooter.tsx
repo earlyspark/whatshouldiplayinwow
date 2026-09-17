@@ -4,7 +4,6 @@ import { DATA_CHECKED_LABEL } from "@/data/forever";
 export default function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-[var(--line)] pb-6 pt-8 text-center">
-      {/* Primary link sits on its own line; legal note, data date and credit follow as fine print. */}
       <p className="t-small">
         <Link href="/methodology" className="link-bronze focus-ring">How it works &amp; privacy</Link>
       </p>

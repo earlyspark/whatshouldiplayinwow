@@ -27,7 +27,7 @@ export function ResultFeedbackProvider({ id, children }: { id: string; children:
     const controller = new AbortController();
     let saved: string | null = null;
     try { saved = sessionStorage.getItem(`wow-forever-feedback:${id}`); }
-    catch { /* Session storage is optional; shared pages still render. */ }
+    catch {}
     if (!saved) {
       const frame = requestAnimationFrame(() => setLoading(false));
       return () => { controller.abort(); cancelAnimationFrame(frame); };
@@ -40,7 +40,7 @@ export function ResultFeedbackProvider({ id, children }: { id: string; children:
       signal: controller.signal,
     }).then(async (response) => {
       if (response.status === 401 || response.status === 403 || response.status === 404) {
-        try { sessionStorage.removeItem(`wow-forever-feedback:${id}`); } catch { /* Ignore. */ }
+        try { sessionStorage.removeItem(`wow-forever-feedback:${id}`); } catch {}
         setReceipt(null);
         return;
       }
@@ -68,7 +68,7 @@ export function ResultFeedbackProvider({ id, children }: { id: string; children:
       });
       if (!response.ok) {
         if (response.status === 401 || response.status === 403 || response.status === 404) {
-          try { sessionStorage.removeItem(`wow-forever-feedback:${id}`); } catch { /* Ignore. */ }
+          try { sessionStorage.removeItem(`wow-forever-feedback:${id}`); } catch {}
           setReceipt(null);
           return;
         }

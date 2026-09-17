@@ -8,7 +8,6 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-dynamic";
 
-// Read once at module scope so nothing is re-read per request.
 const [crest, marcellus, garamond, plexMono] = await Promise.all([
   readFile(join(process.cwd(), "assets/crest.png")),
   readFile(join(process.cwd(), "assets/fonts/marcellus.ttf")),

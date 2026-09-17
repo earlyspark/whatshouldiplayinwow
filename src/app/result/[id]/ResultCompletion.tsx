@@ -15,7 +15,7 @@ export default function ResultCompletion({ id }: { id: string }) {
       signal: controller.signal,
     }).then((response) => {
       if (response.ok) sessionStorage.removeItem(key);
-    }).catch(() => { /* Keep the receipt so a reload can retry. */ });
+    }).catch(() => {});
     return () => controller.abort();
   }, [id]);
 

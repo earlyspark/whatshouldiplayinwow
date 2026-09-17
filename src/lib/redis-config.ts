@@ -1,12 +1,3 @@
-/**
- * Resolves Upstash REST credentials from the environment.
- *
- * The Vercel integration namespaces injected variables with a per-project
- * prefix, so the project-specific names take precedence. The unprefixed Vercel
- * KV and Upstash names are kept as fallbacks for alternate setups. Empty values
- * are treated as absent, so placeholder variables copied from .env.example do
- * not register as a configured store.
- */
 const URL_KEYS = [
   "WOWFOREVER_KV_REST_API_URL",
   "KV_REST_API_URL",

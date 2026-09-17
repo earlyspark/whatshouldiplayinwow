@@ -45,7 +45,7 @@ export default function QuizFlow() {
             : 0);
           setAnswers(saved.answers ?? {});
         }
-      } catch { /* Ignore an unreadable draft. */ }
+      } catch {}
       setHydrated(true);
     });
     return () => window.cancelAnimationFrame(frame);
@@ -54,7 +54,7 @@ export default function QuizFlow() {
   useEffect(() => {
     if (!hydrated) return;
     try { sessionStorage.setItem(storageKey, JSON.stringify({ started, index, answers })); }
-    catch { /* The quiz still works when browser storage is unavailable. */ }
+    catch {}
   }, [answers, hydrated, index, started]);
 
   useEffect(() => {
@@ -181,7 +181,7 @@ export default function QuizFlow() {
         sessionStorage.setItem(`wow-forever-completion:${body.id}`, body.receipt);
         sessionStorage.setItem(`wow-forever-feedback:${body.id}`, body.receipt);
         sessionStorage.removeItem(storageKey);
-      } catch { /* Storage restrictions must not strand a completed result. */ }
+      } catch {}
       router.push(`/result/${body.id}`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to create your result.");
@@ -218,7 +218,7 @@ export default function QuizFlow() {
     setError("");
     setAnnouncement("");
     try { sessionStorage.setItem(storageKey, JSON.stringify({ started: true, index: 0, answers: {} })); }
-    catch { /* The quiz still restarts when browser storage is unavailable. */ }
+    catch {}
     if (index === 0) headingRef.current?.focus();
   };
 

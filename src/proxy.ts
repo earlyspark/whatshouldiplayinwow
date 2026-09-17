@@ -16,7 +16,7 @@ export function proxy(request: NextRequest) {
   let credentials = "";
   const authorization = request.headers.get("authorization") ?? "";
   if (authorization.startsWith("Basic ")) {
-    try { credentials = Buffer.from(authorization.slice(6), "base64").toString("utf8"); } catch { /* Invalid credentials. */ }
+    try { credentials = Buffer.from(authorization.slice(6), "base64").toString("utf8"); } catch {}
   }
   const divider = credentials.indexOf(":");
   const username = divider >= 0 ? credentials.slice(0, divider) : "";

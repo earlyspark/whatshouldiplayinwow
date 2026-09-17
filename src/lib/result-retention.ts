@@ -1,4 +1,3 @@
-/** Results expire 12 calendar months after creation. */
 export function resultExpiresAt(createdAt: string): number {
   const created = new Date(createdAt);
   if (!Number.isFinite(created.getTime())) return Number.NaN;

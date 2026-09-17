@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { ANALYTICS_CONSENT_CHANGED_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics-consent";
 import { prepareGtag, trackPageError } from "@/lib/gtag";
 
-/** The global error document replaces the root layout, so it loads its own tag. */
 export default function ErrorAnalytics({ type, loadScript = false }: {
   type: "not_found" | "render_error";
   loadScript?: boolean;

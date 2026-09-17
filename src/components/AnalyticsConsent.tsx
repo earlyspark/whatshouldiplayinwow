@@ -38,7 +38,7 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
           setChoice(saved);
           return;
         }
-      } catch { /* Storage may be unavailable; default to no analytics. */ }
+      } catch {}
       setChoice(null);
     });
     return () => window.cancelAnimationFrame(frame);
@@ -60,7 +60,7 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
   };
 
   const choose = (next: Choice) => {
-    try { localStorage.setItem(ANALYTICS_CONSENT_KEY, next); } catch { /* Keep the choice for this visit. */ }
+    try { localStorage.setItem(ANALYTICS_CONSENT_KEY, next); } catch {}
     if (next === "accepted") {
       prepareGtag();
       window.dispatchEvent(new Event(ANALYTICS_CONSENT_CHANGED_EVENT));

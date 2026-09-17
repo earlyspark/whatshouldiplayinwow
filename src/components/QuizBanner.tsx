@@ -5,7 +5,6 @@ import AmazonProductLink from "@/components/AmazonProductLink";
 import type { AmazonProduct } from "@/lib/amazon";
 
 interface QuizBannerProps {
-  /** Zero-based question index. Advancing the quiz advances the product. */
   questionIndex: number;
   layout?: "banner" | "sidebar";
   pool: ProductPoolResponse;
@@ -18,7 +17,6 @@ interface ProductPoolResponse {
   pinnedAsin: string | null;
 }
 
-/** Load the shared pool once, even though mobile and desktop have separate placements. */
 export function useQuizProductPool() {
   const [pool, setPool] = useState<ProductPoolResponse>({ products: [], pinnedAsin: null });
   const [visitOffset, setVisitOffset] = useState(0);
@@ -46,7 +44,6 @@ export function useQuizProductPool() {
   return { pool, visitOffset, loaded };
 }
 
-/** A six-hour search pool, with a stable rotation during this page visit. */
 export default function QuizBanner({ questionIndex, layout = "banner", pool, visitOffset, loaded }: QuizBannerProps) {
   const pinned = pool.products.find((product) => product.asin === pool.pinnedAsin);
   const rotating = pool.products.filter((product) => product.asin !== pool.pinnedAsin);

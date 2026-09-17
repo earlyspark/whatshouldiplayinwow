@@ -20,9 +20,7 @@ const RANK_FACTORS: Record<number, number[]> = {
   3: [5 / 9, 3 / 9, 1 / 9],
 };
 
-// Combination signals reward specific roles without making any one answer an
-// exclusion. The strongest bonus is 3.5 weighted points: below a full Q4
-// answer (6) and well below a direct fighting-style answer (9).
+// Strongest bonus is 3.5 weighted points: below a full Q4 answer (6) and a direct fighting-style answer (9).
 const q4CombinationBonuses: {
   choices: string[];
   anchors?: [string, string];

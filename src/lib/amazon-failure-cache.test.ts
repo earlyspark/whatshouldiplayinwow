@@ -40,7 +40,7 @@ it("stores a short shared cooldown after an Amazon failure", async () => {
 
   expect(await getProductPool()).toEqual([]);
   expect(redisCalls.set).toHaveBeenCalledWith(expect.stringContaining(":asins:B0TESTASIN"), "[]", { ex: 90 });
-  clearAmazonToken(); // Simulate a fresh process reading the shared Redis cooldown.
+  clearAmazonToken();
   expect(await getProductPool()).toEqual([]);
-  expect(fetchMock).toHaveBeenCalledTimes(2); // One token exchange and one failed catalog call.
+  expect(fetchMock).toHaveBeenCalledTimes(2);
 });

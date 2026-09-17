@@ -10,10 +10,6 @@ interface AmazonProductLinkProps {
   children: React.ReactNode;
 }
 
-/**
- * Click-tracked affiliate link. The href comes from Amazon's detailPageURL, so
- * the partner tag is already attached and must not be rewritten.
- */
 export default function AmazonProductLink({ href, asin, placement, className, children }: AmazonProductLinkProps) {
   const trackClick = () => {
     trackEvent("ad_click", { placement, destination_host: "amazon", item_id: asin });

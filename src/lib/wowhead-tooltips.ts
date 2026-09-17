@@ -1,8 +1,5 @@
 import type { RaceId } from "@/data/forever";
 
-// These are the racial spell links in Wowhead's Forever combinations guide.
-// Not every announced racial has a linked spell page yet, and some linked spell
-// tooltips still show older values than the guide's current racial table.
 const racialSpellIds: Partial<Record<RaceId, Record<string, number>>> = {
   human: { "Perception": 20600, "Sword Specialization": 20597, "The Human Spirit": 20598 },
   dwarf: { "Find Treasure": 2481, "Stoneform": 20594 },

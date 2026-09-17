@@ -22,7 +22,6 @@ function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-/** Answers the token endpoint and the catalog endpoint from one stub. */
 function stubAmazon(catalog: unknown = CATALOG_RESPONSE, catalogStatus = 200) {
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input.toString();
@@ -160,7 +159,6 @@ describe("getBannerProducts", () => {
 
     const [catalogUrl, catalogInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
     expect(catalogUrl).toBe("https://creatorsapi.amazon/catalog/v1/searchItems");
-    // The search now fills the rotation pool, not just the visible slots.
     expect(JSON.parse(catalogInit.body as string)).toMatchObject({ keywords: "warcraft mousepad", itemCount: 10, itemPage: 1 });
     expect(JSON.parse(catalogInit.body as string).resources).not.toContain("offersV2.listings.price");
     expect(products).toHaveLength(1);
@@ -236,7 +234,6 @@ describe("getBannerProducts", () => {
   });
 });
 
-/** Builds a search response with a predictable pool of products. */
 function poolResponse(count: number) {
   return {
     searchResult: {
@@ -277,7 +274,6 @@ describe("pool, pinning and rotation", () => {
     const products = await getBannerProducts(3);
     expect(products).toHaveLength(3);
     expect(products[0].asin).toBe("B0PINNED01");
-    // The pinned product must not be duplicated further down the banner.
     expect(products.slice(1).some((product) => product.asin === "B0PINNED01")).toBe(false);
   });
 
@@ -309,11 +305,10 @@ describe("pool, pinning and rotation", () => {
       renders.add(products.map((product) => product.asin).join(","));
     }
 
-    // A 40 product pool shuffled 12 times should not land on one arrangement.
     expect(renders.size).toBeGreaterThan(1);
 
     const catalogCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes("/catalog/v1/"));
-    expect(catalogCalls).toHaveLength(5); // Four full pages, then an empty end-of-results page.
+    expect(catalogCalls).toHaveLength(5);
   });
 
   it("keeps the pool within the requested size", async () => {
@@ -421,10 +416,10 @@ describe("keyword overrides", () => {
 
     await getProductPool("World of Warcraft Druid");
     await getProductPool("World of Warcraft Mage");
-    await getProductPool("World of Warcraft Druid"); // served from cache
+    await getProductPool("World of Warcraft Druid");
 
     const searches = fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"));
-    expect(searches).toHaveLength(2); // One request per distinct result query.
+    expect(searches).toHaveLength(2);
   });
 
   it("fills a four-product result sidebar from one class-specific search", async () => {

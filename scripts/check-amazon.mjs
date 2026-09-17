@@ -1,10 +1,3 @@
-/**
- * Verifies Amazon Creators API credentials outside the app.
- *
- * Run with `npm run amazon:check`. Reports which step failed rather than a bare
- * stack trace, because the usual causes (wrong version for the marketplace, a
- * tag that is not yet approved) all surface as opaque 4xx responses.
- */
 import { readFileSync } from "node:fs";
 
 const VERSION_ENDPOINTS = {
@@ -16,8 +9,6 @@ const VERSION_ENDPOINTS = {
   "3.3": "https://api.amazon.co.jp/auth/o2/token",
 };
 
-// Read .env.local directly so the check does not depend on a Node version or a
-// dotenv dependency the project does not otherwise need.
 function loadEnvFile(path) {
   try {
     for (const line of readFileSync(path, "utf8").split("\n")) {
@@ -38,7 +29,6 @@ console.log(found ? "Read .env.local" : "No .env.local found, using the current 
 const id = process.env.AMAZON_CREATORS_CREDENTIAL_ID;
 const secret = process.env.AMAZON_CREATORS_CREDENTIAL_SECRET;
 const tag = process.env.AMAZON_ASSOCIATE_TAG ?? process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG;
-// Match the app, which accepts "v3.1" as well as "3.1".
 const version = (process.env.AMAZON_CREATORS_VERSION ?? "3.1").replace(/^v/i, "");
 const marketplace = process.env.AMAZON_CREATORS_MARKETPLACE ?? "www.amazon.com";
 const keywords = process.env.AMAZON_AD_KEYWORDS ?? "World of Warcraft";
@@ -67,7 +57,6 @@ const isLwa = version.startsWith("3.");
 console.log(`Version ${version} (${isLwa ? "Login with Amazon" : "Cognito"}), marketplace ${marketplace}`);
 console.log(`Partner tag ${tag}\n`);
 
-// Step 1: exchange the credential for a bearer token.
 const body = {
   grant_type: "client_credentials",
   client_id: id,
@@ -92,7 +81,6 @@ if (!tokenResponse.ok) {
 const { access_token: token } = await tokenResponse.json();
 console.log("Step 1 OK: got a bearer token");
 
-// Step 2: a real catalog call, which is where tag and marketplace problems show.
 async function catalog(operation, payload) {
   return fetch(`https://creatorsapi.amazon/catalog/v1/${operation}`, {
     method: "POST",
@@ -126,7 +114,6 @@ for (const item of items.slice(0, 3)) {
   console.log(`   - ${item.itemInfo?.title?.displayValue ?? item.asin}`);
 }
 
-// Step 3: the pinned ASIN, which fails independently of the search.
 if (pinned) {
   const pinnedResponse = await catalog("getItems", { itemIds: [pinned] });
   if (!pinnedResponse.ok) {

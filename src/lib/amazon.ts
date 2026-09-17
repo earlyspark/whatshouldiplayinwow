@@ -10,19 +10,6 @@ import {
   type AmazonConfig,
 } from "@/lib/amazon-config";
 
-/**
- * Minimal Amazon Creators API client for affiliate banner content.
- *
- * Flow: exchange the credential id/secret for a bearer token via the OAuth2
- * client_credentials grant, then POST to the catalog endpoints. Tokens live for
- * an hour, so they are cached in module scope and refreshed with a safety
- * buffer rather than requested per call, which is the fastest way to get
- * throttled.
- *
- * Product identity, titles, images, and links are cached separately. Offer
- * prices are not requested or displayed because they require a shorter TTL.
- */
-
 const TOKEN_EXPIRY_BUFFER_SECONDS = 30;
 const DEFAULT_TOKEN_LIFETIME_SECONDS = 3600;
 const PRODUCT_TTL_SECONDS = 6 * 60 * 60;
@@ -60,10 +47,6 @@ const memoryCache =
 const inFlight = new Map<string, Promise<AmazonProduct[]>>();
 if (process.env.NODE_ENV !== "production") globalThis.__amazonProducts = memoryCache;
 
-/* -------------------------------------------------------------------------- */
-/* Response parsing                                                           */
-/* -------------------------------------------------------------------------- */
-
 const imageSizeSchema = z.object({
   url: z.string().optional(),
   height: z.number().optional(),
@@ -99,10 +82,6 @@ function toProduct(item: CatalogItem): AmazonProduct | null {
     imageHeight: image?.height ?? null,
   };
 }
-
-/* -------------------------------------------------------------------------- */
-/* Authentication                                                             */
-/* -------------------------------------------------------------------------- */
 
 async function fetchToken(config: AmazonConfig): Promise<string> {
   const body = {
@@ -144,15 +123,10 @@ async function accessToken(config: AmazonConfig): Promise<string> {
   return fetchToken(config);
 }
 
-/** Exported for tests. Drops the cached token so the next call re-authenticates. */
 export function clearAmazonToken() {
   globalThis.__amazonToken = undefined;
   memoryCache.clear();
 }
-
-/* -------------------------------------------------------------------------- */
-/* Catalog requests                                                           */
-/* -------------------------------------------------------------------------- */
 
 async function callCatalog(config: AmazonConfig, operation: string, payload: Record<string, unknown>) {
   const token = await accessToken(config);
@@ -170,8 +144,6 @@ async function callCatalog(config: AmazonConfig, operation: string, payload: Rec
   });
 
   if (response.status === 401 || response.status === 403) {
-    // A rejected token is worth one retry; a stale cached token looks the same
-    // as revoked credentials until we try again with a fresh one.
     clearAmazonToken();
     throw new Error(`Amazon catalog request was rejected with status ${response.status}`);
   }
@@ -182,10 +154,6 @@ async function callCatalog(config: AmazonConfig, operation: string, payload: Rec
   const items = parsed.data.itemsResult?.items ?? parsed.data.searchResult?.items ?? [];
   return items.map(toProduct).filter((product): product is AmazonProduct => product !== null);
 }
-
-/* -------------------------------------------------------------------------- */
-/* Caching                                                                    */
-/* -------------------------------------------------------------------------- */
 
 function redis() {
   const config = redisConfig();
@@ -206,7 +174,7 @@ async function cached(key: string, load: () => Promise<AmazonProduct[]>): Promis
         const parsed = z.array(z.custom<AmazonProduct>()).safeParse(value);
         if (parsed.success) return parsed.data;
       }
-    } catch { /* Refill a malformed cache entry. */ }
+    } catch {}
   }
 
   const pending = inFlight.get(cacheKey);
@@ -230,10 +198,6 @@ async function cached(key: string, load: () => Promise<AmazonProduct[]>): Promis
   finally { inFlight.delete(cacheKey); }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Public API                                                                 */
-/* -------------------------------------------------------------------------- */
-
 export async function getItemsByAsin(asins: string[], config: AmazonConfig) {
   if (!asins.length) return [];
   return callCatalog(config, "getItems", { itemIds: asins });
@@ -255,29 +219,15 @@ async function searchPool(keywords: string, size: number, config: AmazonConfig) 
   return [...products.values()].slice(0, size);
 }
 
-/**
- * The pool every placement draws from, cached and fail-safe.
- *
- * One pool is fetched per cache cycle and then sampled per request, which is
- * what lets the page vary products without spending an API call per view. The
- * pinned product is fetched separately for the general quiz pool. Result
- * searches are a separate contextual pool without the generic pinned item.
- *
- * Returns an empty array whenever credentials are missing or Amazon is
- * unreachable, so an ad never takes the page down with it.
- */
+/** Returns [] whenever credentials are missing or Amazon fails, so an ad never breaks the page. */
 export async function getProductPool(overrideKeywords?: string): Promise<AmazonProduct[]> {
   const config = amazonConfig();
   if (!config) return [];
 
   const { asins: configuredAsins, keywords: defaultKeywords, pinnedAsin, poolSize } = adSelection();
-  // An explicit query always means a search, so a curated ASIN list does not
-  // silently override a caller asking for something context-specific.
   const asins = overrideKeywords ? [] : configuredAsins;
   const keywords = overrideKeywords ?? defaultKeywords;
-  // A contextual result needs only four visible products. Limit each distinct
-  // class query to one catalog request so a popular result does not exhaust
-  // Amazon's search quota while still leaving products to rotate.
+  // One catalog request per class query, to spare Amazon's search quota.
   const searchSize = overrideKeywords ? Math.min(poolSize, 10) : poolSize;
   const poolKey = asins.length
     ? `${config.marketplace}:asins:${asins.join("-")}`
@@ -297,7 +247,6 @@ export async function getProductPool(overrideKeywords?: string): Promise<AmazonP
     if (pinnedResult.status === "rejected") console.error("Amazon pinned product fetch failed", pinnedResult.reason);
     const pool = poolResult.status === "fulfilled" ? poolResult.value : [];
     const pinned = pinnedResult.status === "fulfilled" ? pinnedResult.value : [];
-    // The pinned product leads and must not also appear further down the list.
     const rest = pool.filter((product) => product.asin !== pinnedAsin);
     return [...pinned, ...rest];
   } catch (error) {
@@ -306,14 +255,12 @@ export async function getProductPool(overrideKeywords?: string): Promise<AmazonP
   }
 }
 
-/** Whether the first pool entry is the configured evergreen product. */
 function hasPinned(pool: AmazonProduct[], keywords?: string) {
   if (keywords) return false;
   const { pinnedAsin } = adSelection();
   return Boolean(pinnedAsin) && pool[0]?.asin === pinnedAsin;
 }
 
-/** Stable 32-bit hash, so a given seed always yields the same pick. */
 function hashSeed(seed: string) {
   let hash = 2166136261;
   for (let i = 0; i < seed.length; i += 1) {
@@ -323,7 +270,6 @@ function hashSeed(seed: string) {
   return Math.abs(hash);
 }
 
-/** Fisher-Yates, so every product has an equal chance of a placement. */
 function shuffle<T>(items: T[]): T[] {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -333,14 +279,7 @@ function shuffle<T>(items: T[]): T[] {
   return copy;
 }
 
-/**
- * Products for a banner placement.
- *
- * The pinned product keeps the first slot and the remaining slots are drawn
- * fresh per request, so a repeat visitor does not see the same banner twice.
- * Shuffling happens here on the server; doing it in a client component would
- * desynchronise the markup React hydrates against.
- */
+/** Shuffled on the server; shuffling in a client component would break hydration. */
 export async function getBannerProducts(limit: number, keywords?: string, focusTerm?: string): Promise<AmazonProduct[]> {
   const pool = await getProductPool(keywords);
   if (!pool.length) return [];
@@ -353,13 +292,7 @@ export async function getBannerProducts(limit: number, keywords?: string, focusT
   return [pinned, ...shuffle(rest).slice(0, Math.max(0, limit - 1))];
 }
 
-/**
- * One product for an in-content text link.
- *
- * Deterministic by seed rather than random: this reads as part of the prose,
- * so it must not change between a reload and a revisit of the same permalink.
- * The generic pinned product is skipped when it already has the quiz banner slot.
- */
+/** Deterministic by seed so a shared permalink shows the same product on every visit. */
 export async function getContextualProduct(seed: string, keywords?: string, focusTerm?: string): Promise<AmazonProduct | null> {
   const pool = await getProductPool(keywords);
   const candidates = (hasPinned(pool, keywords) ? pool.slice(1) : pool)

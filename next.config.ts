@@ -3,9 +3,7 @@ import { contentSecurityPolicy } from "./src/lib/content-security-policy";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // The generated Open Graph routes read these files at module load, including
-  // while Next.js resolves page metadata. Webpack cannot trace the dynamic
-  // process.cwd() paths, so ship them with every route that may load metadata.
+  // Webpack can't trace the OG routes' process.cwd() file reads, so ship them explicitly.
   outputFileTracingIncludes: {
     "/*": ["./assets/crest.png", "./assets/fonts/*.ttf"],
   },

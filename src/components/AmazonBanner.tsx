@@ -4,22 +4,10 @@ import { getBannerProducts } from "@/lib/amazon";
 
 interface AmazonBannerProps {
   placement: "sidebar" | "inline";
-  /** Overrides the configured pool query, e.g. to match a quiz result. */
   keywords?: string;
-  /** Keep contextual products aligned with the primary recommendation. */
   focusTerm?: string;
 }
 
-/**
- * Affiliate banner backed by the Amazon Creators API.
- *
- * Amazon retired the old static banner and iframe creatives with PA-API 5.0, so
- * a banner is now built from catalog data the API returns. Rendering happens on
- * the server: the credentials never reach the browser, and the products are
- * cached so a page view does not mean an API call.
- *
- * Falls back to the reserved ad space whenever there is nothing to show.
- */
 export default async function AmazonBanner({ placement, keywords, focusTerm }: AmazonBannerProps) {
   const limit = 4;
   const products = await getBannerProducts(limit, keywords, focusTerm);
@@ -46,8 +34,7 @@ export default async function AmazonBanner({ placement, keywords, focusTerm }: A
             className="focus-ring group flex flex-col gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/[.04]"
           >
             {product.imageUrl && (
-              // Amazon requires product images to be served unmodified from its
-              // own CDN, so next/image optimisation is deliberately not used.
+              // Amazon requires product images served unmodified from its CDN.
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={product.imageUrl}

@@ -1,13 +1,5 @@
 import { redactedPageUrl } from "@/lib/analytics-url";
 
-/**
- * Google Analytics event helpers.
- *
- * gtag is only loaded on production deployments, so every call here is a no-op
- * during local development and on preview deployments. Hits use the beacon
- * transport so events queued while the page is unloading are not dropped.
- */
-
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
@@ -44,7 +36,6 @@ export function trackPageView(measurementId: string, pathname: string) {
   });
 }
 
-/** Group error routes without sending unknown paths or shareable result IDs. */
 export function errorRouteGroup(pathname: string) {
   if (/^\/result\/[^/]+\/?$/.test(pathname)) return "/result/[id]";
   if (pathname === "/" || pathname === "/methodology" || pathname === "/stats") return pathname;

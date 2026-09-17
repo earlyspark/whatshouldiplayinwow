@@ -1,9 +1,5 @@
 import { Marcellus, EB_Garamond, IBM_Plex_Mono } from "next/font/google";
 
-/**
- * Self-hosted at build time, so there is no third-party request, no layout
- * shift, and no silent fallback to a system face.
- */
 export const display = Marcellus({
   subsets: ["latin"],
   weight: "400",

@@ -1,11 +1,3 @@
-/**
- * Resolves the canonical origin for metadata, sitemaps, and share links.
- *
- * Production sets NEXT_PUBLIC_SITE_URL to the custom domain. Preview
- * deployments leave it unset and fall back to the deployment's own hostname,
- * so preview canonical tags and Open Graph images reference the preview
- * rather than production.
- */
 function resolveSiteUrl() {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
   if (explicit) return explicit;

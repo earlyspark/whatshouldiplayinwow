@@ -1,17 +1,3 @@
-/**
- * Resolves Amazon Creators API credentials from the environment.
- *
- * Amazon retired the Product Advertising API (PA-API 5.0) on 15 May 2026 and
- * replaced it with the Creators API. The two differ at the auth layer: PA-API
- * signed every request with AWS Signature V4, while the Creators API issues a
- * short-lived OAuth2 bearer token from a credential id and secret created in
- * Associates Central.
- *
- * Empty values are treated as absent, so placeholder variables copied from
- * .env.example do not register as configured credentials.
- */
-
-/** Token endpoint for each credential version. 2.x uses Cognito, 3.x uses Login with Amazon. */
 const VERSION_ENDPOINTS: Record<string, string> = {
   "2.1": "https://creatorsapi.auth.us-east-1.amazoncognito.com/oauth2/token",
   "2.2": "https://creatorsapi.auth.eu-south-2.amazoncognito.com/oauth2/token",
@@ -23,18 +9,14 @@ const VERSION_ENDPOINTS: Record<string, string> = {
 
 export const CREATORS_API_HOST = "https://creatorsapi.amazon";
 
-/** The version family decides the scope, the token encoding, and the Authorization format. */
 export const COGNITO_SCOPE = "creatorsapi/default";
 export const LWA_SCOPE = "creatorsapi::default";
 
 export interface AmazonConfig {
   credentialId: string;
   credentialSecret: string;
-  /** Credential version from Associates Central, e.g. "3.1". Decides the token endpoint. */
   version: string;
-  /** Target locale sent as the x-marketplace header, e.g. "www.amazon.com". */
   marketplace: string;
-  /** Associates tracking id appended to every outbound link, e.g. "mytag-20". */
   partnerTag: string;
   tokenEndpoint: string;
   isLwa: boolean;
@@ -78,26 +60,16 @@ export function hasAmazonConfig() {
   return Boolean(amazonConfig());
 }
 
-/** SearchItems accepts 10 items per page and up to 10 pages. */
 const MAX_POOL_SIZE = 100;
 const DEFAULT_POOL_SIZE = 50;
 
-/**
- * Which products fill the rotation pool.
- *
- * A pool is fetched once per cache cycle and then sampled per request, so
- * variety costs no extra API calls. An explicit ASIN list wins when set;
- * otherwise a keyword search fills the pool.
- *
- * The pinned ASIN is separate: it always occupies the first slot, so an
- * evergreen product is guaranteed a placement no matter what the pool holds.
- */
+/** Explicit ASINs win over keywords; the pinned ASIN always takes the first slot. */
 export function adSelection() {
   const asins = (value("AMAZON_AD_ASINS") ?? "")
     .split(",")
     .map((asin) => asin.trim().toUpperCase())
     .filter(Boolean)
-    .slice(0, 10); // getItems accepts at most 10 item ids per request
+    .slice(0, 10);
 
   const requestedPool = Number(value("AMAZON_AD_POOL_SIZE") ?? DEFAULT_POOL_SIZE);
   const poolSize = Number.isFinite(requestedPool)

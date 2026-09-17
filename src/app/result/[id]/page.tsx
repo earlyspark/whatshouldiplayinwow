@@ -47,8 +47,6 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const quizChanged = result.quizVersion !== QUIZ_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;
   const summary = `This pick balances ${result.primary.classTagline} with ${result.primary.raceTagline}.`;
-  // Ties the result page ads to the pick the reader just received, rather than
-  // the generic pool the quiz pages rotate through.
   const resultKeywords = `World of Warcraft ${result.primary.className}`;
   const hasWowheadTooltips = result.primary.racials.some((racial) => wowheadRacialUrl(result.primary.raceId, racial.name));
 
