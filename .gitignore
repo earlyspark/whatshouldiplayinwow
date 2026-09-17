@@ -5,6 +5,10 @@ coverage/
 .env*
 AGENTS.md
 CLAUDE.md
+agents.md
+claude.md
+docs/QUIZ_SCORING_HISTORY.local.md
+docs/adsense-setup.md
 *.tsbuildinfo
 .DS_Store
 npm-debug.log*

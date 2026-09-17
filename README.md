@@ -36,12 +36,6 @@ Some questions take a single answer. Others ask you to **rank** up to three pick
 
 Your unfinished answers are kept in the current tab. The restart control begins again at question one; clicking the logo clears the unfinished quiz and returns to the start screen.
 
-## Ads and privacy choices
-
-Amazon affiliate products appear on the quiz and result pages. The site also has a compact Google AdSense placement: on desktop it sits below the Amazon products, while on mobile quiz screens it sits below the quiz, above the footer. The result page places it below Amazon. Unfilled ad units collapse once Google reports that no ad was returned. The [AdSense setup notes](docs/adsense-setup.md) cover the remaining account activation steps. AdSense approval and available ad inventory determine whether a live ad appears.
-
-In the EEA, UK, and Switzerland, Google's three-choice consent message handles ads and analytics. Elsewhere, a single site banner offers Accept and Decline for both. Visitors can reopen their choices from the [privacy page](https://www.whatshouldiplayinwowforever.com/methodology#privacy). For a local layout preview, run `npm run dev` and open `http://127.0.0.1:3000/?previewAds=1`; the placeholder shows the ad area without requesting a real ad.
-
 ## How scoring works
 
 The scoring is deterministic. There's no randomness and no AI involved, so the same answers and the same game data always give the same result.
