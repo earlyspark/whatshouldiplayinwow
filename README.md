@@ -32,7 +32,7 @@ The quiz covers:
 12. Up to three things that would annoy you most
 13. Whether you want a focused class identity or room to change jobs and tactics
 
-Some questions take a single answer. Others ask you to **rank** up to three picks (two for character fantasy). For question 12, “None of these” is a standalone answer.
+Some questions take a single answer. Others ask you to **rank** up to three picks (two for character fantasy). 
 
 Your unfinished answers are kept in the current tab. The restart control begins again at question one; clicking the logo clears the unfinished quiz and returns to the start screen.
 
