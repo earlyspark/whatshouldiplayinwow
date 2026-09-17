@@ -7,8 +7,8 @@ import { getCreatorBookProduct } from "@/lib/amazon";
 export default async function CreatorShopCard() {
   const book = await getCreatorBookProduct();
   return (
-    <aside className="surface w-full p-5" aria-label="From the creator">
-      <p className="t-label text-[var(--dim)]">From the creator</p>
+    <aside className="surface w-full p-5" aria-label="Hey, i made this">
+      <p className="t-label text-[var(--dim)]">Hey, i made this</p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <CreatorShopLink>
           <Image
@@ -28,6 +28,9 @@ export default async function CreatorShopCard() {
             <span className="t-small line-clamp-3 text-[var(--dim)] group-hover:text-[var(--bone)]">{book.title}</span>
           </AmazonProductLink>}
       </div>
+      <p className="t-small mt-4 text-[var(--dim)]">
+        Visit my <a href="https://earlyspark.etsy.com" target="_blank" rel="noopener noreferrer" className="focus-ring underline underline-offset-2 hover:text-[var(--bone)]">Etsy store</a> and shop my coloring book on Amazon. Clicks help offset the cost of this fun, free quiz!
+      </p>
     </aside>
   );
 }
