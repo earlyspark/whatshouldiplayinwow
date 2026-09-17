@@ -9,12 +9,35 @@ const prefix = "wow-forever:result-feedback:v1";
 const voteScript = `
   local previous = redis.call("HGET", KEYS[1], ARGV[1])
   if previous == ARGV[2] then return 0 end
+  local versionPrefix = "version:" .. ARGV[5] .. ":feedback:"
+  local trackedField = "tracked:" .. ARGV[1]
+  local wasTracked = redis.call("HGET", KEYS[1], trackedField) == "1"
+  local function adjustPairs(amount)
+    for _, alternative in ipairs({"runner-up-1", "runner-up-2"}) do
+      local primary = redis.call("HGET", KEYS[1], "primary")
+      local other = redis.call("HGET", KEYS[1], alternative)
+      if primary and other
+        and redis.call("HGET", KEYS[1], "tracked:primary") == "1"
+        and redis.call("HGET", KEYS[1], "tracked:" .. alternative) == "1" then
+        redis.call("HINCRBY", KEYS[2], versionPrefix .. "paired:" .. alternative .. ":" .. primary .. ":" .. other, amount)
+      end
+    end
+  end
+  adjustPairs(-1)
   if previous then
     redis.call("HINCRBY", KEYS[2], "feedback:" .. ARGV[1] .. ":" .. previous, -1)
+    if wasTracked then
+      redis.call("HINCRBY", KEYS[2], versionPrefix .. ARGV[1] .. ":" .. previous, -1)
+      redis.call("HINCRBY", KEYS[2], versionPrefix .. "class:" .. ARGV[6] .. ":" .. ARGV[1] .. ":" .. previous, -1)
+    end
   end
   redis.call("HSET", KEYS[1], ARGV[1], ARGV[2])
+  redis.call("HSET", KEYS[1], trackedField, "1")
   redis.call("EXPIREAT", KEYS[1], tonumber(ARGV[3]))
   redis.call("HINCRBY", KEYS[2], "feedback:" .. ARGV[1] .. ":" .. ARGV[2], 1)
+  redis.call("HINCRBY", KEYS[2], versionPrefix .. ARGV[1] .. ":" .. ARGV[2], 1)
+  redis.call("HINCRBY", KEYS[2], versionPrefix .. "class:" .. ARGV[6] .. ":" .. ARGV[1] .. ":" .. ARGV[2], 1)
+  adjustPairs(1)
   redis.call("SADD", KEYS[3], ARGV[4])
   return 1
 `;
@@ -80,10 +103,11 @@ export async function saveResultVote(result: SavedResult, position: FeedbackPosi
     return changed === 1;
   }
   const month = result.createdAt.slice(0, 7);
+  const classId = position === "primary" ? result.primary.classId : result.alternatives[position === "runner-up-1" ? 0 : 1].classId;
   const changed = await feedbackRedis().eval<string[], number>(
     voteScript,
     [feedbackKey(result.id), quizStatsMonthKey(month), quizStatsMonthsKey],
-    [position, vote, String(Math.ceil(expiry / 1000)), month],
+    [position, vote, String(Math.ceil(expiry / 1000)), month, result.quizVersion, classId],
   );
   return changed === 1;
 }

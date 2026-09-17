@@ -20,7 +20,7 @@ const RANK_FACTORS: Record<number, number[]> = {
   3: [5 / 9, 3 / 9, 1 / 9],
 };
 
-// Strongest bonus is 3.5 weighted points: below a full Q4 answer (6) and a direct fighting-style answer (9).
+// Strongest bonus is 3 weighted points: below a full Q4 answer (6) and a direct fighting-style answer (9).
 const q4CombinationBonuses: {
   choices: string[];
   anchors?: [string, string];
@@ -31,8 +31,8 @@ const q4CombinationBonuses: {
   { choices: ["heal", "damage"], label: "healing while dealing damage", classes: { priest: 1.5, paladin: 0.5, shaman: 0.5, druid: 0.5 } },
   { choices: ["protect", "heal"], label: "protecting and healing allies", classes: { priest: 1.25, paladin: 0.5, druid: 0.5, shaman: 0.5 } },
   { choices: ["protect", "damage"], label: "protecting allies while dealing damage", classes: { warrior: 1, warlock: 0.75, hunter: 0.75, paladin: 0.25, druid: 0.25 } },
-  { choices: ["protect", "damage", "control"], anchors: ["protect", "damage"], label: "protecting, damaging, and disrupting enemies", classes: { warlock: 1.75, hunter: 0.75, priest: 0.5, druid: 0.5, warrior: 0.25 } },
-  { choices: ["protect", "damage", "adapt"], anchors: ["protect", "damage"], label: "protecting, damaging, and changing roles", classes: { druid: 1.5, paladin: 1.25, shaman: 1.25, priest: 0.5, warrior: 0.5 } },
+  { choices: ["protect", "damage", "control"], anchors: ["protect", "damage"], label: "protecting, damaging, and disrupting enemies", classes: { warlock: 1.25, hunter: 0.75, priest: 0.5, druid: 0.5, warrior: 0.25 } },
+  { choices: ["protect", "damage", "adapt"], anchors: ["protect", "damage"], label: "protecting, damaging, and changing roles", classes: { druid: 1.5, paladin: 1.25, shaman: 0.75, priest: 0.5, warrior: 0.5 } },
 ];
 
 interface ScoreSignal {

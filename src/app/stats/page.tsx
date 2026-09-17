@@ -4,6 +4,7 @@ import { classes, races } from "@/data/forever";
 import { questions } from "@/data/questions";
 import { feedbackPositions } from "@/lib/feedback-types";
 import { readMonthlyQuizStats, type MonthlyQuizStats } from "@/lib/quiz-stats";
+import { VersionFeedback } from "./VersionFeedback";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Quiz stats", robots: { index: false, follow: false } };
@@ -103,7 +104,7 @@ export default async function StatsPage() {
   const months = await readMonthlyQuizStats();
   const allTime = combinedCounts(months);
   const versionIds = [...new Set(Object.keys(allTime).flatMap((key) => {
-    const match = key.match(/^version:([^:]+):result:class:/);
+    const match = key.match(/^version:([^:]+):(?:result:class:|feedback:)/);
     return match ? [match[1]] : [];
   }))].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
   return (
@@ -127,6 +128,7 @@ export default async function StatsPage() {
               {classes.reduce((total, item) => total + (allTime[`version:${version}:result:class:${item.id}`] ?? 0), 0).toLocaleString()} completed results counted since version-separated tracking began.
             </p>
             <ResultsBreakdown counts={allTime} prefix={`version:${version}:`} />
+            <VersionFeedback counts={allTime} version={version} />
           </section>
         ))}
         {months.map((month) => <StatsSection key={month.month} title={month.month} counts={month.counts} />)}

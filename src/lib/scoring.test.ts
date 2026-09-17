@@ -152,7 +152,7 @@ describe("quiz definition", () => {
 
   it("contrasts saved cooldown windows with sustained ability use without changing Q6 scoring", () => {
     const q6 = questions.find((question) => question.id === "q6")!;
-    expect(QUIZ_VERSION).toBe("1.21.0");
+    expect(QUIZ_VERSION).toBe("1.22.0");
     expect(q6.options.find((option) => option.id === "wait-opening")?.label).toBe("Hold my big cooldowns for an opening");
     expect(q6.options.find((option) => option.id === "stick-plan")?.label).toBe("Keep my core abilities rolling through the chaos");
     expect(q6.options.find((option) => option.id === "stick-plan")?.description).toContain("damage, healing, or control");
@@ -336,6 +336,58 @@ describe("scoring", () => {
     expect((scoring.q4.damage.classes!.warrior! - 2) * questionWeights.q4.class * firstOfThree).toBeCloseTo(10 / 9);
     expect((scoring.q5["quick-melee"].classes!.warrior! - 1) * questionWeights.q5.class * firstOfThree).toBeCloseTo(5 / 3);
     expect(scoring.q8.duo.classes!.warrior! * questionWeights.q8.class * firstOfThree).toBeCloseTo(10 / 9);
+  });
+
+  it("credits quick Mage control and open-world utility without eclipsing direct adventure specialists", () => {
+    expect(scoring.q6["act-fast"].classes?.mage).toBe(3);
+    expect(scoring.q6["wait-opening"].classes?.mage).toBe(3);
+    expect(scoring.q8["open-world"].classes?.mage).toBe(2);
+    expect(scoring.q8["open-world"].classes?.hunter).toBe(3);
+    expect(scoring.q8["open-world"].classes?.druid).toBe(3);
+    expect((scoring.q6["act-fast"].classes!.mage! - 2) * questionWeights.q6.class).toBe(2.5);
+    expect((scoring.q8["open-world"].classes!.mage! - 1) * questionWeights.q8.class * normalizedRankFactors(3)[0]).toBeCloseTo(5 / 9);
+    const quickController = persona({ ...answersByClass.mage, q6: ["act-fast"], q8: ["open-world", "solo", "duo"] });
+    expect(scoreQuiz(quickController).primary.classId).toBe("mage");
+    expect(scoreQuiz(answersByClass.hunter).primary.classId).toBe("hunter");
+  });
+
+  it("credits Priest ranged offense and independent or paired play without displacing a Mage", () => {
+    expect(scoring.q5["ranged-magic"].classes?.priest).toBe(2.5);
+    expect(scoring.q5["ranged-magic"].classes?.priest).toBeLessThan(scoring.q5["ranged-magic"].classes!.mage!);
+    expect(scoring.q8.solo.classes?.priest).toBe(1);
+    expect(scoring.q8.duo.classes?.priest).toBe(2);
+    expect((scoring.q5["ranged-magic"].classes!.priest! - 2) * questionWeights.q5.class).toBe(1.5);
+    expect((scoring.q8.duo.classes!.priest! - 1) * questionWeights.q8.class * normalizedRankFactors(3)[0]).toBeCloseTo(5 / 9);
+    const shadowSolo = persona({ ...answersByClass.priest, q4: ["damage", "heal", "control"], q8: ["solo", "open-world", "duo"], q9: ["secrets", "holy"] });
+    expect(scoreQuiz(shadowSolo).primary.classId).toBe("priest");
+    expect(scoreQuiz(answersByClass.mage).primary.classId).toBe("mage");
+  });
+
+  it("credits Rogue leveling and a trusted partner without giving it Hunter-level solo credit", () => {
+    expect(scoring.q3.leveling.classes?.rogue).toBe(2);
+    expect(scoring.q3.leveling.classes?.rogue).toBeLessThan(scoring.q3.leveling.classes!.hunter!);
+    expect(scoring.q8.duo.classes?.rogue).toBe(1);
+    expect((scoring.q3.leveling.classes!.rogue! - 1) * questionWeights.q3.class * normalizedRankFactors(3)[0]).toBeCloseTo(4 / 9);
+    const stealthPartner = persona({ ...answersByClass.rogue, q3: ["leveling", "exploration", "pvp"], q8: ["duo", "solo", "open-world"] });
+    expect(scoreQuiz(stealthPartner).primary.classId).toBe("rogue");
+    expect(scoreQuiz(answersByClass.hunter).primary.classId).toBe("hunter");
+  });
+
+  it("moderates pet and totem protection combinations without removing their direct identities", () => {
+    expect(q4CombinationBonus("warlock", ["protect", "damage", "control"])?.value).toBe(2.5);
+    expect(q4CombinationBonus("shaman", ["protect", "damage", "adapt"])?.value).toBe(1.5);
+    expect(q4CombinationBonus("warlock", ["control", "protect", "damage"])!.value).toBeLessThan(2.5);
+    expect(q4CombinationBonus("shaman", ["adapt", "protect", "damage"])!.value).toBeLessThan(1.5);
+    expect(scoring.q4.protect.classes?.warlock).toBe(1);
+    expect(scoring.q4.protect.classes?.shaman).toBe(1);
+    expect(scoring.q7.central.classes?.warlock).toBe(3);
+    expect(scoring.q9.wilds.classes?.shaman).toBe(3);
+    const petProtector = persona({ ...answersByClass.warlock, q4: ["protect", "damage", "control"] });
+    const elementalHelper = persona({ ...answersByClass.shaman, q4: ["adapt", "heal", "control"] });
+    const fullProtector = persona({ ...answersByClass.shaman, q4: ["protect", "damage", "adapt"], q5: ["ranged-magic", "adaptable"], q9: ["wilds", "arcane"], q12: ["juggling"] });
+    expect(scoreQuiz(petProtector).primary.classId).toBe("warlock");
+    expect(scoreQuiz(elementalHelper).primary.classId).toBe("shaman");
+    expect(scoreQuiz(fullProtector).primary.classId).toBe("druid");
   });
 
   it("keeps racial utility tied to the relevant racial kit", () => {
