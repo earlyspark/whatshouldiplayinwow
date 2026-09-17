@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Bree_Serif } from "next/font/google";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
@@ -22,6 +23,7 @@ interface ResultPageProps { params: Promise<{ id: string }> }
 
 export const dynamic = "force-dynamic";
 const getCachedResult = cache(getResult);
+const supportButtonFont = Bree_Serif({ subsets: ["latin"], weight: "400", display: "swap" });
 
 export async function generateMetadata({ params }: ResultPageProps): Promise<Metadata> {
   const { id } = await params;
@@ -54,7 +56,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
       {hasWowheadTooltips && <WowheadTooltips resultId={id} />}
       <ResultCompletion id={id} />
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
-        <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
+        <header className="pt-4 sm:pt-5">
           <LogoHomeLink />
           <div className="flex flex-col items-start gap-5">
             <p className="t-eyebrow text-[var(--bronze)]">What should I play in WoW: Forever?</p>
@@ -73,6 +75,16 @@ export default async function ResultPage({ params }: ResultPageProps) {
         <div className="result-layout mt-8">
           <ResultFeedbackProvider id={id}>
           <div className="space-y-8">
+            <a
+              href="https://buymeacoffee.com/earlyspark"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`focus-ring mx-auto flex min-h-9 w-fit max-w-full items-center justify-center gap-2 rounded-lg bg-[#ffbb00] px-4 py-2 text-center text-xs leading-tight text-black no-underline transition-colors hover:bg-[#e5a800] ${supportButtonFont.className}`}
+              style={{ color: "#000000" }}
+            >
+              <span className="text-lg" aria-hidden="true">☕</span>
+              <span>Support the quiz creator</span>
+            </a>
             <section className="surface p-6 sm:p-8">
               <p className="t-label text-[var(--dim)]">Race</p>
               <h2 className="t-section mt-3">{result.primary.raceName}</h2>
