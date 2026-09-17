@@ -13,6 +13,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  verification: { google: "qwOA1Y4jGLDBA5KHoCgt9QeK4AR7SQgeYPUitze_Sdk" },
   title: { default: "What Should I Play? WoW Forever Race & Class Quiz", template: "%s | What Should I Play?" },
   description: "Answer playstyle questions to discover which World of Warcraft: Forever race and class you should play.",
   applicationName: "What Should I Play?",
