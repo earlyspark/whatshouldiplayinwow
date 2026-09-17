@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import GoogleAnalyticsPageViews from "./GoogleAnalyticsPageViews";
+import { ANALYTICS_CONSENT_CHANGED_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics-consent";
 import { prepareGtag } from "@/lib/gtag";
 
-const CONSENT_KEY = "wow-forever-analytics-consent";
 const SETTINGS_EVENT = "wow-forever-open-analytics-settings";
 type Choice = "accepted" | "declined";
 
@@ -32,7 +32,7 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       try {
-        const saved = localStorage.getItem(CONSENT_KEY);
+        const saved = localStorage.getItem(ANALYTICS_CONSENT_KEY);
         if (saved === "accepted" || saved === "declined") {
           if (saved === "accepted") prepareGtag();
           setChoice(saved);
@@ -60,8 +60,11 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
   };
 
   const choose = (next: Choice) => {
-    try { localStorage.setItem(CONSENT_KEY, next); } catch { /* Keep the choice for this visit. */ }
-    if (next === "accepted") prepareGtag();
+    try { localStorage.setItem(ANALYTICS_CONSENT_KEY, next); } catch { /* Keep the choice for this visit. */ }
+    if (next === "accepted") {
+      prepareGtag();
+      window.dispatchEvent(new Event(ANALYTICS_CONSENT_CHANGED_EVENT));
+    }
     if (next === "declined" && choice === "accepted") {
       delete window.gtag;
       clearAnalyticsCookies();

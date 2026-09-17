@@ -1,6 +1,6 @@
 # What Should I Play?
 
-A quiz that asks questions about how you like to play and suggests a race and class for *World of Warcraft: Forever*. It gives you one main pick plus two alternatives you can share with friends.
+A [quiz](https://whatshouldiplayinwowforever.com/) that asks how you like to play and suggests a race and class for *World of Warcraft: Forever*. It gives you one main pick plus two alternatives you can share with friends.
 
 ![The quiz landing page](docs/screenshots/home.png)
 
@@ -13,8 +13,6 @@ After the last question you land on a result page with its own shareable link:
 - **Two alternatives**: one keeps your class with a different race, the other suggests a different class
 - **Optional thumbs feedback** on each of the three picks, available to the quiz-taker during the same tab session
 - A retake prompt if the game data, quiz questions, or scoring have changed since you took the quiz
-
-<img src="docs/screenshots/result.png" alt="A result page recommending Tauren Shaman, with racials and two alternatives" width="600">
 
 ## The questions
 
@@ -35,6 +33,8 @@ The quiz covers:
 13. Whether you want a focused class identity or room to change jobs and tactics
 
 Some questions take a single answer. Others ask you to **rank** up to three picks (two for character fantasy). For question 12, “None of these” is a standalone answer.
+
+Your unfinished answers are kept in the current tab, and the restart control clears them when you want to begin again.
 
 ## How scoring works
 
@@ -109,8 +109,6 @@ The alternatives aren't just the 2nd- and 3rd-highest scores, since those would 
 
 The quiz-taker can give each race/class pick one thumbs-up or thumbs-down vote and change it while their tab session retains the creator receipt. The receipt is stored separately from the shareable URL and is checked by the server. Shared-link visitors cannot vote. Closing the tab normally clears voting access; browser session restore may preserve it. Results created before voting was added do not have a voting receipt.
 
-Production votes are stored per result until that result expires. The public [quiz stats page](https://www.whatshouldiplayinwowforever.com/stats) shows aggregate thumbs-up, thumbs-down, and response counts by recommendation position, all-time and by the result's creation month. It does not break ratings down by race/class, and shared-link visitors cannot see an individual's votes. Changing a vote adjusts the counts rather than adding another response. Local and preview testing do not contribute to production totals. Voting works independently of Google Analytics consent.
-
 ## How the data is kept up to date
 
 The race and class list, which combinations are allowed, and each race's racials are checked by hand against:
@@ -123,10 +121,8 @@ The site's [How this works](https://www.whatshouldiplayinwowforever.com/methodol
 
 **Shared results stay the same for 12 months.** Each result saves your answers, quiz version, and data version, so a shared link shows the same pick until it expires 12 months after creation. If the game data, quiz questions, or scoring changes before then, the result page offers a retake with the current version. Expired links show a not-found page.
 
-New results receive a Redis expiry automatically. To apply the policy to results created before this change, run `node --env-file=.env.local scripts/backfill-result-retention.mjs` to preview the counts, then rerun with `--apply`. The script deletes already expired results and sets expiry dates on the rest. It also expires old completion markers; monthly aggregate statistics remain available.
-
 The recommendations are about what you might enjoy playing, not a prediction of the best build on launch day.
-General class descriptions help inform the quiz where Forever-specific details are not yet published; those fit judgments are provisional.
+This quiz is just for entertainment purposes. Ultimately, choose whatever you want and have fun!
 
 ## Built with
 

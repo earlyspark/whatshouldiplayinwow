@@ -43,3 +43,23 @@ export function trackPageView(measurementId: string, pathname: string) {
     page_title: typeof document === "undefined" ? undefined : document.title,
   });
 }
+
+/** Group error routes without sending unknown paths or shareable result IDs. */
+export function errorRouteGroup(pathname: string) {
+  if (/^\/result\/[^/]+\/?$/.test(pathname)) return "/result/[id]";
+  if (pathname === "/" || pathname === "/methodology" || pathname === "/stats") return pathname;
+  return "/other";
+}
+
+export function trackPageError(measurementId: string, errorType: "not_found" | "render_error") {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  const pagePath = errorRouteGroup(window.location.pathname);
+  window.gtag("event", "page_error", {
+    send_to: measurementId,
+    error_type: errorType,
+    page_path: pagePath,
+    page_location: new URL(pagePath, window.location.origin).toString(),
+    page_title: errorType === "not_found" ? "Page not found" : "Page error",
+    transport_type: "beacon",
+  });
+}

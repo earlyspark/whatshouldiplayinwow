@@ -79,7 +79,7 @@ export default function MethodologyPage() {
               Your browser uses session storage to keep an unfinished quiz, the one-time receipt used to count a completed quiz, and a separate copy of that receipt for rating your result. The counting copy is deleted after use; the rating copy normally clears when the tab session ends. We use your IP address to limit result creation and protect the service; hosting providers may also process request logs.
             </p>
             <p className="t-small text-[var(--dim)]">
-              If you accept analytics, Google Analytics loads and uses cookies to measure page visits, quiz interactions, and affiliate-link clicks. If you decline, Google Analytics does not load. Your choice is saved in this browser&apos;s local storage. Withdrawing consent stops future Google Analytics activity on this site and clears its first-party cookies where the browser allows.
+              If you accept analytics, Google Analytics loads and uses cookies to measure page visits, quiz interactions, affiliate-link clicks, and error pages. Error events group routes without sending result IDs or error messages. If you decline, Google Analytics does not load. Your choice is saved in this browser&apos;s local storage. Withdrawing consent stops future Google Analytics activity on this site and clears its first-party cookies where the browser allows.
             </p>
             {process.env.VERCEL_ENV === "production" && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
               <p className="t-small text-[var(--dim)]">To change your choice, open <AnalyticsSettingsButton />.</p>

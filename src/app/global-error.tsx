@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import ErrorAnalytics from "@/components/ErrorAnalytics";
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -10,6 +11,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
   return (
     <html lang="en">
       <body style={{ margin: 0, background: "#171220", color: "#f0e9dd", fontFamily: "Georgia, serif" }}>
+        <ErrorAnalytics type="render_error" loadScript />
         <main style={{ display: "grid", minHeight: "100vh", placeItems: "center", padding: "24px" }}>
           <div style={{ maxWidth: "560px", textAlign: "center" }}>
             <p style={{ color: "#c8964a", fontSize: "12px", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" }}>Something went wrong</p>

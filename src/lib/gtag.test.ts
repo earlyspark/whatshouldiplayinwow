@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { prepareGtag, trackEvent, trackPageView } from "@/lib/gtag";
+import { errorRouteGroup, prepareGtag, trackEvent, trackPageError, trackPageView } from "@/lib/gtag";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -30,5 +30,26 @@ describe("Google tag queue", () => {
         send_to: "G-TEST", page_path: "/result/[id]", page_location: "https://example.com/result/[id]", page_title: "Result",
       }),
     ]);
+  });
+
+  it("groups error events without leaking result IDs, unknown paths, or query strings", () => {
+    const browser = {
+      dataLayer: [] as unknown[],
+      gtag: undefined as Window["gtag"],
+      location: { pathname: "/result/ABCDEFGHIJKL", origin: "https://example.com", href: "https://example.com/result/ABCDEFGHIJKL?receipt=secret" },
+    };
+    vi.stubGlobal("window", browser);
+    prepareGtag();
+    trackPageError("G-TEST", "render_error");
+
+    const event = Array.from(browser.dataLayer[0] as IArguments);
+    expect(event).toEqual(["event", "page_error", expect.objectContaining({
+      send_to: "G-TEST",
+      error_type: "render_error",
+      page_path: "/result/[id]",
+      page_location: "https://example.com/result/[id]",
+    })]);
+    expect(JSON.stringify(event)).not.toMatch(/ABCDEFGHIJKL|secret/);
+    expect(errorRouteGroup("/private/email@example.com")).toBe("/other");
   });
 });
