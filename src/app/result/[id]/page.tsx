@@ -12,7 +12,6 @@ import WowheadTooltips from "@/components/WowheadTooltips";
 import LogoHomeLink from "@/components/LogoHomeLink";
 import SupportButton from "@/components/SupportButton";
 import { withArticle } from "@/lib/article";
-import { DATA_VERSION } from "@/data/forever";
 import { QUIZ_VERSION } from "@/data/questions";
 import { getResult } from "@/lib/result-store";
 import { wowheadRacialUrl } from "@/lib/wowhead-tooltips";
@@ -46,11 +45,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const { id } = await params;
   const result = await getCachedResult(id);
   if (!result) notFound();
-  const dataChanged = result.dataVersion !== DATA_VERSION;
   const quizChanged = result.quizVersion !== QUIZ_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;
   const summary = `This pick balances ${result.primary.classTagline} with ${result.primary.raceTagline}.`;
-  const hasWowheadTooltips = result.primary.racials.some((racial) => wowheadRacialUrl(result.primary.raceId, racial.name));
+  const hasWowheadTooltips = result.primary.racials.some((racial) => wowheadRacialUrl(result.primary.raceId, racial.name, result.primary.classId));
 
   return (
     <main id="main-content" className="min-h-screen">
@@ -64,10 +62,9 @@ export default async function ResultPage({ params }: ResultPageProps) {
             <h1 className="t-display">{title}</h1>
             <p className="t-body text-[var(--dim)]">{summary}</p>
           </div>
-          {(dataChanged || quizChanged) && (
+          {quizChanged && (
             <div className="t-small mt-6 border-l-2 border-[var(--bronze)] bg-[rgba(200,150,74,.08)] px-4 py-3">
-              {dataChanged && <>This result used data checked {result.dataCheckedLabel}. Newer game information is available. </>}
-              {quizChanged && <>The quiz questions or scoring have changed since this result was created. </>}
+              <>The quiz questions or scoring have changed since this result was created. </>
               <Link href="/" className="link-bronze focus-ring">Retake the quiz</Link> for a current recommendation.
             </div>
           )}
@@ -84,10 +81,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 {result.primary.racials.map((racial) => (
                   <article key={racial.name} className="inset border-l-2 border-l-[var(--plum)] p-4">
-                    <h3 className={wowheadRacialUrl(result.primary.raceId, racial.name) ? undefined : "t-card"}>
-                      {wowheadRacialUrl(result.primary.raceId, racial.name) ? (
+                    <h3 className={wowheadRacialUrl(result.primary.raceId, racial.name, result.primary.classId) ? undefined : "t-card"}>
+                      {wowheadRacialUrl(result.primary.raceId, racial.name, result.primary.classId) ? (
                         <a
-                          href={wowheadRacialUrl(result.primary.raceId, racial.name)!}
+                          href={wowheadRacialUrl(result.primary.raceId, racial.name, result.primary.classId)!}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -100,7 +97,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
                 ))}
               </div>
               {hasWowheadTooltips && (
-                <p className="t-small mt-4 text-[var(--dim)]">Some Wowhead spell tooltips still show older values. The descriptions above reflect this result&apos;s reviewed Forever data.</p>
+                <p className="t-small mt-4 text-[var(--dim)]">Hover over a racial name for its current Wowhead tooltip. Saved results retain the descriptions from when they were created.</p>
               )}
               <div className="mt-8 border-t border-[var(--line)] pt-8">
                 <p className="t-label text-[var(--dim)]">Class</p>

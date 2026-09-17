@@ -1,5 +1,5 @@
-export const DATA_VERSION = "2026-09";
-export const DATA_CHECKED_AT = "2026-09-16";
+export const DATA_VERSION = "2026-09-17";
+export const DATA_CHECKED_AT = "2026-09-17";
 export const DATA_CHECKED_LABEL = "September 2026";
 
 export const DATA_SOURCES = [
@@ -107,8 +107,8 @@ export const races: RaceProfile[] = [
     classes: ["druid", "hunter", "priest", "rogue", "warrior"],
     racials: [
       { name: "Elune’s Light", description: "Temporarily increases critical strike chance." },
-      { name: "Shadowmeld", description: "Grants stealth while immobile." },
-      { name: "Quickness", description: "Increases dodge chance and run speed." },
+      { name: "Shadowmeld", description: "Reduces detection while immobile; using it in combat discourages attacks but lengthens its cooldown." },
+      { name: "Quickness", description: "Increases dodge chance by 1% and run speed by 2%, with improved stealth for Night Elf Rogues and Druids." },
       { name: "Wisp Spirit", description: "Greatly increases movement speed while dead." },
     ],
   },
@@ -119,8 +119,8 @@ export const races: RaceProfile[] = [
     classes: ["mage", "priest", "rogue", "warlock", "warrior"],
     racials: [
       { name: "Escape Artist", description: "Provides brief immunity to roots and snares." },
-      { name: "Eureka!", description: "Reduces cost and increases damage or healing for the next few abilities." },
-      { name: "Expansive Mind", description: "Increases maximum resource." },
+      { name: "Eureka!", description: "Reduces the resource cost of the next three abilities and increases their damage by 10%; Priest healing also benefits." },
+      { name: "Expansive Mind", description: "Increases maximum Mana, Energy, or Rage by 5%, according to class." },
       { name: "Engineering Specialization", description: "Makes engineering devices more reliable." },
     ],
   },
@@ -131,7 +131,7 @@ export const races: RaceProfile[] = [
     classes: ["hunter", "mage", "rogue", "shaman", "warlock", "warrior"],
     racials: [
       { name: "Blood Fury", description: "Temporarily increases Attack Power and Spell Power." },
-      { name: "Shatter Curse", description: "Temporarily grants immunity to Curses and Banes and reduces Magical damage taken." },
+      { name: "Shatter Curse", description: "Removes and grants immunity to Curses and Banes, and reduces Magical damage taken by 15% for 8 sec." },
       { name: "Hardiness", description: "Reduces stun duration." },
       { name: "Axe Specialization", description: "Increases critical strike chance while using axes." },
     ],
@@ -144,7 +144,7 @@ export const races: RaceProfile[] = [
     racials: [
       { name: "Will of the Forsaken", description: "Removes Charm, Fear, and Sleep effects." },
       { name: "Cannibalize", description: "Restores Health and Mana while consuming a nearby corpse." },
-      { name: "Touch of the Grave", description: "Attacks and spells can drain Health from the target." },
+      { name: "Touch of the Grave", description: "Attacks and spells have a 5% or 10% chance, depending on class, to drain up to 5% of maximum Health from the target." },
       { name: "Underwater Breathing", description: "Greatly extends underwater breath." },
     ],
   },
@@ -156,7 +156,7 @@ export const races: RaceProfile[] = [
     racials: [
       { name: "War Stomp", description: "Stuns nearby enemies for a short duration." },
       { name: "Endurance", description: "Increases total Health and hit chance." },
-      { name: "Plainsrunning", description: "Builds movement speed while continuously moving." },
+      { name: "Plainsrunning", description: "Gains 1% movement speed every 5 sec while moving, up to 30%; damage or standing still reduces it." },
       { name: "Cultivation", description: "Grows bonus herbs that do not require Herbalism to gather." },
     ],
   },
@@ -167,8 +167,8 @@ export const races: RaceProfile[] = [
     classes: ["hunter", "mage", "priest", "rogue", "shaman", "warlock", "warrior"],
     racials: [
       { name: "Berserking", description: "Temporarily increases casting and attack speed." },
-      { name: "Rapid Regeneration", description: "Regenerates a large portion of maximum Health over time." },
-      { name: "Regeneration", description: "Allows part of normal Health regeneration to continue in combat." },
+      { name: "Rapid Regeneration", description: "Regenerates 50% of maximum Health over 6 sec; movement, action, or damage cancels it." },
+      { name: "Regeneration", description: "Increases Health regeneration by 10%, with 10% of total regeneration continuing in combat." },
       { name: "Beast Slaying", description: "Increases damage dealt to Beasts." },
     ],
   },
@@ -179,7 +179,7 @@ export const races: RaceProfile[] = [
     classes: ["druid", "hunter", "mage", "rogue", "warrior"],
     racials: [
       { name: "Walk on Air", description: "Glides downward through the air for a short duration." },
-      { name: "Read Ley Line", description: "Activates a ley line for greatly increased Health and Mana regeneration." },
+      { name: "Read Ley Line", description: "Increases Health and Mana regeneration by 100% for 15 sec, or 15 min near a ley line." },
       { name: "Wind Blessed", description: "Increases melee, ranged, and spellcasting Haste." },
       { name: "Elemental Insight", description: "Increases damage dealt to Elementals." },
     ],
@@ -191,7 +191,7 @@ export const races: RaceProfile[] = [
     classes: ["druid", "hunter", "rogue", "shaman", "warrior"],
     racials: [
       { name: "Walk on Air", description: "Glides downward through the air for a short duration." },
-      { name: "Skysight", description: "Receives an Elemental Blessing that increases run speed." },
+      { name: "Skysight", description: "Increases movement and mounted speed by 10% for 30 sec, or 15 min near an elemental convergence." },
       { name: "Wind Blessed", description: "Increases melee, ranged, and spellcasting Haste." },
       { name: "Elemental Insight", description: "Increases damage dealt to Elementals." },
     ],
