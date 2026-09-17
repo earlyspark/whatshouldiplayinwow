@@ -62,10 +62,10 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   q3: {
     leveling: {
       classes: { hunter: 3, druid: 3, warlock: 2, paladin: 2, shaman: 2, mage: 1, priest: 1, rogue: 1, warrior: 1 },
-      races: { undead: 3, troll: 2, tauren: 2, "night-elf": 2, "skyborne-alliance": 2, "skyborne-horde": 2 },
+      races: { undead: 3, troll: 2, tauren: 2, orc: 2, "night-elf": 2, "skyborne-alliance": 2, "skyborne-horde": 2 },
     },
     dungeons: {
-      classes: { warrior: 2, paladin: 2, priest: 2, shaman: 2, druid: 2, mage: 2, rogue: 2, hunter: 1, warlock: 1 },
+      classes: { warrior: 2, paladin: 2, priest: 2, shaman: 2, druid: 2, mage: 2, rogue: 2, hunter: 1, warlock: 2 },
       races: { tauren: 3, dwarf: 2, orc: 2, troll: 2, human: 2, gnome: 1, undead: 1 },
     },
     raids: {
@@ -94,7 +94,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     heal: { classes: { priest: 3, paladin: 3, shaman: 3, druid: 3 } },
     // Shadow and Retribution can deal damage, while Discipline mixes damage with healing.
     damage: { classes: { mage: 3, rogue: 3, hunter: 3, warlock: 3, warrior: 2, shaman: 2, druid: 2, priest: 2, paladin: 2 } },
-    control: { classes: { mage: 3, rogue: 3, warlock: 2, shaman: 2, hunter: 2, priest: 2, druid: 1 } },
+    control: { classes: { mage: 3, rogue: 3, warlock: 3, shaman: 2, hunter: 2, priest: 2, druid: 1 } },
     adapt: { classes: { druid: 3, shaman: 3, paladin: 3, priest: 2, warrior: 1, hunter: 1, warlock: 1 } },
   },
   q5: {
@@ -126,7 +126,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
       races: { human: 1, dwarf: 1, orc: 1, tauren: 1 },
     },
     "small-group": {
-      classes: { paladin: 3, priest: 3, shaman: 3, druid: 3, warrior: 2, mage: 2, rogue: 2 },
+      classes: { paladin: 3, priest: 3, shaman: 3, druid: 3, warrior: 2, mage: 2, rogue: 2, warlock: 2 },
       races: { dwarf: 1, tauren: 1, human: 1, troll: 1 },
     },
     "large-group": {
@@ -182,7 +182,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     prep: { classes: { warlock: -3, rogue: -2, hunter: -2, mage: -1, druid: -1 } },
     cornered: {
       classes: { warrior: -3, priest: -2, shaman: -1, warlock: -1 },
-      races: { gnome: 3, human: 3, undead: 3, dwarf: 2, "night-elf": 1 },
+      races: { gnome: 3, human: 3, undead: 3, dwarf: 2, "night-elf": 1, orc: 1 },
     },
     repetition: { classes: { druid: 3, shaman: 3, rogue: 2, hunter: 2, mage: 2, warlock: 2, paladin: 2, priest: 2, warrior: 1 } },
     juggling: { classes: { druid: -3, shaman: -2, warlock: -2, hunter: -1, rogue: -1, mage: -1 } },

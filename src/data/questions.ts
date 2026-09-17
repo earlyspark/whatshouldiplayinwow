@@ -1,4 +1,4 @@
-export const QUIZ_VERSION = "1.16.0";
+export const QUIZ_VERSION = "1.20.0";
 
 export type QuestionId = `q${number}`;
 
@@ -77,9 +77,9 @@ export const questions: QuizQuestion[] = [
     prompt: "When a fight gets unpredictable, how do you respond?",
     options: [
       { id: "act-fast", label: "Act fast and create an opening", description: "I trust my instincts and like to set the pace." },
-      { id: "wait-opening", label: "Wait for the right moment", description: "I watch for an opportunity before committing." },
+      { id: "wait-opening", label: "Hold my big cooldowns for an opening", description: "I save key abilities for a moment when they can have the most impact." },
       { id: "help-ally", label: "Help whoever needs me most", description: "I react to what my teammates need." },
-      { id: "stick-plan", label: "Stay steady and stick to the plan", description: "I prefer a deliberate approach when things get messy." },
+      { id: "stick-plan", label: "Keep my core abilities rolling through the chaos", description: "I maintain damage, healing, or control rather than waiting for a perfect window." },
       { id: "improvise", label: "Adapt as the fight changes", description: "I enjoy switching tactics on the fly." },
     ],
   },
@@ -120,10 +120,10 @@ export const questions: QuizQuestion[] = [
     options: [
       { id: "finish", label: "Create an opening and finish it quickly" },
       { id: "endure", label: "Stay steady until the danger passes" },
-      { id: "break-free", label: "Shake off whatever is limiting me" },
+      { id: "break-free", label: "Counter crowd control or cleanse a debuff" },
       { id: "reposition", label: "Reposition and find safer ground" },
       { id: "recover", label: "Recover and keep moving" },
-      { id: "resource", label: "Find a resource or tool others missed" },
+      { id: "resource", label: "Find a useful resource or tool" },
     ],
   },
   {

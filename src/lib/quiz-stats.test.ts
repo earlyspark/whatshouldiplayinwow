@@ -23,6 +23,19 @@ describe("completion statistics", () => {
     expect(counts["first:q3:leveling"]).toBe(1);
     expect(counts["first:q3:dungeons"]).toBeUndefined();
     expect(counts[`result:race:${saved.primary.raceId}`]).toBe(1);
+    expect(counts[`quiz-version:${saved.quizVersion}`]).toBe(1);
+    expect(counts[`version:${saved.quizVersion}:result:race:${saved.primary.raceId}`]).toBe(1);
+    expect(counts[`version:${saved.quizVersion}:result:class:${saved.primary.classId}`]).toBe(1);
+    expect(counts[`version:${saved.quizVersion}:result:pair:${saved.primary.raceId}:${saved.primary.classId}`]).toBe(1);
+  });
+
+  it("keeps versioned recommendations separate while retaining all-time counts", () => {
+    const saved = result();
+    saved.quizVersion = "1.16.0";
+    const counts = completionIncrements(saved);
+    expect(counts[`result:class:${saved.primary.classId}`]).toBe(1);
+    expect(counts[`version:1.16.0:result:class:${saved.primary.classId}`]).toBe(1);
+    expect(counts[`version:1.17.0:result:class:${saved.primary.classId}`]).toBeUndefined();
   });
 
   it.each([undefined, "development", "preview"])("never tallies outside Vercel production (%s)", async (environment) => {

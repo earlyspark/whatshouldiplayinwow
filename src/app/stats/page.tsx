@@ -25,6 +25,29 @@ function combinedCounts(months: MonthlyQuizStats[]) {
   return counts;
 }
 
+function ResultsBreakdown({ counts, prefix = "" }: { counts: Record<string, number>; prefix?: string }) {
+  return (
+    <div className="mt-10 grid gap-8 sm:grid-cols-2">
+      <div>
+        <h3 className="t-card">Recommended classes</h3>
+        {classes.map((item) => (
+          <div key={item.id} className="t-small flex justify-between gap-3 border-b border-[var(--line)] py-1.5">
+            <span>{item.name}</span><span className="text-[var(--dim)]">{counts[`${prefix}result:class:${item.id}`] ?? 0}</span>
+          </div>
+        ))}
+      </div>
+      <div>
+        <h3 className="t-card">Recommended races</h3>
+        {races.map((item) => (
+          <div key={item.id} className="t-small flex justify-between gap-3 border-b border-[var(--line)] py-1.5">
+            <span>{item.name}</span><span className="text-[var(--dim)]">{counts[`${prefix}result:race:${item.id}`] ?? 0}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StatsSection({ title, counts }: { title: string; counts: Record<string, number> }) {
   const total = counts.total ?? 0;
   const hasFeedback = feedbackPositions.some((position) => (counts[`feedback:${position}:up`] ?? 0) + (counts[`feedback:${position}:down`] ?? 0) > 0);
@@ -71,26 +94,7 @@ function StatsSection({ title, counts }: { title: string; counts: Record<string,
           </div>
         </div>
       ))}
-      {total > 0 && (
-        <div className="mt-10 grid gap-8 sm:grid-cols-2">
-          <div>
-            <h3 className="t-card">Recommended classes</h3>
-            {classes.map((item) => (
-              <div key={item.id} className="t-small flex justify-between gap-3 border-b border-[var(--line)] py-1.5">
-                <span>{item.name}</span><span className="text-[var(--dim)]">{counts[`result:class:${item.id}`] ?? 0}</span>
-              </div>
-            ))}
-          </div>
-          <div>
-            <h3 className="t-card">Recommended races</h3>
-            {races.map((item) => (
-              <div key={item.id} className="t-small flex justify-between gap-3 border-b border-[var(--line)] py-1.5">
-                <span>{item.name}</span><span className="text-[var(--dim)]">{counts[`result:race:${item.id}`] ?? 0}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {total > 0 && <ResultsBreakdown counts={counts} />}
     </section>
   );
 }
@@ -98,6 +102,10 @@ function StatsSection({ title, counts }: { title: string; counts: Record<string,
 export default async function StatsPage() {
   const months = await readMonthlyQuizStats();
   const allTime = combinedCounts(months);
+  const versionIds = [...new Set(Object.keys(allTime).flatMap((key) => {
+    const match = key.match(/^version:([^:]+):result:class:/);
+    return match ? [match[1]] : [];
+  }))].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
   return (
     <main id="main-content" className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
       <Link href="/" className="link-bronze focus-ring">← Home</Link>
@@ -107,10 +115,20 @@ export default async function StatsPage() {
         Ranked-answer percentages can add up to more than 100%. Totals begin when this feature is deployed, with no retroactive count.
         Local and preview results are never tallied.
         Recommendation feedback starts when this feature is deployed.
+        Version-separated recommendation counts start when this update is deployed and are not backfilled; earlier results remain in the all-time and monthly totals.
       </p>
       {months.length === 0 && <p className="t-body mb-8">No production completions have been counted yet.</p>}
       <div className="space-y-8">
         <StatsSection title="All time" counts={allTime} />
+        {versionIds.map((version) => (
+          <section key={version} className="surface p-6 sm:p-8">
+            <h2 className="t-section">Quiz version {version}</h2>
+            <p className="t-body mt-2 text-[var(--dim)]">
+              {classes.reduce((total, item) => total + (allTime[`version:${version}:result:class:${item.id}`] ?? 0), 0).toLocaleString()} completed results counted since version-separated tracking began.
+            </p>
+            <ResultsBreakdown counts={allTime} prefix={`version:${version}:`} />
+          </section>
+        ))}
         {months.map((month) => <StatsSection key={month.month} title={month.month} counts={month.counts} />)}
       </div>
     </main>

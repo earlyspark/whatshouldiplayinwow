@@ -41,6 +41,9 @@ export function completionIncrements(result: SavedResult): Record<string, number
     [`result:race:${result.primary.raceId}`]: 1,
     [`result:class:${result.primary.classId}`]: 1,
     [`result:pair:${result.primary.raceId}:${result.primary.classId}`]: 1,
+    [`version:${result.quizVersion}:result:race:${result.primary.raceId}`]: 1,
+    [`version:${result.quizVersion}:result:class:${result.primary.classId}`]: 1,
+    [`version:${result.quizVersion}:result:pair:${result.primary.raceId}:${result.primary.classId}`]: 1,
   };
   for (const question of questions) {
     const choices = result.answers[question.id] ?? [];

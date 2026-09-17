@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { classes, isValidCombination, raceById, races, type ClassId } from "@/data/forever";
-import { questions } from "@/data/questions";
+import { questions, QUIZ_VERSION } from "@/data/questions";
 import { questionWeights, scoring } from "@/data/scoring-config";
 import { normalizedRankFactors, q4CombinationBonus, scoreQuiz } from "@/lib/scoring";
 import type { QuizAnswers } from "@/lib/result-schema";
@@ -150,6 +150,30 @@ describe("quiz definition", () => {
     expect(questions.at(-1)?.type).toBe("single");
   });
 
+  it("contrasts saved cooldown windows with sustained ability use without changing Q6 scoring", () => {
+    const q6 = questions.find((question) => question.id === "q6")!;
+    expect(QUIZ_VERSION).toBe("1.20.0");
+    expect(q6.options.find((option) => option.id === "wait-opening")?.label).toBe("Hold my big cooldowns for an opening");
+    expect(q6.options.find((option) => option.id === "stick-plan")?.label).toBe("Keep my core abilities rolling through the chaos");
+    expect(q6.options.find((option) => option.id === "stick-plan")?.description).toContain("damage, healing, or control");
+    expect(scoring.q6["wait-opening"].classes?.rogue).toBe(3);
+    expect(scoring.q6["stick-plan"].classes?.priest).toBe(3);
+  });
+
+  it("names Q10's control and debuff response without changing its racial credit", () => {
+    const q10 = questions.find((question) => question.id === "q10")!;
+    expect(q10.options.find((option) => option.id === "break-free")?.label).toBe("Counter crowd control or cleanse a debuff");
+    expect(scoring.q10["break-free"].races).toEqual({ undead: 3, gnome: 3, human: 3, dwarf: 3, orc: 2 });
+    expect(questionWeights.q10).toEqual({ class: 0, race: 2.2 });
+  });
+
+  it("keeps Q10's resource-finding credit under the clearer label", () => {
+    const q10 = questions.find((question) => question.id === "q10")!;
+    expect(q10.options.find((option) => option.id === "resource")?.label).toBe("Find a useful resource or tool");
+    expect(scoring.q10.resource.races).toEqual({ tauren: 3, gnome: 3, dwarf: 3, "skyborne-alliance": 2 });
+    expect(questionWeights.q10).toEqual({ class: 0, race: 2.2 });
+  });
+
   it("normalizes ranked influence", () => {
     for (const count of [1, 2, 3]) {
       expect(normalizedRankFactors(count).reduce((sum, value) => sum + value, 0)).toBeCloseTo(1);
@@ -238,12 +262,61 @@ describe("scoring", () => {
     expect(scoreQuiz(damageHealer).primary.classId).toBe("priest");
   });
 
+  it("credits a Warlock's disruption and defined small-group contribution without displacing Mage or Hunter", () => {
+    expect(scoring.q3.dungeons.classes?.warlock).toBe(2);
+    expect(scoring.q4.control.classes?.warlock).toBe(3);
+    expect(scoring.q8["small-group"].classes?.warlock).toBe(2);
+    const groupWarlock = persona({
+      q3: ["dungeons", "raids"], q4: ["control", "damage"],
+      q5: ["ranged-magic", "ranged-companion"], q6: ["stick-plan"],
+      q7: ["optional"], q8: ["small-group", "large-group"],
+      q9: ["secrets", "arcane"], q12: ["none"], q13: ["focused"],
+    });
+    const arcaneMage = persona({
+      q3: ["dungeons", "pvp"], q4: ["control", "damage"],
+      q5: ["ranged-magic"], q6: ["wait-opening"], q7: ["none"],
+      q8: ["small-group", "large-group"], q9: ["arcane"], q12: ["prep"],
+    });
+    const companionHunter = persona({
+      ...answersByClass.hunter, q3: ["dungeons", "leveling", "exploration"],
+      q8: ["small-group", "solo", "duo"],
+    });
+    expect(scoreQuiz(groupWarlock).primary.classId).toBe("warlock");
+    expect(scoreQuiz(arcaneMage).primary.classId).toBe("mage");
+    expect(scoreQuiz(companionHunter).primary.classId).toBe("hunter");
+    const firstOfThree = normalizedRankFactors(3)[0];
+    expect((scoring.q3.dungeons.classes!.warlock! - 1) * questionWeights.q3.class * firstOfThree).toBeCloseTo(4 / 9);
+    expect((scoring.q4.control.classes!.warlock! - 2) * questionWeights.q4.class * firstOfThree).toBeCloseTo(10 / 9);
+    expect(scoring.q8["small-group"].classes!.warlock! * questionWeights.q8.class * firstOfThree).toBeCloseTo(10 / 9);
+  });
+
   it("keeps racial utility tied to the relevant racial kit", () => {
     expect(scoring.q10.endure.races?.["night-elf"]).toBeGreaterThan(0);
     expect(scoring.q10.resource.races?.["skyborne-alliance"]).toBeGreaterThan(0);
     expect(scoring.q10.resource.races?.["skyborne-horde"]).toBeUndefined();
     expect(scoring.q3.professions.races?.["skyborne-alliance"]).toBeUndefined();
     expect(scoring.q3.professions.races?.["skyborne-horde"]).toBeUndefined();
+  });
+
+  it("credits Orc leveling and anti-control without inventing recovery or mobility", () => {
+    expect(scoring.q3.leveling.races?.orc).toBe(2);
+    expect(scoring.q12.cornered.races?.orc).toBe(1);
+    expect(scoring.q10["break-free"].races?.orc).toBeLessThan(scoring.q10["break-free"].races?.human ?? 0);
+    for (const utility of ["reposition", "recover", "resource"]) {
+      expect(scoring.q10[utility].races?.orc).toBeUndefined();
+    }
+    const orcLeveller = persona({
+      ...answersByClass.warrior, q2: ["horde"], q3: ["leveling", "raids"],
+      q10: ["endure"], q11: ["no-zone-preference"], q12: ["cornered"],
+    });
+    const recovering = { ...orcLeveller, q10: ["recover"] };
+    const mobile = { ...orcLeveller, q3: ["exploration", "leveling"], q8: ["open-world"], q10: ["reposition"], q12: ["none"] };
+    expect(scoreQuiz(orcLeveller).primary.raceId).toBe("orc");
+    expect(scoreQuiz(recovering).primary.raceId).not.toBe("orc");
+    expect(scoreQuiz(mobile).primary.raceId).not.toBe("orc");
+    const firstOfThree = normalizedRankFactors(3)[0];
+    expect(scoring.q3.leveling.races!.orc! * questionWeights.q3.race * firstOfThree).toBeCloseTo(4 / 3);
+    expect(scoring.q12.cornered.races!.orc! * questionWeights.q12.race * firstOfThree).toBeCloseTo(1 / 3);
   });
 
   it("only recommends playable race and class combinations", () => {
