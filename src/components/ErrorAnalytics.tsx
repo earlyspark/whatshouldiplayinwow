@@ -10,7 +10,9 @@ export default function ErrorAnalytics({ type, loadScript = false }: {
 }) {
   useEffect(() => {
     const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" || !measurementId) return;
+    // Client bundles inline NEXT_PUBLIC_* at build time, so this cannot use
+    // deployEnv() (which reads the server-only APP_ENV at runtime).
+    if (process.env.NEXT_PUBLIC_APP_ENV !== "production" || !measurementId) return;
     let sent = false;
 
     const sendIfConsented = () => {

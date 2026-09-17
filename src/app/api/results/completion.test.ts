@@ -19,8 +19,7 @@ afterEach(() => {
 
 describe("result completion receipt", () => {
   it("requires the creator's receipt and never tallies local or preview results", async () => {
-    vi.stubEnv("VERCEL_ENV", undefined);
-    vi.stubEnv("VERCEL", undefined);
+    vi.stubEnv("APP_ENV", undefined);
     const answers = Object.fromEntries(questions.map((question) => [question.id, [question.options[0].id]]));
     const create = await createResult(new NextRequest("http://localhost:3000/api/results", {
       method: "POST",

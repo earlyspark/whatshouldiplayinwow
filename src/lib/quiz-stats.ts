@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { questions } from "@/data/questions";
+import { isProductionDeployment } from "@/lib/deploy-env";
 import { redisConfig } from "@/lib/redis-config";
 import type { SavedResult } from "@/lib/result-schema";
 import { resultExpiresAt } from "@/lib/result-retention";
@@ -22,10 +23,6 @@ const completionScript = `
   redis.call("SADD", KEYS[3], ARGV[1])
   return 1
 `;
-
-function isProductionDeployment() {
-  return process.env.VERCEL === "1" && process.env.VERCEL_ENV === "production";
-}
 
 function statsRedis() {
   const config = redisConfig();

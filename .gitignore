@@ -10,6 +10,7 @@ claude.md
 docs/QUIZ_SCORING_HISTORY.local.md
 .agents/
 docs/adsense-setup.md
+docs/the-site-is-set-twinkling-leaf.md
 *.tsbuildinfo
 .DS_Store
 npm-debug.log*

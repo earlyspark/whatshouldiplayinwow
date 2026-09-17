@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { isProductionDeployment, isPreviewDeployment } from "@/lib/deploy-env";
 import { feedbackPositions, type FeedbackPosition, type FeedbackVote, type ResultVotes, emptyResultVotes } from "@/lib/feedback-types";
 import { quizStatsMonthKey, quizStatsMonthsKey } from "@/lib/quiz-stats";
 import { redisConfig } from "@/lib/redis-config";
@@ -55,14 +56,6 @@ declare global {
 
 const memory = globalThis.__wowForeverFeedback ?? new Map<string, ResultVotes>();
 if (process.env.NODE_ENV !== "production") globalThis.__wowForeverFeedback = memory;
-
-function isProductionDeployment() {
-  return process.env.VERCEL === "1" && process.env.VERCEL_ENV === "production";
-}
-
-function isPreviewDeployment() {
-  return process.env.VERCEL === "1" && process.env.VERCEL_ENV === "preview";
-}
 
 function feedbackRedis() {
   const config = redisConfig();

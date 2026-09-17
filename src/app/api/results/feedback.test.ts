@@ -19,8 +19,7 @@ afterEach(() => {
 });
 
 async function create() {
-  vi.stubEnv("VERCEL", undefined);
-  vi.stubEnv("VERCEL_ENV", undefined);
+  vi.stubEnv("APP_ENV", undefined);
   const answers = Object.fromEntries(questions.map((question) => [question.id, [question.options[0].id]]));
   const response = await createResult(new NextRequest("http://localhost:3000/api/results", {
     method: "POST",

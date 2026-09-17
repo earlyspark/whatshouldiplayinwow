@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { NextRequest, NextResponse } from "next/server";
+import { isProductionDeployment } from "@/lib/deploy-env";
 import { feedbackRequestSchema } from "@/lib/feedback-types";
 import { redisConfig } from "@/lib/redis-config";
 import { readResultVotes, saveResultVote } from "@/lib/result-feedback";
@@ -29,7 +30,7 @@ async function authorizedResult(request: NextRequest, id: string): Promise<Saved
 }
 
 function rateLimiter() {
-  if (process.env.VERCEL !== "1" || process.env.VERCEL_ENV !== "production") return null;
+  if (!isProductionDeployment()) return null;
   const config = redisConfig();
   if (!config) throw new Error("Feedback rate limiting is not configured.");
   return new Ratelimit({

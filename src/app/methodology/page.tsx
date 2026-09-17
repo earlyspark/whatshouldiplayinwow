@@ -6,6 +6,7 @@ import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
 import SiteFooter from "@/components/SiteFooter";
 import AnalyticsSettingsButton from "@/components/AnalyticsSettingsButton";
+import { isProductionDeployment } from "@/lib/deploy-env";
 import { DATA_CHECKED_LABEL, DATA_SOURCES } from "@/data/forever";
 import { siteUrl } from "@/lib/site-url";
 
@@ -85,11 +86,11 @@ export default function MethodologyPage() {
             <p className="t-small text-[var(--dim)]">
               In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and manual AdSense ads off. Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
             </p>
-            {process.env.VERCEL_ENV === "production" && (
+            {isProductionDeployment() && (
               <p className="t-small text-[var(--dim)]">To change your choice, open <AnalyticsSettingsButton />.</p>
             )}
             <p className="t-small text-[var(--dim)]">
-              Vercel Speed Insights measures page performance; result IDs are removed from its page URLs. Amazon supplies affiliate product images and links; clicking a paid link takes you to Amazon, which applies its own privacy practices. Result pages may load Wowhead&apos;s tooltip script when a racial ability has a Wowhead link. These services can receive browser request information when their resources load.
+              Amazon supplies affiliate product images and links; clicking a paid link takes you to Amazon, which applies its own privacy practices. Result pages may load Wowhead&apos;s tooltip script when a racial ability has a Wowhead link. These services can receive browser request information when their resources load.
             </p>
             <p className="t-small text-[var(--dim)]">
               The site is an unofficial project by <a href="https://earlyspark.com" className="link-bronze focus-ring">earlyspark</a>. For privacy questions, email <a href="mailto:business@earlyspark.com" className="link-bronze focus-ring">business@earlyspark.com</a>.

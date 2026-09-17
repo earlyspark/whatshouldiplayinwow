@@ -38,16 +38,14 @@ describe("completion statistics", () => {
     expect(counts[`version:1.17.0:result:class:${saved.primary.classId}`]).toBeUndefined();
   });
 
-  it.each([undefined, "development", "preview"])("never tallies outside Vercel production (%s)", async (environment) => {
-    vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("VERCEL_ENV", environment);
+  it.each([undefined, "development", "preview"])("never tallies outside a production deployment (%s)", async (environment) => {
+    vi.stubEnv("APP_ENV", environment);
     expect(await recordQuizCompletion(result())).toBe(false);
     expect(await readMonthlyQuizStats()).toEqual([]);
   });
 
-  it("never tallies on localhost even if VERCEL_ENV is accidentally set to production", async () => {
-    vi.stubEnv("VERCEL", undefined);
-    vi.stubEnv("VERCEL_ENV", "production");
+  it("treats an unrecognised APP_ENV as development rather than production", async () => {
+    vi.stubEnv("APP_ENV", "prod");
     expect(await recordQuizCompletion(result())).toBe(false);
   });
 });

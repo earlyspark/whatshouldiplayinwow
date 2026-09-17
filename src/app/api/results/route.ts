@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { deployEnv } from "@/lib/deploy-env";
 import { hasRedisConfig, redisConfig } from "@/lib/redis-config";
 import { answersSchema } from "@/lib/result-schema";
 import { createSavedResult, validateAnswers } from "@/lib/scoring";
@@ -12,7 +13,7 @@ const MAX_REQUEST_BYTES = 16_384;
 function rateLimiter() {
   // Local testing reuses real Redis credentials for permalink testing. Keep
   // the deployed guard in place without making repeated local QA hit the quota.
-  if (process.env.VERCEL_ENV !== "production" && process.env.VERCEL_ENV !== "preview") return null;
+  if (deployEnv() === "development") return null;
   const config = redisConfig();
   if (!config) return null;
   return new Ratelimit({
@@ -30,7 +31,12 @@ export async function POST(request: NextRequest) {
 
     const limiter = rateLimiter();
     if (limiter) {
-      const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+      // Behind Cloudflare -> Apache, cf-connecting-ip is the authoritative client
+      // address; x-forwarded-for can be rewritten by intermediate proxies. Falling
+      // back to a single proxy IP would rate limit every visitor as one bucket.
+      const ip = request.headers.get("cf-connecting-ip")
+        ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+        ?? "anonymous";
       const { success, reset } = await limiter.limit(ip);
       if (!success) {
         // reset is an epoch timestamp for when the window frees up again.

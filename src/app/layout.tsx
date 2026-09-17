@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { body, display, mono } from "./fonts";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import PrivacySafeSpeedInsights from "@/components/PrivacySafeSpeedInsights";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -39,7 +38,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to content
         </a>
         {children}
-        <PrivacySafeSpeedInsights />
         <GoogleAnalytics />
       </body>
     </html>

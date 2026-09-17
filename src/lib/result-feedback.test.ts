@@ -32,8 +32,7 @@ afterEach(() => {
 
 describe("result feedback storage", () => {
   it("keeps local votes in memory even when Redis credentials exist", async () => {
-    vi.stubEnv("VERCEL", undefined);
-    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("APP_ENV", undefined);
     const saved = result();
     expect(await saveResultVote(saved, "primary", "up")).toBe(true);
     expect(await saveResultVote(saved, "primary", "up")).toBe(false);
@@ -42,8 +41,7 @@ describe("result feedback storage", () => {
   });
 
   it("uses isolated preview vote storage without touching aggregate stats", async () => {
-    vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("APP_ENV", "preview");
     redisCalls.eval.mockResolvedValue(1);
     expect(await saveResultVote(result(), "runner-up-1", "down")).toBe(true);
     const [script, keys, args] = redisCalls.eval.mock.calls[0];
@@ -53,8 +51,7 @@ describe("result feedback storage", () => {
   });
 
   it("atomically replaces production counts in the result's creation month", async () => {
-    vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("APP_ENV", "production");
     redisCalls.eval.mockResolvedValue(1);
     const saved = result();
     expect(await saveResultVote(saved, "runner-up-2", "up")).toBe(true);
@@ -78,8 +75,7 @@ describe("result feedback storage", () => {
   });
 
   it.each(["primary", "runner-up-1", "runner-up-2"] as const)("attributes a %s vote to its own recommended class", async (position) => {
-    vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("APP_ENV", "production");
     redisCalls.eval.mockResolvedValue(1);
     const saved = result();
     await saveResultVote(saved, position, "down");

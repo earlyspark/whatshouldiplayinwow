@@ -36,8 +36,7 @@ afterEach(() => {
 
 describe("feedback write limit", () => {
   it("rejects excessive production changes before writing a vote", async () => {
-    vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("APP_ENV", "production");
     const receipt = "a".repeat(43);
     const answers = Object.fromEntries(questions.map((question) => [question.id, [question.options[0].id]])) as QuizAnswers;
     mocked.result = {
