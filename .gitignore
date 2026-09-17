@@ -8,6 +8,7 @@ CLAUDE.md
 agents.md
 claude.md
 docs/QUIZ_SCORING_HISTORY.local.md
+.agents/
 docs/adsense-setup.md
 *.tsbuildinfo
 .DS_Store

@@ -152,7 +152,7 @@ describe("quiz definition", () => {
 
   it("contrasts saved cooldown windows with sustained ability use without changing Q6 scoring", () => {
     const q6 = questions.find((question) => question.id === "q6")!;
-    expect(QUIZ_VERSION).toBe("1.20.0");
+    expect(QUIZ_VERSION).toBe("1.21.0");
     expect(q6.options.find((option) => option.id === "wait-opening")?.label).toBe("Hold my big cooldowns for an opening");
     expect(q6.options.find((option) => option.id === "stick-plan")?.label).toBe("Keep my core abilities rolling through the chaos");
     expect(q6.options.find((option) => option.id === "stick-plan")?.description).toContain("damage, healing, or control");
@@ -223,6 +223,20 @@ describe("scoring", () => {
     expect(q4CombinationBonus("priest", ["protect", "heal"])?.value).toBeGreaterThan(0);
   });
 
+  it("credits Mage damage with disruption and Warrior protection with damage without stacking Q4 bonuses", () => {
+    const magePair = q4CombinationBonus("mage", ["damage", "control"]);
+    const warriorPair = q4CombinationBonus("warrior", ["protect", "damage"]);
+    expect(magePair?.value).toBe(2);
+    expect(magePair?.label).toContain("disrupting");
+    expect(warriorPair?.value).toBe(2);
+    expect(q4CombinationBonus("mage", ["damage"])).toBeUndefined();
+    expect(q4CombinationBonus("warrior", ["protect"])).toBeUndefined();
+    expect(q4CombinationBonus("mage", ["damage", "control", "heal"])?.value).toBeCloseTo(16 / 9);
+    expect(q4CombinationBonus("mage", ["damage", "heal", "control"])?.value).toBeCloseTo(16 / 27);
+    expect(q4CombinationBonus("warrior", ["protect", "damage", "adapt"])?.value).toBeCloseTo(16 / 9);
+    expect(q4CombinationBonus("warrior", ["protect", "damage", "adapt"])?.label).toBe(warriorPair?.label);
+  });
+
   it("favors Warlock for disruption and role-switching classes for adaptation", () => {
     const control = q4CombinationBonus("warlock", ["protect", "damage", "control"])!;
     const adapt = q4CombinationBonus("druid", ["protect", "damage", "adapt"])!;
@@ -237,7 +251,7 @@ describe("scoring", () => {
   it("keeps combination weights proportional to the ranked group preference", () => {
     expect(groupContributionScore("warrior", ["protect"])).toBeGreaterThan(groupContributionScore("warlock", ["protect"]));
     expect(groupContributionScore("warrior", ["protect", "damage"])).toBeGreaterThan(groupContributionScore("warlock", ["protect", "damage"]));
-    expect(groupContributionScore("warlock", ["damage", "protect"])).toBeGreaterThan(groupContributionScore("warrior", ["damage", "protect"]));
+    expect(groupContributionScore("warrior", ["damage", "protect"])).toBeGreaterThan(groupContributionScore("warlock", ["damage", "protect"]));
     expect(groupContributionScore("priest", ["heal", "damage"])).toBeGreaterThan(groupContributionScore("paladin", ["heal", "damage"]));
     expect(groupContributionScore("warlock", ["protect", "damage", "control"])).toBeGreaterThan(groupContributionScore("druid", ["protect", "damage", "control"]));
     expect(groupContributionScore("druid", ["protect", "damage", "adapt"])).toBeGreaterThan(groupContributionScore("warlock", ["protect", "damage", "adapt"]));
@@ -288,6 +302,40 @@ describe("scoring", () => {
     expect((scoring.q3.dungeons.classes!.warlock! - 1) * questionWeights.q3.class * firstOfThree).toBeCloseTo(4 / 9);
     expect((scoring.q4.control.classes!.warlock! - 2) * questionWeights.q4.class * firstOfThree).toBeCloseTo(10 / 9);
     expect(scoring.q8["small-group"].classes!.warlock! * questionWeights.q8.class * firstOfThree).toBeCloseTo(10 / 9);
+  });
+
+  it("credits Mage leveling and trusted-duo utility while preserving companion and stealth counterexamples", () => {
+    expect(scoring.q3.leveling.classes?.mage).toBe(2);
+    expect(scoring.q8.duo.classes?.mage).toBe(2);
+    const arcanePartner = persona({
+      q3: ["leveling", "dungeons", "exploration"], q4: ["damage", "control"],
+      q5: ["ranged-magic"], q6: ["wait-opening"], q7: ["none"],
+      q8: ["duo", "small-group"], q9: ["arcane"], q12: ["prep"],
+    });
+    expect(scoreQuiz(arcanePartner).primary.classId).toBe("mage");
+    expect(scoreQuiz(answersByClass.warlock).primary.classId).toBe("warlock");
+    expect(scoreQuiz(answersByClass.rogue).primary.classId).toBe("rogue");
+    const firstOfThree = normalizedRankFactors(3)[0];
+    expect((scoring.q3.leveling.classes!.mage! - 1) * questionWeights.q3.class * firstOfThree).toBeCloseTo(4 / 9);
+    expect(scoring.q8.duo.classes!.mage! * questionWeights.q8.class * firstOfThree).toBeCloseTo(10 / 9);
+  });
+
+  it("credits Warrior damage, fast melee, and duo frontline play without displacing other niches", () => {
+    expect(scoring.q4.damage.classes?.warrior).toBe(3);
+    expect(scoring.q5["quick-melee"].classes?.warrior).toBe(2);
+    expect(scoring.q8.duo.classes?.warrior).toBe(2);
+    const martialPartner = persona({
+      q3: ["dungeons", "leveling"], q4: ["damage", "protect"],
+      q5: ["quick-melee", "heavy-melee"], q6: ["act-fast"], q7: ["none"],
+      q8: ["duo", "small-group"], q9: ["martial"], q12: ["juggling"],
+    });
+    expect(scoreQuiz(martialPartner).primary.classId).toBe("warrior");
+    expect(scoreQuiz(answersByClass.paladin).primary.classId).toBe("paladin");
+    expect(scoreQuiz(answersByClass.hunter).primary.classId).toBe("hunter");
+    const firstOfThree = normalizedRankFactors(3)[0];
+    expect((scoring.q4.damage.classes!.warrior! - 2) * questionWeights.q4.class * firstOfThree).toBeCloseTo(10 / 9);
+    expect((scoring.q5["quick-melee"].classes!.warrior! - 1) * questionWeights.q5.class * firstOfThree).toBeCloseTo(5 / 3);
+    expect(scoring.q8.duo.classes!.warrior! * questionWeights.q8.class * firstOfThree).toBeCloseTo(10 / 9);
   });
 
   it("keeps racial utility tied to the relevant racial kit", () => {

@@ -61,7 +61,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   },
   q3: {
     leveling: {
-      classes: { hunter: 3, druid: 3, warlock: 2, paladin: 2, shaman: 2, mage: 1, priest: 1, rogue: 1, warrior: 1 },
+      classes: { hunter: 3, druid: 3, warlock: 2, paladin: 2, shaman: 2, mage: 2, priest: 1, rogue: 1, warrior: 1 },
       races: { undead: 3, troll: 2, tauren: 2, orc: 2, "night-elf": 2, "skyborne-alliance": 2, "skyborne-horde": 2 },
     },
     dungeons: {
@@ -92,14 +92,15 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     // Frontline tanks lead; shields, totems, and protective pets also count.
     protect: { classes: { warrior: 3, paladin: 3, druid: 3, priest: 2, shaman: 1, warlock: 1, hunter: 1 } },
     heal: { classes: { priest: 3, paladin: 3, shaman: 3, druid: 3 } },
-    // Shadow and Retribution can deal damage, while Discipline mixes damage with healing.
-    damage: { classes: { mage: 3, rogue: 3, hunter: 3, warlock: 3, warrior: 2, shaman: 2, druid: 2, priest: 2, paladin: 2 } },
+    // Warrior is a damage class as well as a tank; Shadow and Retribution can
+    // deal damage, while Discipline mixes damage with healing.
+    damage: { classes: { mage: 3, rogue: 3, hunter: 3, warlock: 3, warrior: 3, shaman: 2, druid: 2, priest: 2, paladin: 2 } },
     control: { classes: { mage: 3, rogue: 3, warlock: 3, shaman: 2, hunter: 2, priest: 2, druid: 1 } },
     adapt: { classes: { druid: 3, shaman: 3, paladin: 3, priest: 2, warrior: 1, hunter: 1, warlock: 1 } },
   },
   q5: {
     "heavy-melee": { classes: { warrior: 3, paladin: 3, shaman: 2, druid: 1 } },
-    "quick-melee": { classes: { rogue: 3, shaman: 2, druid: 2, warrior: 1, hunter: 1 } },
+    "quick-melee": { classes: { rogue: 3, shaman: 2, druid: 2, warrior: 2, hunter: 1 } },
     "ranged-companion": { classes: { hunter: 3, warlock: 3 } },
     "ranged-magic": { classes: { mage: 3, warlock: 3, priest: 2, shaman: 2, druid: 1 } },
     adaptable: { classes: { druid: 3, shaman: 3, paladin: 2, priest: 1 } },
@@ -122,7 +123,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
       races: { undead: 2, troll: 2, tauren: 1, "night-elf": 1 },
     },
     duo: {
-      classes: { hunter: 3, paladin: 2, druid: 2, shaman: 2, warlock: 2, priest: 1 },
+      classes: { hunter: 3, paladin: 2, druid: 2, shaman: 2, warlock: 2, mage: 2, warrior: 2, priest: 1 },
       races: { human: 1, dwarf: 1, orc: 1, tauren: 1 },
     },
     "small-group": {

@@ -1,25 +1,33 @@
 "use client";
 
 import { useEffect } from "react";
-import Script from "next/script";
 
 type WowheadWindow = Window & {
   $WowheadPower?: { refreshLinks: (force?: boolean) => void };
+  whTooltips?: { colorLinks: boolean; iconizeLinks: boolean; renameLinks: boolean };
 };
 
-function refreshWowheadLinks() {
-  (window as WowheadWindow).$WowheadPower?.refreshLinks();
-}
+const SCRIPT_ID = "wowhead-tooltips-script";
 
 export default function WowheadTooltips({ resultId }: { resultId: string }) {
-  useEffect(refreshWowheadLinks, [resultId]);
+  useEffect(() => {
+    const wowheadWindow = window as WowheadWindow;
+    wowheadWindow.whTooltips = { colorLinks: true, iconizeLinks: true, renameLinks: true };
 
-  return (
-    <>
-      <Script id="wowhead-tooltip-config" strategy="afterInteractive">
-        {`window.whTooltips = { colorLinks: true, iconizeLinks: true, renameLinks: true };`}
-      </Script>
-      <Script src="https://wow.zamimg.com/js/tooltips.js" strategy="afterInteractive" onReady={refreshWowheadLinks} />
-    </>
-  );
+    const refresh = () => wowheadWindow.$WowheadPower?.refreshLinks();
+    let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = SCRIPT_ID;
+      script.src = "https://wow.zamimg.com/js/tooltips.js";
+      script.async = true;
+      document.head.appendChild(script);
+    }
+    script.addEventListener("load", refresh);
+    refresh();
+
+    return () => script?.removeEventListener("load", refresh);
+  }, [resultId]);
+
+  return null;
 }

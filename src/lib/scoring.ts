@@ -27,9 +27,10 @@ const q4CombinationBonuses: {
   label: string;
   classes: Partial<Record<ClassId, number>>;
 }[] = [
+  { choices: ["damage", "control"], label: "dealing damage while disrupting enemies", classes: { mage: 1 } },
   { choices: ["heal", "damage"], label: "healing while dealing damage", classes: { priest: 1.5, paladin: 0.5, shaman: 0.5, druid: 0.5 } },
   { choices: ["protect", "heal"], label: "protecting and healing allies", classes: { priest: 1.25, paladin: 0.5, druid: 0.5, shaman: 0.5 } },
-  { choices: ["protect", "damage"], label: "protecting allies while dealing damage", classes: { warlock: 0.75, hunter: 0.75, warrior: 0.25, paladin: 0.25, druid: 0.25 } },
+  { choices: ["protect", "damage"], label: "protecting allies while dealing damage", classes: { warrior: 1, warlock: 0.75, hunter: 0.75, paladin: 0.25, druid: 0.25 } },
   { choices: ["protect", "damage", "control"], anchors: ["protect", "damage"], label: "protecting, damaging, and disrupting enemies", classes: { warlock: 1.75, hunter: 0.75, priest: 0.5, druid: 0.5, warrior: 0.25 } },
   { choices: ["protect", "damage", "adapt"], anchors: ["protect", "damage"], label: "protecting, damaging, and changing roles", classes: { druid: 1.5, paladin: 1.25, shaman: 1.25, priest: 0.5, warrior: 0.5 } },
 ];

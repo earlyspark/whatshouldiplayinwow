@@ -3,6 +3,7 @@ import { contentSecurityPolicy } from "./src/lib/content-security-policy";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  allowedDevOrigins: ["127.0.0.1"],
   // Webpack can't trace the OG routes' process.cwd() file reads, so ship them explicitly.
   outputFileTracingIncludes: {
     "/*": ["./assets/crest.png", "./assets/fonts/*.ttf"],
