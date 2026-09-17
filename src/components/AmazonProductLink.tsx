@@ -5,14 +5,15 @@ import { trackEvent } from "@/lib/gtag";
 interface AmazonProductLinkProps {
   href: string;
   asin: string;
+  category?: string;
   placement: "sidebar" | "inline";
   className?: string;
   children: React.ReactNode;
 }
 
-export default function AmazonProductLink({ href, asin, placement, className, children }: AmazonProductLinkProps) {
+export default function AmazonProductLink({ href, asin, category, placement, className, children }: AmazonProductLinkProps) {
   const trackClick = () => {
-    trackEvent("ad_click", { placement, destination_host: "amazon", item_id: asin });
+    trackEvent("ad_click", { placement, destination_host: "amazon", item_id: asin, category });
   };
 
   return (

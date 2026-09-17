@@ -1,16 +1,21 @@
 import AdSlot from "@/components/AdSlot";
 import AmazonProductLink from "@/components/AmazonProductLink";
-import { getBannerProducts } from "@/lib/amazon";
+import { getBannerProducts, getEquipmentGroups } from "@/lib/amazon";
 
 interface AmazonBannerProps {
   placement: "sidebar" | "inline";
   keywords?: string;
   focusTerm?: string;
+  equipment?: boolean;
 }
 
-export default async function AmazonBanner({ placement, keywords, focusTerm }: AmazonBannerProps) {
+export default async function AmazonBanner({ placement, keywords, focusTerm, equipment = false }: AmazonBannerProps) {
   const limit = 4;
-  const products = await getBannerProducts(limit, keywords, focusTerm);
+  const products = equipment
+    ? (await getEquipmentGroups("results")).flatMap((group) => group.products.length
+      ? [{ ...group.products[0], category: group.category }]
+      : [])
+    : (await getBannerProducts(limit, keywords, focusTerm)).map((product) => ({ ...product, category: undefined }));
   if (!products.length) return <AdSlot placement={placement} />;
 
   const isSidebar = placement === "sidebar";
@@ -30,6 +35,7 @@ export default async function AmazonBanner({ placement, keywords, focusTerm }: A
             key={product.asin}
             href={product.url}
             asin={product.asin}
+            category={product.category}
             placement={placement}
             className="focus-ring group flex flex-col gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/[.04]"
           >
@@ -52,9 +58,9 @@ export default async function AmazonBanner({ placement, keywords, focusTerm }: A
         ))}
       </div>
 
-      <p className="t-small mt-4 text-[var(--dim)]">
+      {!equipment && <p className="t-small mt-4 text-[var(--dim)]">
         Ads help me pay the bills for this site, thanks for supporting a small creator! As an Amazon Associate, this site earns from qualifying purchases.
-      </p>
+      </p>}
     </aside>
   );
 }

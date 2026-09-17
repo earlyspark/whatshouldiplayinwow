@@ -41,7 +41,6 @@ beforeEach(() => {
   vi.stubEnv("AMAZON_CREATORS_CREDENTIAL_SECRET", "amzn1.oa2-cs.v1.test");
   vi.stubEnv("AMAZON_ASSOCIATE_TAG", "wowforever-20");
   vi.stubEnv("AMAZON_AD_ASINS", "B0TESTASIN");
-  vi.stubEnv("AMAZON_AD_PINNED_ASIN", "");
   // Keep the Redis-backed cache out of the way so tests exercise the API path.
   vi.stubEnv("WOWFOREVER_KV_REST_API_URL", "");
   vi.stubEnv("WOWFOREVER_KV_REST_API_TOKEN", "");
@@ -246,53 +245,7 @@ function poolResponse(count: number) {
   };
 }
 
-describe("pool, pinning and rotation", () => {
-  it("puts the pinned product first and fills the rest from the pool", async () => {
-    vi.stubEnv("AMAZON_AD_ASINS", "");
-    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
-
-    const fetchMock = vi.fn(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (url.includes("/auth/o2/token")) return jsonResponse(TOKEN_RESPONSE);
-      if (url.includes("getItems")) {
-        return jsonResponse({
-          itemsResult: {
-            items: [
-              {
-                asin: "B0PINNED01",
-                detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
-                itemInfo: { title: { displayValue: "Evergreen pick" } },
-              },
-            ],
-          },
-        });
-      }
-      return jsonResponse(poolResponse(20));
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    const products = await getBannerProducts(3);
-    expect(products).toHaveLength(3);
-    expect(products[0].asin).toBe("B0PINNED01");
-    expect(products.slice(1).some((product) => product.asin === "B0PINNED01")).toBe(false);
-  });
-
-  it("keeps the pinned product visible when the search fails", async () => {
-    vi.stubEnv("AMAZON_AD_ASINS", "");
-    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
-    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (url.includes("/auth/o2/token")) return jsonResponse(TOKEN_RESPONSE);
-      if (url.includes("searchItems")) return jsonResponse({ message: "unavailable" }, 500);
-      return jsonResponse({ itemsResult: { items: [{
-        asin: "B0PINNED01",
-        detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
-        itemInfo: { title: { displayValue: "Evergreen pick" } },
-      }] } });
-    }));
-
-    expect((await getProductPool()).map((product) => product.asin)).toEqual(["B0PINNED01"]);
-  });
+describe("pool and rotation", () => {
 
   it("varies the rotating slots across renders without new API calls", async () => {
     vi.stubEnv("AMAZON_AD_ASINS", "");
@@ -360,37 +313,6 @@ describe("getContextualProduct", () => {
     expect(picks.size).toBeGreaterThan(1);
   });
 
-  it("never offers the pinned product, which already has the banner slot", async () => {
-    vi.stubEnv("AMAZON_AD_ASINS", "");
-    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (input: string | URL | Request) => {
-        const url = String(input);
-        if (url.includes("/auth/o2/token")) return jsonResponse(TOKEN_RESPONSE);
-        if (url.includes("getItems")) {
-          return jsonResponse({
-            itemsResult: {
-              items: [
-                {
-                  asin: "B0PINNED01",
-                  detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
-                  itemInfo: { title: { displayValue: "Evergreen pick" } },
-                },
-              ],
-            },
-          });
-        }
-        return jsonResponse(poolResponse(15));
-      }),
-    );
-
-    for (const seed of ["one", "two", "three", "four", "five"]) {
-      expect((await getContextualProduct(seed))?.asin).not.toBe("B0PINNED01");
-    }
-  });
-
   it("returns null when there is nothing to show", async () => {
     vi.stubEnv("AMAZON_CREATORS_CREDENTIAL_ID", "");
     expect(await getContextualProduct("seed")).toBeNull();
@@ -424,7 +346,6 @@ describe("keyword overrides", () => {
 
   it("fills a four-product result sidebar from one class-specific search", async () => {
     vi.stubEnv("AMAZON_AD_ASINS", "B0CURATED1");
-    vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
     const fetchMock = stubAmazon(poolResponse(20));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -455,21 +376,14 @@ describe("keyword overrides", () => {
     expect(contextual?.title).toContain("Warrior");
   });
 
-  it("keeps the generic pinned product out of result-specific pools", async () => {
+  it("does not fetch a former pinned product for result-specific pools", async () => {
     vi.stubEnv("AMAZON_AD_ASINS", "");
     vi.stubEnv("AMAZON_AD_PINNED_ASIN", "B0PINNED01");
-    const response = poolResponse(8);
-    response.searchResult.items.unshift({
-      asin: "B0PINNED01",
-      detailPageURL: "https://www.amazon.com/dp/B0PINNED01?tag=wowforever-20",
-      itemInfo: { title: { displayValue: "Evergreen pick" } },
-    });
-    const fetchMock = stubAmazon(response);
+    const fetchMock = stubAmazon(poolResponse(8));
     vi.stubGlobal("fetch", fetchMock);
 
     const products = await getProductPool("World of Warcraft Druid");
     expect(products).toHaveLength(8);
-    expect(products.some((product) => product.asin === "B0PINNED01")).toBe(false);
     expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("getItems"))).toHaveLength(0);
   });
 

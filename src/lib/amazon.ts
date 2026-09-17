@@ -16,6 +16,7 @@ const PRODUCT_TTL_SECONDS = 6 * 60 * 60;
 const FAILURE_TTL_SECONDS = 90;
 const REQUEST_TIMEOUT_MS = 8000;
 const CACHE_PREFIX = "wow-forever-amazon:v2";
+export const CREATOR_BOOK_ASIN = "B0HGNX657R";
 
 const PRODUCT_RESOURCES = [
   "images.primary.large",
@@ -31,6 +32,32 @@ export interface AmazonProduct {
   imageWidth: number | null;
   imageHeight: number | null;
 }
+
+export type EquipmentCategory =
+  | "stream-controller" | "mmo-mouse" | "mechanical-keyboard" | "1440p-monitor"
+  | "microphone" | "4k-webcam" | "key-light" | "studio-headphones";
+
+export interface EquipmentGroup {
+  category: EquipmentCategory;
+  products: AmazonProduct[];
+}
+
+const EQUIPMENT = {
+  homepage: [
+    { category: "stream-controller", keywords: "Elgato Stream Deck streaming controller", searchIndex: "Electronics", minPrice: 10000, include: /stream deck|stream controller|streaming controller/i },
+    { category: "mmo-mouse", keywords: "MMO gaming mouse 12 buttons", searchIndex: "Electronics", minPrice: 6000, include: /mmo.*mouse|mouse.*mmo|12.button.*mouse|mouse.*12.button/i },
+    { category: "mechanical-keyboard", keywords: "mechanical gaming keyboard", searchIndex: "Computers", minPrice: 10000, include: /mechanical.*keyboard|keyboard.*mechanical/i },
+    { category: "1440p-monitor", keywords: "1440p QHD gaming monitor", searchIndex: "Electronics", minPrice: 20000, include: /(?:1440p|qhd|2560.?x.?1440|wqhd).*monitor|monitor.*(?:1440p|qhd|2560.?x.?1440|wqhd)/i },
+  ],
+  results: [
+    { category: "microphone", keywords: "USB XLR streaming microphone", searchIndex: "Electronics", minPrice: 10000, include: /microphone|\bmic\b/i },
+    { category: "4k-webcam", keywords: "4K webcam streaming", searchIndex: "Electronics", minPrice: 12000, include: /(?:4k|uhd|2160p).*webcam|webcam.*(?:4k|uhd|2160p)/i },
+    { category: "key-light", keywords: "streaming key light video", searchIndex: "Electronics", minPrice: 7500, include: /key light|video light|studio light|streaming light/i },
+    { category: "studio-headphones", keywords: "studio monitor headphones", searchIndex: "Electronics", minPrice: 10000, include: /(?:studio|monitor|reference).*headphones|headphones.*(?:studio|monitor|reference)/i },
+  ],
+} as const;
+
+const ACCESSORY_ONLY = /\b(?:case|cover|skin|mount|holder|adapter|cable|replacement|spare|keycaps?|mouse ?pad|boom arm|pop filter|shock mount|light bulb|diffuser|battery|charger|bundle of accessories|stand for|discontinued|no longer supported|renewed|refurbished)\b/i;
 
 interface TokenCache {
   token: string;
@@ -207,6 +234,43 @@ export async function searchItems(keywords: string, itemCount: number, config: A
   return callCatalog(config, "searchItems", { keywords, itemCount, itemPage });
 }
 
+/** Each category is cached independently; sequential misses respect Amazon's request quota. */
+export async function getEquipmentGroups(page: "homepage" | "results"): Promise<EquipmentGroup[]> {
+  const config = amazonConfig();
+  if (!config) return EQUIPMENT[page].map(({ category }) => ({ category, products: [] }));
+
+  const seen = new Set<string>([CREATOR_BOOK_ASIN]);
+  const groups: EquipmentGroup[] = [];
+  for (const profile of EQUIPMENT[page]) {
+    const key = `${config.marketplace}:equipment:v1:${profile.category}:${profile.minPrice}`;
+    const candidates = await cached(key, () => callCatalog(config, "searchItems", {
+      keywords: profile.keywords,
+      searchIndex: profile.searchIndex,
+      itemCount: 10,
+      itemPage: 1,
+      availability: "Available",
+      condition: "New",
+      minReviewsRating: 4,
+      minPrice: profile.minPrice,
+      sortBy: "Relevance",
+    }));
+    const products = candidates.filter((product) =>
+      Boolean(product.imageUrl) && profile.include.test(product.title) &&
+      !ACCESSORY_ONLY.test(product.title) && !seen.has(product.asin),
+    );
+    for (const product of products) seen.add(product.asin);
+    groups.push({ category: profile.category, products });
+  }
+  return groups;
+}
+
+export async function getCreatorBookProduct(): Promise<AmazonProduct | null> {
+  const config = amazonConfig();
+  if (!config) return null;
+  const products = await cached(`${config.marketplace}:creator-book:${CREATOR_BOOK_ASIN}`, () => getItemsByAsin([CREATOR_BOOK_ASIN], config));
+  return products.find((product) => product.asin === CREATOR_BOOK_ASIN) ?? null;
+}
+
 async function searchPool(keywords: string, size: number, config: AmazonConfig) {
   const products = new Map<string, AmazonProduct>();
   const pageSize = Math.min(10, size);
@@ -224,7 +288,7 @@ export async function getProductPool(overrideKeywords?: string): Promise<AmazonP
   const config = amazonConfig();
   if (!config) return [];
 
-  const { asins: configuredAsins, keywords: defaultKeywords, pinnedAsin, poolSize } = adSelection();
+  const { asins: configuredAsins, keywords: defaultKeywords, poolSize } = adSelection();
   const asins = overrideKeywords ? [] : configuredAsins;
   const keywords = overrideKeywords ?? defaultKeywords;
   // One catalog request per class query, to spare Amazon's search quota.
@@ -234,31 +298,13 @@ export async function getProductPool(overrideKeywords?: string): Promise<AmazonP
     : `${config.marketplace}:search:${keywords}:${searchSize}`;
 
   try {
-    const [poolResult, pinnedResult] = await Promise.allSettled([
-      cached(poolKey, () =>
-        asins.length ? getItemsByAsin(asins, config) : searchPool(keywords, searchSize, config),
-      ),
-      pinnedAsin && !overrideKeywords
-        ? cached(`${config.marketplace}:pinned:${pinnedAsin}`, () => getItemsByAsin([pinnedAsin], config))
-        : Promise.resolve([]),
-    ]);
-
-    if (poolResult.status === "rejected") console.error("Amazon search pool fetch failed", poolResult.reason);
-    if (pinnedResult.status === "rejected") console.error("Amazon pinned product fetch failed", pinnedResult.reason);
-    const pool = poolResult.status === "fulfilled" ? poolResult.value : [];
-    const pinned = pinnedResult.status === "fulfilled" ? pinnedResult.value : [];
-    const rest = pool.filter((product) => product.asin !== pinnedAsin);
-    return [...pinned, ...rest];
+    return await cached(poolKey, () =>
+      asins.length ? getItemsByAsin(asins, config) : searchPool(keywords, searchSize, config),
+    );
   } catch (error) {
     console.error("Amazon product fetch failed", error);
     return [];
   }
-}
-
-function hasPinned(pool: AmazonProduct[], keywords?: string) {
-  if (keywords) return false;
-  const { pinnedAsin } = adSelection();
-  return Boolean(pinnedAsin) && pool[0]?.asin === pinnedAsin;
 }
 
 function hashSeed(seed: string) {
@@ -287,15 +333,13 @@ export async function getBannerProducts(limit: number, keywords?: string, focusT
     ? pool.filter((product) => product.title.toLowerCase().includes(focusTerm.toLowerCase()))
     : pool;
 
-  if (!hasPinned(relevant, keywords)) return shuffle(relevant).slice(0, limit);
-  const [pinned, ...rest] = relevant;
-  return [pinned, ...shuffle(rest).slice(0, Math.max(0, limit - 1))];
+  return shuffle(relevant).slice(0, limit);
 }
 
 /** Deterministic by seed so a shared permalink shows the same product on every visit. */
 export async function getContextualProduct(seed: string, keywords?: string, focusTerm?: string): Promise<AmazonProduct | null> {
   const pool = await getProductPool(keywords);
-  const candidates = (hasPinned(pool, keywords) ? pool.slice(1) : pool)
+  const candidates = pool
     .filter((product) => !focusTerm || product.title.toLowerCase().includes(focusTerm.toLowerCase()));
   if (!candidates.length) return null;
   return candidates[hashSeed(seed) % candidates.length];

@@ -47,7 +47,6 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const quizChanged = result.quizVersion !== QUIZ_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;
   const summary = `This pick balances ${result.primary.classTagline} with ${result.primary.raceTagline}.`;
-  const resultKeywords = `World of Warcraft ${result.primary.className}`;
   const hasWowheadTooltips = result.primary.racials.some((racial) => wowheadRacialUrl(result.primary.raceId, racial.name));
 
   return (
@@ -132,7 +131,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
           </ResultFeedbackProvider>
           <div className="result-ads space-y-5">
             <CreatorShopCard />
-            <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" keywords={resultKeywords} focusTerm={result.primary.className} /></Suspense>
+            <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" equipment /></Suspense>
           </div>
         </div>
 

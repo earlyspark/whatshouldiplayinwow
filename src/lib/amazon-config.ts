@@ -63,7 +63,7 @@ export function hasAmazonConfig() {
 const MAX_POOL_SIZE = 100;
 const DEFAULT_POOL_SIZE = 50;
 
-/** Explicit ASINs win over keywords; the pinned ASIN always takes the first slot. */
+/** Explicit ASINs win over keywords for the legacy methodology ad pool. */
 export function adSelection() {
   const asins = (value("AMAZON_AD_ASINS") ?? "")
     .split(",")
@@ -79,7 +79,6 @@ export function adSelection() {
   return {
     asins,
     keywords: value("AMAZON_AD_KEYWORDS") ?? "World of Warcraft",
-    pinnedAsin: value("AMAZON_AD_PINNED_ASIN")?.toUpperCase() ?? null,
     poolSize,
   };
 }

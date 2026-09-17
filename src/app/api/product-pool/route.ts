@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { getProductPool } from "@/lib/amazon";
-import { adSelection } from "@/lib/amazon-config";
+import { getEquipmentGroups } from "@/lib/amazon";
 
 /** The path avoids "ads": blocklists match /ads/ and /ad/ URL substrings. */
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const products = await getProductPool();
+  const groups = await getEquipmentGroups("homepage");
   return NextResponse.json(
-    { products, pinnedAsin: adSelection().pinnedAsin },
+    { groups },
     {
       headers: {
         "Cache-Control": "public, s-maxage=60",

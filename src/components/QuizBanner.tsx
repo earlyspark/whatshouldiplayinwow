@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import AmazonProductLink from "@/components/AmazonProductLink";
-import type { AmazonProduct } from "@/lib/amazon";
+import type { EquipmentGroup } from "@/lib/amazon";
+import { selectQuizEquipment } from "@/lib/equipment-selection";
 
 interface QuizBannerProps {
   questionIndex: number;
@@ -13,21 +14,20 @@ interface QuizBannerProps {
 }
 
 interface ProductPoolResponse {
-  products: AmazonProduct[];
-  pinnedAsin: string | null;
+  groups: EquipmentGroup[];
 }
 
 export function useQuizProductPool() {
-  const [pool, setPool] = useState<ProductPoolResponse>({ products: [], pinnedAsin: null });
+  const [pool, setPool] = useState<ProductPoolResponse>({ groups: [] });
   const [visitOffset, setVisitOffset] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let active = true;
     fetch("/api/product-pool")
-      .then((response) => (response.ok ? response.json() : { products: [], pinnedAsin: null }))
+      .then((response) => (response.ok ? response.json() : { groups: [] }))
       .then((data: ProductPoolResponse) => {
-        if (active && Array.isArray(data.products)) {
+        if (active && Array.isArray(data.groups)) {
           setVisitOffset(window.crypto.getRandomValues(new Uint32Array(1))[0]);
           setPool(data);
           setLoaded(true);
@@ -45,14 +45,7 @@ export function useQuizProductPool() {
 }
 
 export default function QuizBanner({ questionIndex, layout = "banner", pool, visitOffset, loaded }: QuizBannerProps) {
-  const pinned = pool.products.find((product) => product.asin === pool.pinnedAsin);
-  const rotating = pool.products.filter((product) => product.asin !== pool.pinnedAsin);
-  const step = Math.max(0, questionIndex + 1);
-  const start = rotating.length ? (visitOffset + step * 3) % rotating.length : 0;
-  const products = [
-    ...(pinned ? [pinned] : []),
-    ...Array.from({ length: Math.min(pinned ? 3 : 4, rotating.length) }, (_, index) => rotating[(start + index) % rotating.length]),
-  ];
+  const products = selectQuizEquipment(pool.groups, visitOffset, questionIndex);
 
   return (
     <aside
@@ -62,11 +55,12 @@ export default function QuizBanner({ questionIndex, layout = "banner", pool, vis
       <span className="t-label block text-[var(--dim)]">Advertisement</span>
       {products.length ? (
         <div className={`mt-4 grid grid-cols-2 gap-3 ${layout === "banner" ? "lg:grid-cols-4" : ""}`}>
-          {products.map((product) => (
+          {products.map(({ product, category }) => (
             <AmazonProductLink
               key={product.asin}
               href={product.url}
               asin={product.asin}
+              category={category}
               placement="inline"
               className={`focus-ring group flex min-w-0 flex-col gap-2 rounded-xl bg-white/[.03] transition-colors hover:bg-white/[.07] ${layout === "sidebar" ? "p-2" : "p-3"}`}
             >

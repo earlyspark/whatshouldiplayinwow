@@ -32,7 +32,7 @@ const tag = process.env.AMAZON_ASSOCIATE_TAG ?? process.env.NEXT_PUBLIC_AMAZON_A
 const version = (process.env.AMAZON_CREATORS_VERSION ?? "3.1").replace(/^v/i, "");
 const marketplace = process.env.AMAZON_CREATORS_MARKETPLACE ?? "www.amazon.com";
 const keywords = process.env.AMAZON_AD_KEYWORDS ?? "World of Warcraft";
-const pinned = process.env.AMAZON_AD_PINNED_ASIN;
+const creatorBookAsin = "B0HGNX657R";
 
 const missing = [
   ["AMAZON_CREATORS_CREDENTIAL_ID", id],
@@ -114,20 +114,18 @@ for (const item of items.slice(0, 3)) {
   console.log(`   - ${item.itemInfo?.title?.displayValue ?? item.asin}`);
 }
 
-if (pinned) {
-  const pinnedResponse = await catalog("getItems", { itemIds: [pinned] });
-  if (!pinnedResponse.ok) {
-    console.error(`\nStep 3 FAILED: getItems(${pinned}) returned ${pinnedResponse.status}`);
-    console.error(await pinnedResponse.text());
-    process.exit(1);
-  }
-  const pinnedItems = (await pinnedResponse.json()).itemsResult?.items ?? [];
-  if (!pinnedItems.length) {
-    console.error(`\nStep 3 WARNING: ${pinned} returned no product.`);
-    console.error("Check the ASIN exists in this marketplace.");
-  } else {
-    console.log(`Step 3 OK: pinned ${pinned} is "${pinnedItems[0].itemInfo?.title?.displayValue}"`);
-  }
+const bookResponse = await catalog("getItems", { itemIds: [creatorBookAsin] });
+if (!bookResponse.ok) {
+  console.error(`\nStep 3 FAILED: getItems(${creatorBookAsin}) returned ${bookResponse.status}`);
+  console.error(await bookResponse.text());
+  process.exit(1);
+}
+const bookItems = (await bookResponse.json()).itemsResult?.items ?? [];
+if (!bookItems.length) {
+  console.error(`\nStep 3 WARNING: ${creatorBookAsin} returned no product.`);
+  console.error("Check the ASIN exists in this marketplace.");
+} else {
+  console.log(`Step 3 OK: creator book ${creatorBookAsin} is "${bookItems[0].itemInfo?.title?.displayValue}"`);
 }
 
 console.log("\nCredentials work. If ads still do not appear, restart `npm run dev`.");
