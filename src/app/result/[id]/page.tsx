@@ -10,6 +10,7 @@ import CreatorShopCard from "@/components/CreatorShopCard";
 import SiteFooter from "@/components/SiteFooter";
 import WowheadTooltips from "@/components/WowheadTooltips";
 import LogoHomeLink from "@/components/LogoHomeLink";
+import SupportButton from "@/components/SupportButton";
 import { withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
 import { QUIZ_VERSION } from "@/data/questions";
@@ -75,16 +76,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
         <div className="result-layout mt-8">
           <ResultFeedbackProvider id={id}>
           <div className="space-y-8">
-            <a
-              href="https://buymeacoffee.com/earlyspark"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`focus-ring mx-auto flex min-h-9 w-fit max-w-full items-center justify-center gap-2 rounded-lg bg-[#ffbb00] px-4 py-2 text-center text-xs leading-tight text-black no-underline transition-colors hover:bg-[#e5a800] ${supportButtonFont.className}`}
-              style={{ color: "#000000" }}
-            >
-              <span className="text-lg" aria-hidden="true">☕</span>
-              <span>Support the quiz creator</span>
-            </a>
+            <SupportButton fontClassName={supportButtonFont.className} />
             <section className="surface p-6 sm:p-8">
               <p className="t-label text-[var(--dim)]">Race</p>
               <h2 className="t-section mt-3">{result.primary.raceName}</h2>
