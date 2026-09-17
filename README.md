@@ -117,7 +117,7 @@ The race and class list, which combinations are allowed, and each race's racials
 - Blizzard's [*Deep Dive* panel recap](https://worldofwarcraft.blizzard.com/en-us/news/24303313/world-of-warcraft-forever-deep-dive-panel-recap)
 - Wowhead's [racials and class-race combinations guide](https://www.wowhead.com/forever/guide/new-race-class-combinations)
 
-The site's [How this works](https://www.whatshouldiplayinwowforever.com/methodology) page shows when the game information was last checked. Saved results also record a data version, which can stay the same when a review finds no change to the game data.
+The site's [How this works](https://whatshouldiplayinwowforever.com/methodology) page shows when the game information was last checked. Saved results also record a data version, which can stay the same when a review finds no change to the game data.
 
 **Shared results stay the same for 12 months.** Each result saves your answers, quiz version, and data version, so a shared link shows the same pick until it expires 12 months after creation. If the game data, quiz questions, or scoring changes before then, the result page offers a retake with the current version. Expired links show a not-found page.
 
