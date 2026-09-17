@@ -1,7 +1,7 @@
 "use client";
 
-import { openAnalyticsSettings } from "./AnalyticsConsent";
+import { openConsentSettings } from "./ConsentManager";
 
 export default function AnalyticsSettingsButton() {
-  return <button type="button" onClick={openAnalyticsSettings} className="link-bronze focus-ring">Analytics settings</button>;
+  return <button type="button" onClick={openConsentSettings} className="link-bronze focus-ring">Ads and analytics settings</button>;
 }

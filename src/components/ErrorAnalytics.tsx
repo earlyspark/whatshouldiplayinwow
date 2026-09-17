@@ -13,13 +13,11 @@ export default function ErrorAnalytics({ type, loadScript = false }: {
     if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" || !measurementId) return;
     let sent = false;
 
-    const sendIfConsented = (consentedForVisit = false) => {
+    const sendIfConsented = () => {
       if (sent) return;
-      if (!consentedForVisit) {
-        try {
-          if (localStorage.getItem(ANALYTICS_CONSENT_KEY) !== "accepted") return;
-        } catch { return; }
-      }
+      try {
+        if (localStorage.getItem(ANALYTICS_CONSENT_KEY) !== "accepted") return;
+      } catch { return; }
 
       prepareGtag();
       window.gtag?.("js", new Date());
@@ -35,8 +33,7 @@ export default function ErrorAnalytics({ type, loadScript = false }: {
       }
     };
 
-    sendIfConsented();
-    const onConsentAccepted = () => sendIfConsented(true);
+    const onConsentAccepted = () => sendIfConsented();
     window.addEventListener(ANALYTICS_CONSENT_CHANGED_EVENT, onConsentAccepted);
     return () => window.removeEventListener(ANALYTICS_CONSENT_CHANGED_EVENT, onConsentAccepted);
   }, [loadScript, type]);

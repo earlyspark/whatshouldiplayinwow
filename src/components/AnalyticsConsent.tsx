@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Script from "next/script";
-import GoogleAnalyticsPageViews from "./GoogleAnalyticsPageViews";
 import { ANALYTICS_CONSENT_CHANGED_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics-consent";
-import { prepareGtag } from "@/lib/gtag";
+import { AD_CONSENT_CHANGED_EVENT, AD_CONSENT_KEY } from "@/lib/ad-consent";
 
 const SETTINGS_EVENT = "wow-forever-open-analytics-settings";
 type Choice = "accepted" | "declined";
@@ -22,10 +20,9 @@ function clearAnalyticsCookies() {
   }
 }
 
-export default function AnalyticsConsent({ measurementId }: { measurementId: string }) {
+export default function AnalyticsConsent() {
   const [choice, setChoice] = useState<Choice | null | undefined>(undefined);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [scriptReady, setScriptReady] = useState(false);
   const declineRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
@@ -33,8 +30,8 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
     const frame = window.requestAnimationFrame(() => {
       try {
         const saved = localStorage.getItem(ANALYTICS_CONSENT_KEY);
-        if (saved === "accepted" || saved === "declined") {
-          if (saved === "accepted") prepareGtag();
+        const ads = localStorage.getItem(AD_CONSENT_KEY);
+        if ((saved === "accepted" || saved === "declined") && saved === ads) {
           setChoice(saved);
           return;
         }
@@ -61,12 +58,12 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
 
   const choose = (next: Choice) => {
     try { localStorage.setItem(ANALYTICS_CONSENT_KEY, next); } catch {}
+    try { localStorage.setItem(AD_CONSENT_KEY, next); } catch {}
     if (next === "accepted") {
-      prepareGtag();
       window.dispatchEvent(new Event(ANALYTICS_CONSENT_CHANGED_EVENT));
+      window.dispatchEvent(new Event(AD_CONSENT_CHANGED_EVENT));
     }
     if (next === "declined" && choice === "accepted") {
-      delete window.gtag;
       clearAnalyticsCookies();
       window.location.reload();
       return;
@@ -77,28 +74,13 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
 
   return (
     <>
-      {choice === "accepted" && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-            strategy="afterInteractive"
-            onReady={() => {
-              window.gtag?.("js", new Date());
-              window.gtag?.("config", measurementId, { send_page_view: false });
-              setScriptReady(true);
-            }}
-          />
-          {scriptReady && <GoogleAnalyticsPageViews measurementId={measurementId} />}
-        </>
-      )}
-
       {choice !== undefined && (choice === null || settingsOpen) && (
         <section aria-labelledby="cookie-consent-title" className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4">
           <div className={`mx-auto max-w-2xl rounded-md border border-[var(--bronze-dim)] bg-[var(--surface)] p-3 shadow-2xl sm:p-4 ${settingsOpen && choice !== null ? "sm:flex sm:items-center sm:justify-between sm:gap-5" : "flex items-center justify-between gap-3 sm:gap-5"}`}>
             <div className="min-w-0">
-              <h2 id="cookie-consent-title" className="text-sm font-semibold text-[var(--bone)]">Cookie consent</h2>
+              <h2 id="cookie-consent-title" className="text-sm font-semibold text-[var(--bone)]">Ads and analytics cookies</h2>
               <p className="mt-0.5 text-sm text-[var(--dim)]">
-                Read more in{" "}
+                Accept loads Google ads and analytics. Decline keeps both off. Details in{" "}
                 <Link href="/methodology#privacy" className="link-bronze focus-ring">privacy and cookies</Link>.
               </p>
             </div>
@@ -112,8 +94,4 @@ export default function AnalyticsConsent({ measurementId }: { measurementId: str
       )}
     </>
   );
-}
-
-export function openAnalyticsSettings() {
-  window.dispatchEvent(new Event(SETTINGS_EVENT));
 }

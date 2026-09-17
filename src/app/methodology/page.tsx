@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import crest from "../../../assets/crest.png";
+import LogoHomeLink from "@/components/LogoHomeLink";
 import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
 import SiteFooter from "@/components/SiteFooter";
@@ -38,9 +37,7 @@ export default function MethodologyPage() {
     <main id="main-content">
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
         <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
-          <Link href="/" className="focus-ring mx-auto mb-5 block w-fit" aria-label="What Should I Play? — home">
-            <Image src={crest} alt="" priority sizes="130px" className="h-[110px] w-auto sm:h-[130px]" />
-          </Link>
+          <LogoHomeLink />
           <div className="flex flex-col items-start gap-5">
             <p className="t-eyebrow text-[var(--bronze)]">World of Warcraft: Forever</p>
             <h1 className="t-display">How this works</h1>
@@ -64,6 +61,10 @@ export default function MethodologyPage() {
             </ul>
           </section>
 
+          <div className="mt-12 flex justify-center">
+            <Link href="/" className="btn focus-ring">Go to the quiz</Link>
+          </div>
+
           <section id="privacy" className="surface mt-12 space-y-5 p-6 sm:p-8" aria-labelledby="privacy-title">
             <h2 id="privacy-title" className="t-section">Privacy and cookies</h2>
             <p className="t-small text-[var(--dim)]">
@@ -79,9 +80,12 @@ export default function MethodologyPage() {
               Your browser uses session storage to keep an unfinished quiz, the one-time receipt used to count a completed quiz, and a separate copy of that receipt for rating your result. The counting copy is deleted after use; the rating copy normally clears when the tab session ends. We use your IP address to limit result creation and protect the service; hosting providers may also process request logs.
             </p>
             <p className="t-small text-[var(--dim)]">
-              If you accept analytics, Google Analytics loads and uses cookies to measure page visits, quiz interactions, affiliate-link clicks, and error pages. Error events group routes without sending result IDs or error messages. If you decline, Google Analytics does not load. Your choice is saved in this browser&apos;s local storage. Withdrawing consent stops future Google Analytics activity on this site and clears its first-party cookies where the browser allows.
+              Google AdSense may show an advertisement below Amazon products on the quiz and result pages. Google and its ad partners may process browser information to deliver and measure ads. Google Analytics measures page visits, quiz interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages.
             </p>
-            {process.env.VERCEL_ENV === "production" && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+            <p className="t-small text-[var(--dim)]">
+              In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and manual AdSense ads off. Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
+            </p>
+            {process.env.VERCEL_ENV === "production" && (
               <p className="t-small text-[var(--dim)]">To change your choice, open <AnalyticsSettingsButton />.</p>
             )}
             <p className="t-small text-[var(--dim)]">
@@ -92,10 +96,6 @@ export default function MethodologyPage() {
             </p>
           </section>
         </article>
-
-        <div className="mt-12 flex justify-center">
-          <Link href="/" className="btn focus-ring">Go to the quiz</Link>
-        </div>
 
         <div className="mt-8">
           <Suspense fallback={<AdSlot placement="inline" />}>

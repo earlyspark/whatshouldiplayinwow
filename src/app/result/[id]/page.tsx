@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
 import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
+import AdSenseUnit from "@/components/AdSenseUnit";
 import CreatorShopCard from "@/components/CreatorShopCard";
 import SiteFooter from "@/components/SiteFooter";
 import WowheadTooltips from "@/components/WowheadTooltips";
-import crest from "../../../../assets/crest.png";
+import LogoHomeLink from "@/components/LogoHomeLink";
 import { withArticle } from "@/lib/article";
 import { DATA_VERSION } from "@/data/forever";
 import { QUIZ_VERSION } from "@/data/questions";
@@ -55,9 +55,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
       <ResultCompletion id={id} />
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
         <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
-          <Link href="/" className="focus-ring mx-auto mb-5 block w-fit" aria-label="What Should I Play? — home">
-            <Image src={crest} alt="" priority sizes="130px" className="h-[110px] w-auto sm:h-[130px]" />
-          </Link>
+          <LogoHomeLink />
           <div className="flex flex-col items-start gap-5">
             <p className="t-eyebrow text-[var(--bronze)]">What should I play in WoW: Forever?</p>
             <h1 className="t-display">{title}</h1>
@@ -132,6 +130,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
           <div className="result-ads space-y-5">
             <CreatorShopCard />
             <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" equipment /></Suspense>
+            <AdSenseUnit />
           </div>
         </div>
 

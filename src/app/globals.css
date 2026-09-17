@@ -139,6 +139,22 @@ button { font: inherit; }
   border: 1px solid var(--line);
 }
 
+/* AdSense needs a visible unit to request an ad. Show the card only after it fills. */
+.adsense-unit .adsense-label { display: none; }
+.adsense-unit:has(.adsbygoogle[data-ad-status="filled"]) {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 1rem;
+}
+.adsense-unit:has(.adsbygoogle[data-ad-status="filled"]) .adsense-label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+.adsense-unit:has(.adsbygoogle[data-ad-status="unfilled"]),
+.adsense-unit:has(.adsbygoogle[data-ad-status="unfill-optimized"]) {
+  display: none;
+}
+
 .inset {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--line);

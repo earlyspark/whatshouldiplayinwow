@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import QuizFlow from "./QuizFlow";
-import crest from "../../assets/crest.png";
+import AdSenseUnit from "@/components/AdSenseUnit";
+import LogoHomeLink from "@/components/LogoHomeLink";
 import SiteFooter from "@/components/SiteFooter";
 import { siteUrl } from "@/lib/site-url";
 
@@ -28,13 +28,7 @@ export default function HomePage() {
 
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
         <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
-          <Image
-            src={crest}
-            alt="What Should I Play?"
-            priority
-            sizes="130px"
-            className="mx-auto mb-5 h-[110px] w-auto sm:h-[130px]"
-          />
+          <LogoHomeLink />
 
           <div className="flex flex-col items-start gap-5">
             <p className="t-eyebrow text-[var(--bronze)]">World of Warcraft: Forever</p>
@@ -56,6 +50,7 @@ export default function HomePage() {
         </header>
 
         <QuizFlow />
+        <AdSenseUnit viewport="mobile" />
 
         <SiteFooter />
       </div>

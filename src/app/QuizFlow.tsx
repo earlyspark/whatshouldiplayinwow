@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { questions, QUIZ_VERSION, type QuizOption } from "@/data/questions";
 import QuizBanner, { useQuizProductPool } from "@/components/QuizBanner";
+import AdSenseUnit from "@/components/AdSenseUnit";
 import { trackEvent } from "@/lib/gtag";
 
 type Answers = Record<string, string[]>;
@@ -227,6 +228,7 @@ export default function QuizFlow() {
       <section id="quiz" className="w-full" aria-label="Start the WoW Forever race and class quiz">
         <div className="mb-8 flex justify-center"><button ref={startButtonRef} onClick={start} className="btn focus-ring">Start the quiz</button></div>
         <QuizBanner questionIndex={-1} {...productPool} />
+        <AdSenseUnit viewport="desktop" />
       </section>
     );
   }
@@ -335,6 +337,7 @@ export default function QuizFlow() {
       </div>
       <div className="hidden lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:block">
         <QuizBanner questionIndex={index} layout="sidebar" {...productPool} />
+        <AdSenseUnit viewport="desktop" />
       </div>
       </div>
     </section>
