@@ -80,7 +80,7 @@ export default function AnalyticsConsent() {
             <div className="min-w-0">
               <h2 id="cookie-consent-title" className="text-sm font-semibold text-[var(--bone)]">Ads and analytics cookies</h2>
               <p className="mt-0.5 text-sm text-[var(--dim)]">
-                Accept loads Google ads and analytics. Decline keeps both off. Details in{" "}
+                Accept loads Google ads and analytics. Details in{" "}
                 <Link href="/methodology#privacy" className="link-bronze focus-ring">privacy and cookies</Link>.
               </p>
             </div>
