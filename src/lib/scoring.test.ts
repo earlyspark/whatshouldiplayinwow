@@ -152,7 +152,7 @@ describe("quiz definition", () => {
 
   it("contrasts saved cooldown windows with sustained ability use without changing Q6 scoring", () => {
     const q6 = questions.find((question) => question.id === "q6")!;
-    expect(QUIZ_VERSION).toBe("1.22.0");
+    expect(QUIZ_VERSION).toBe("1.23.0");
     expect(q6.options.find((option) => option.id === "wait-opening")?.label).toBe("Hold my big cooldowns for an opening");
     expect(q6.options.find((option) => option.id === "stick-plan")?.label).toBe("Keep my core abilities rolling through the chaos");
     expect(q6.options.find((option) => option.id === "stick-plan")?.description).toContain("damage, healing, or control");
@@ -388,6 +388,33 @@ describe("scoring", () => {
     expect(scoreQuiz(petProtector).primary.classId).toBe("warlock");
     expect(scoreQuiz(elementalHelper).primary.classId).toBe("shaman");
     expect(scoreQuiz(fullProtector).primary.classId).toBe("druid");
+  });
+
+  it("gives Shaman a modest setup-aversion penalty at the selected rank", () => {
+    const raw = scoring.q12.prep.classes?.shaman;
+    expect(raw).toBe(-1);
+    expect(scoring.q12.prep.races).toBeUndefined();
+    expect(raw! * questionWeights.q12.class).toBe(-1.5);
+    const factors = normalizedRankFactors(3);
+    expect(raw! * questionWeights.q12.class * factors[0]).toBeCloseTo(-5 / 6);
+    expect(raw! * questionWeights.q12.class * factors[1]).toBeCloseTo(-0.5);
+    expect(raw! * questionWeights.q12.class * factors[2]).toBeCloseTo(-1 / 6);
+  });
+
+  it("keeps clear elemental support Shaman fits and close specialist counterexamples", () => {
+    for (const q12 of [["prep"], ["prep", "juggling", "downtime"], ["downtime", "juggling", "prep"]]) {
+      const result = scoreQuiz({ ...answersByClass.shaman, q12 });
+      expect(result.primary.classId).toBe("shaman");
+      expect(result.alternatives[0].classId).toBe("shaman");
+      expect(result.alternatives[0].raceId).not.toBe(result.primary.raceId);
+      expect(result.alternatives[1].classId).not.toBe("shaman");
+      for (const candidate of [result.primary, ...result.alternatives]) {
+        expect(isValidCombination(candidate.raceId as keyof typeof raceById, candidate.classId as ClassId)).toBe(true);
+      }
+    }
+    for (const classId of ["hunter", "druid", "paladin"] as const) {
+      expect(scoreQuiz({ ...answersByClass[classId], q12: ["prep"] }).primary.classId).toBe(classId);
+    }
   });
 
   it("keeps racial utility tied to the relevant racial kit", () => {

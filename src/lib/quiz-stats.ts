@@ -13,13 +13,21 @@ export interface MonthlyQuizStats {
 const statsPrefix = "wow-forever:quiz-stats:v1";
 export const quizStatsMonthKey = (month: string) => `${statsPrefix}:month:${month}`;
 export const quizStatsMonthsKey = `${statsPrefix}:months`;
+// Read and write all counters in one atomic script to avoid one Redis command per answer.
 const completionScript = `
-  if redis.call("EXISTS", KEYS[1]) == 1 then return 0 end
-  redis.call("SET", KEYS[1], "1")
-  redis.call("EXPIRE", KEYS[1], tonumber(ARGV[2]))
+  if not redis.call("SET", KEYS[1], "1", "EX", ARGV[2], "NX") then return 0 end
+
+  local fields = {}
   for i = 3, #ARGV, 2 do
-    redis.call("HINCRBY", KEYS[2], ARGV[i], tonumber(ARGV[i + 1]))
+    fields[#fields + 1] = ARGV[i]
   end
+  local current = redis.call("HMGET", KEYS[2], unpack(fields))
+  local updates = {}
+  for i = 1, #fields do
+    updates[#updates + 1] = fields[i]
+    updates[#updates + 1] = tostring(tonumber(current[i] or "0") + tonumber(ARGV[2 * i + 2]))
+  end
+  redis.call("HSET", KEYS[2], unpack(updates))
   redis.call("SADD", KEYS[3], ARGV[1])
   return 1
 `;
