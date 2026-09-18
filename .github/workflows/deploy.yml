@@ -21,7 +21,7 @@ concurrency:
 
 env:
   NODE_VERSION: "22.23.2"
-  NEXT_PUBLIC_SITE_URL: https://wowforever.letgravitydecide.com
+  NEXT_PUBLIC_SITE_URL: https://whatshouldiplayinwowforever.com
   NEXT_PUBLIC_APP_ENV: production
   # Static pages are prerendered here, and server components such as
   # GoogleAnalytics read APP_ENV while doing it. Without this, the build
