@@ -15,3 +15,4 @@ docs/the-site-is-set-twinkling-leaf.md
 .DS_Store
 npm-debug.log*
 scripts/redis-migrate/
+.claude/

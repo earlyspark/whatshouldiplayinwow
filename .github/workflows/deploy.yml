@@ -63,6 +63,13 @@ jobs:
           mkdir -p release/.next
           cp -r .next/static release/.next/static
           if [ -d public ]; then cp -r public release/public; fi
+          # Passenger serves files under the app's public/ straight from disk.
+          # Without this copy, /_next/static goes through the Node process,
+          # and when Passenger shuts down an idle process mid-transfer the
+          # browser caches the truncated file for a year (Next marks these
+          # immutable), breaking the page until the cache is cleared.
+          mkdir -p release/public/_next
+          cp -r .next/static release/public/_next/static
           mkdir -p release/tmp
 
       - name: Verify the OG image assets were traced
