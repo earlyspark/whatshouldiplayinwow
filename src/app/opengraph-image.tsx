@@ -4,6 +4,7 @@ import { ImageResponse } from "next/og";
 
 export const alt = "What Should I Play? WoW Forever Race & Class Quiz";
 export const size = { width: 1200, height: 630 };
+// The og:image URL hash comes from this file's contents; editing it makes social crawlers refetch cached images.
 export const contentType = "image/png";
 
 const [crest, marcellus, garamond, plexMono] = await Promise.all([

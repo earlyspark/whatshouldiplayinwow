@@ -5,6 +5,7 @@ import { getResult } from "@/lib/result-store";
 
 export const alt = "Personalized WoW Forever race and class quiz result";
 export const size = { width: 1200, height: 630 };
+// The og:image URL hash comes from this file's contents; editing it makes social crawlers refetch cached images.
 export const contentType = "image/png";
 export const dynamic = "force-dynamic";
 
