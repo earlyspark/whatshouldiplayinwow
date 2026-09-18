@@ -69,7 +69,7 @@ export default function MethodologyPage() {
           <section id="privacy" className="surface mt-12 space-y-5 p-6 sm:p-8" aria-labelledby="privacy-title">
             <h2 id="privacy-title" className="t-section">Privacy and cookies</h2>
             <p className="t-small text-[var(--dim)]">
-              This quiz saves your answers, recommendation, result ID, data version, and creation date so your result link can be shared. Results are stored for 12 months after creation, then expire. Anyone with your result link can view that result. Avoid sharing the link if you want to keep your choices private.
+              This quiz saves your answers, recommendation, result ID, data version, and creation date so your result link can be shared. Results are stored for 12 months after creation, then expire. Anyone with your result link can view that result.
             </p>
             <p className="t-small text-[var(--dim)]">
               Completed quizzes also contribute to monthly aggregate counts, such as answers chosen and recommended classes. We do not keep a per-person breakdown of those counts, so we cannot reliably attribute or subtract one person&apos;s contribution after it has been counted.
@@ -81,7 +81,7 @@ export default function MethodologyPage() {
               Your browser uses session storage to keep an unfinished quiz, the one-time receipt used to count a completed quiz, and a separate copy of that receipt for rating your result. The counting copy is deleted after use; the rating copy normally clears when the tab session ends. We use your IP address to limit result creation and protect the service; hosting providers may also process request logs.
             </p>
             <p className="t-small text-[var(--dim)]">
-              Google AdSense may show an advertisement below Amazon products on the quiz and result pages. Google and its ad partners may process browser information to deliver and measure ads. Google Analytics measures page visits, quiz interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages.
+              Google and its ad partners may process browser information to deliver and measure ads. Google Analytics measures page visits, quiz interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages.
             </p>
             <p className="t-small text-[var(--dim)]">
               In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and manual AdSense ads off. Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
