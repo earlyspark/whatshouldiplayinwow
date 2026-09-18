@@ -180,7 +180,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
       classes: { mage: -2, priest: -2, shaman: -2, warlock: -1, warrior: -1 },
       races: { undead: 3, troll: 3, "skyborne-alliance": 2, tauren: 1 },
     },
-    prep: { classes: { warlock: -3, rogue: -2, hunter: -2, mage: -1, druid: -1 } },
+    prep: { classes: { warlock: -3, rogue: -2, hunter: -2, mage: -1, druid: -1, shaman: -1 } },
     cornered: {
       classes: { warrior: -3, priest: -2, shaman: -1, warlock: -1 },
       races: { gnome: 3, human: 3, undead: 3, dwarf: 2, "night-elf": 1, orc: 1 },
