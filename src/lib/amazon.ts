@@ -15,7 +15,7 @@ const DEFAULT_TOKEN_LIFETIME_SECONDS = 3600;
 const PRODUCT_TTL_SECONDS = 6 * 60 * 60;
 const FAILURE_TTL_SECONDS = 90;
 const REQUEST_TIMEOUT_MS = 8000;
-const CACHE_PREFIX = "wow-forever-amazon:v2";
+const CACHE_PREFIX = "wow-forever-amazon:v3";
 export const CREATOR_BOOK_ASIN = "B0HGNX657R";
 
 const PRODUCT_RESOURCES = [
@@ -187,6 +187,11 @@ function redis() {
   return config ? new Redis(config) : null;
 }
 
+const cachedProductsSchema = z.object({
+  products: z.array(z.custom<AmazonProduct>()),
+  expiresAt: z.number(),
+});
+
 async function cached(key: string, load: () => Promise<AmazonProduct[]>): Promise<AmazonProduct[]> {
   const client = redis();
   const cacheKey = `${CACHE_PREFIX}:${key}`;
@@ -198,8 +203,12 @@ async function cached(key: string, load: () => Promise<AmazonProduct[]>): Promis
     try {
       if (hit) {
         const value = typeof hit === "string" ? JSON.parse(hit) : hit;
-        const parsed = z.array(z.custom<AmazonProduct>()).safeParse(value);
-        if (parsed.success) return parsed.data;
+        const parsed = cachedProductsSchema.safeParse(value);
+        if (parsed.success && parsed.data.expiresAt > Date.now()) {
+          // Keep the shared entry in process memory so later renders skip Redis until it expires.
+          memoryCache.set(cacheKey, { value: parsed.data.products, expiresAt: parsed.data.expiresAt });
+          return parsed.data.products;
+        }
       }
     } catch {}
   }
@@ -216,8 +225,9 @@ async function cached(key: string, load: () => Promise<AmazonProduct[]>): Promis
       products = [];
       ttl = FAILURE_TTL_SECONDS;
     }
-    memoryCache.set(cacheKey, { value: products, expiresAt: Date.now() + ttl * 1000 });
-    if (client) await client.set(cacheKey, JSON.stringify(products), { ex: ttl }).catch(() => {});
+    const expiresAt = Date.now() + ttl * 1000;
+    memoryCache.set(cacheKey, { value: products, expiresAt });
+    if (client) await client.set(cacheKey, JSON.stringify({ products, expiresAt }), { ex: ttl }).catch(() => {});
     return products;
   })();
   inFlight.set(cacheKey, request);

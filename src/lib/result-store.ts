@@ -17,6 +17,16 @@ declare global {
 const memory = globalThis.__wowForeverResults ?? new Map<string, SavedResult>();
 if (process.env.NODE_ENV !== "production") globalThis.__wowForeverResults = memory;
 
+// Saved results never change, so recent reads are kept in process memory to spare Redis commands.
+const CACHE_LIMIT = 500;
+const recent = new Map<string, SavedResult>();
+
+function remember(result: SavedResult) {
+  recent.delete(result.id);
+  recent.set(result.id, result);
+  if (recent.size > CACHE_LIMIT) recent.delete(recent.keys().next().value!);
+}
+
 function redis() {
   const config = redisConfig();
   return config ? new Redis(config) : null;
@@ -28,6 +38,7 @@ export async function saveResult(result: SavedResult) {
   const client = redis();
   if (client) {
     await client.set(`${prefix}:${result.id}`, JSON.stringify(result), { exat: Math.ceil(expiry / 1000) });
+    remember(result);
     return;
   }
   if (process.env.NODE_ENV === "production") throw new Error("Result storage is not configured.");
@@ -37,6 +48,15 @@ export async function saveResult(result: SavedResult) {
 export async function getResult(id: string): Promise<SavedResult | null> {
   if (!/^[A-Za-z0-9_-]{12}$/.test(id)) return null;
   const client = redis();
+  const known = client ? recent.get(id) : undefined;
+  if (known) {
+    if (isExpired(known)) {
+      recent.delete(id);
+      return null;
+    }
+    remember(known);
+    return known;
+  }
   const raw = client ? await client.get<unknown>(`${prefix}:${id}`) : memory.get(id);
   if (!raw) return null;
   let value: unknown;
@@ -49,6 +69,7 @@ export async function getResult(id: string): Promise<SavedResult | null> {
     else memory.delete(id);
     return null;
   }
+  if (client) remember(parsed.data);
   return parsed.data;
 }
 
