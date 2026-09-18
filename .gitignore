@@ -1,6 +1,5 @@
 node_modules/
 .next/
-.vercel/
 coverage/
 .env*
 AGENTS.md
