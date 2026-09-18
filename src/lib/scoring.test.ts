@@ -152,7 +152,7 @@ describe("quiz definition", () => {
 
   it("contrasts saved cooldown windows with sustained ability use without changing Q6 scoring", () => {
     const q6 = questions.find((question) => question.id === "q6")!;
-    expect(QUIZ_VERSION).toBe("1.23.0");
+    expect(QUIZ_VERSION).toBe("1.24.0");
     expect(q6.options.find((option) => option.id === "wait-opening")?.label).toBe("Hold my big cooldowns for an opening");
     expect(q6.options.find((option) => option.id === "stick-plan")?.label).toBe("Keep my core abilities rolling through the chaos");
     expect(q6.options.find((option) => option.id === "stick-plan")?.description).toContain("damage, healing, or control");
@@ -415,6 +415,39 @@ describe("scoring", () => {
     for (const classId of ["hunter", "druid", "paladin"] as const) {
       expect(scoreQuiz({ ...answersByClass[classId], q12: ["prep"] }).primary.classId).toBe(classId);
     }
+  });
+
+  it("treats weapon combat and incidental pets as weak Warlock signals", () => {
+    expect(scoring.q5["ranged-companion"].classes?.hunter).toBe(3);
+    expect(scoring.q5["ranged-companion"].classes?.warlock).toBe(1);
+    expect(scoring.q5["ranged-magic"].classes?.warlock).toBe(3);
+    expect(scoring.q7.central.classes?.warlock).toBe(3);
+    expect(scoring.q7.optional.classes?.warlock).toBe(1);
+    expect(scoring.q7.optional.classes?.hunter).toBe(2);
+    const weaponWithOptionalPet = persona({
+      q3: ["dungeons", "leveling"], q4: ["damage", "control"], q5: ["ranged-companion"],
+      q6: ["stick-plan"], q7: ["optional"], q8: ["solo", "small-group"],
+      q9: ["secrets", "martial"], q13: ["focused"],
+    });
+    const result = scoreQuiz(weaponWithOptionalPet);
+    expect(result.primary.classId).toBe("hunter");
+    expect(result.alternatives[1].classId).toBe("warlock");
+  });
+
+  it("keeps Warlock for shadow spellcasters with a demon and settles close caster cases by fantasy", () => {
+    const shadowCaster = persona({
+      q3: ["dungeons", "raids"], q4: ["damage", "control"], q5: ["ranged-magic"],
+      q6: ["stick-plan"], q7: ["central"], q8: ["solo", "small-group"],
+      q9: ["secrets", "arcane"], q13: ["focused"],
+    });
+    expect(scoreQuiz(shadowCaster).primary.classId).toBe("warlock");
+    expect(scoreQuiz({ ...shadowCaster, q5: ["ranged-magic", "adaptable", "ranged-companion"] }).primary.classId).toBe("warlock");
+    const optionalPetCaster = { ...shadowCaster, q7: ["optional"], q8: ["small-group", "large-group"] };
+    expect(scoreQuiz(optionalPetCaster).primary.classId).toBe("warlock");
+    expect(scoreQuiz({ ...optionalPetCaster, q9: ["arcane", "secrets"] }).primary.classId).toBe("mage");
+    expect(scoreQuiz({ ...optionalPetCaster, q4: ["damage", "control", "heal"], q9: ["secrets", "holy"] }).primary.classId).toBe("warlock");
+    expect(scoreQuiz(answersByClass.priest).primary.classId).toBe("priest");
+    expect(scoreQuiz(answersByClass.mage).primary.classId).toBe("mage");
   });
 
   it("keeps racial utility tied to the relevant racial kit", () => {

@@ -1,4 +1,4 @@
-export const QUIZ_VERSION = "1.23.0";
+export const QUIZ_VERSION = "1.24.0";
 
 export type QuestionId = `q${number}`;
 

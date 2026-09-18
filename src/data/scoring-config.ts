@@ -101,7 +101,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   q5: {
     "heavy-melee": { classes: { warrior: 3, paladin: 3, shaman: 2, druid: 1 } },
     "quick-melee": { classes: { rogue: 3, shaman: 2, druid: 2, warrior: 2, hunter: 1 } },
-    "ranged-companion": { classes: { hunter: 3, warlock: 3 } },
+    "ranged-companion": { classes: { hunter: 3, warlock: 1 } },
     "ranged-magic": { classes: { mage: 3, warlock: 3, priest: 2.5, shaman: 2, druid: 1 } },
     adaptable: { classes: { druid: 3, shaman: 3, paladin: 2, priest: 1 } },
   },
@@ -114,7 +114,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   },
   q7: {
     central: { classes: { hunter: 3, warlock: 3 } },
-    optional: { classes: { hunter: 2, warlock: 2, druid: 1, shaman: 1, mage: 1, priest: 1 } },
+    optional: { classes: { hunter: 2, warlock: 1, druid: 1, shaman: 1, mage: 1, priest: 1 } },
     none: { classes: { warrior: 2, rogue: 2, mage: 2, priest: 2, paladin: 2, shaman: 1, druid: 1 } },
   },
   q8: {

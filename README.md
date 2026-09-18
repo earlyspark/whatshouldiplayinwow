@@ -47,7 +47,7 @@ The quiz scores all 56 race and class combinations available in Forever and neve
 
 ### 2. Each answer gives points to classes and races
 
-Most answers add up to 3 points to the classes and races they fit. For example, *Protect others* favors frontline tanks most, but also credits Priest shields and the protective pets of Warlocks and Hunters. *Keep allies alive* favors healers, while *Ranged weapons & a companion* favors Hunter and Warlock. Questions 12 and 13 can also subtract points (as low as −3 before question and rank weights) when a class conflicts with a frustration or a preference for focused play.
+Most answers add up to 3 points to the classes and races they fit. For example, *Protect others* favors frontline tanks most, but also credits Priest shields and the protective pets of Warlocks and Hunters. *Keep allies alive* favors healers, while *Ranged weapons & a companion* favors Hunter, with a smaller cue for a Warlock's demon. Questions 12 and 13 can also subtract points (as low as −3 before question and rank weights) when a class conflicts with a frustration or a preference for focused play.
 
 ### 3. Questions carry different weight
 
