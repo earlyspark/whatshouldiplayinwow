@@ -11,6 +11,7 @@ interface QuizBannerProps {
   pool: ProductPoolResponse;
   visitOffset: number;
   loaded: boolean;
+  count?: number;
 }
 
 interface ProductPoolResponse {
@@ -44,8 +45,8 @@ export function useQuizProductPool() {
   return { pool, visitOffset, loaded };
 }
 
-export default function QuizBanner({ questionIndex, layout = "banner", pool, visitOffset, loaded }: QuizBannerProps) {
-  const products = selectQuizEquipment(pool.groups, visitOffset, questionIndex);
+export default function QuizBanner({ questionIndex, layout = "banner", pool, visitOffset, loaded, count }: QuizBannerProps) {
+  const products = selectQuizEquipment(pool.groups, visitOffset, questionIndex, count);
 
   return (
     <aside

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CREATOR_BOOK_ASIN, clearAmazonToken, getCreatorBookProduct, getEquipmentGroups } from "@/lib/amazon";
+import { CREATOR_BOOK_ASIN, clearAmazonToken, getCreatorBookProduct, getEquipmentGroups, getEquipmentPicks } from "@/lib/amazon";
 
 const titles: Record<string, string> = {
   "stream deck": "Elgato Stream Deck XL Streaming Controller",
@@ -10,6 +10,16 @@ const titles: Record<string, string> = {
   "4k webcam": "4K Webcam for Streaming",
   "streaming key light": "Streaming Key Light",
   "studio monitor headphones": "Studio Monitor Headphones",
+  "ergonomic gaming chair": "Ergonomic Gaming Chair with Lumbar Support",
+  "wireless gaming headset": "Wireless Gaming Headset with Mic",
+  "large gaming desk mat": "XXL Desk Mat Extended Mouse Pad",
+  "wireless pc game controller": "Wireless Game Controller for PC",
+  "handheld gaming pc": "ROG Ally Handheld Gaming PC",
+  "epic fantasy book box set": "Epic Fantasy Box Set Books 1-5",
+  "dungeons & dragons": "Dungeons & Dragons Player's Handbook",
+  "cooperative strategy board game": "Cooperative Strategy Board Game",
+  "family board game": "Family Board Game for Kids and Adults",
+  "miniature painting starter kit": "Miniature Paint Starter Set",
 };
 
 const item = (asin: string, title: string) => ({
@@ -43,20 +53,49 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); clearAmazonToken(); });
 
 describe("equipment catalog", () => {
-  it("searches four different categories per page with available new four-star products and price floors", async () => {
+  it("searches every category with available new four-star products and price floors", async () => {
     const fetchMock = mockCatalog();
     vi.stubGlobal("fetch", fetchMock);
-    const homepage = await getEquipmentGroups("homepage");
-    const results = await getEquipmentGroups("results");
-    expect(homepage.map((group) => group.products.length)).toEqual([1, 1, 1, 1]);
-    expect(results.map((group) => group.products.length)).toEqual([1, 1, 1, 1]);
+    const groups = await getEquipmentGroups();
+    expect(groups.map((group) => group.products.length)).toEqual(Array(18).fill(1));
     const searches = fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"));
-    expect(searches).toHaveLength(8);
-    expect(searches.map(([, init]) => JSON.parse((init as RequestInit).body as string).minPrice)).toEqual([10000, 6000, 10000, 20000, 10000, 12000, 7500, 10000]);
+    expect(searches).toHaveLength(18);
+    expect(searches.map(([, init]) => JSON.parse((init as RequestInit).body as string).minPrice)).toEqual([
+      10000, 6000, 10000, 20000, 10000, 12000, 7500, 10000,
+      15000, 7000, 2000, 4000, 40000, 3000, 1500, 2500, 2000, 2500,
+    ]);
     for (const [, init] of searches) expect(JSON.parse((init as RequestInit).body as string)).toMatchObject({
       availability: "Available", condition: "New", minReviewsRating: 4, itemCount: 10, sortBy: "Relevance", partnerTag: "test-20",
     });
-    expect(homepage[0].products[0].url).toContain("tag=test-20");
+    expect(groups[0].products[0].url).toContain("tag=test-20");
+  });
+
+  it("picks the requested number of distinct categories", async () => {
+    vi.stubGlobal("fetch", mockCatalog());
+    const picks = await getEquipmentPicks(4);
+    expect(picks).toHaveLength(4);
+    expect(new Set(picks.map((pick) => pick.category)).size).toBe(4);
+  });
+
+  it("retries a throttled search instead of leaving the category empty", async () => {
+    const catalog = mockCatalog();
+    let throttled = false;
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      if (!throttled && String(input).includes("searchItems")) {
+        throttled = true;
+        return new Response("", { status: 429 });
+      }
+      return catalog(input, init);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const groups = await getEquipmentGroups();
+    expect(groups[0].products).toHaveLength(1);
+  });
+
+  it("keeps desk mats even though their titles mention mouse pads", async () => {
+    vi.stubGlobal("fetch", mockCatalog());
+    const groups = await getEquipmentGroups();
+    expect(groups.find((group) => group.category === "desk-mat")?.products).toHaveLength(1);
   });
 
   it("omits accessories, unrelated products, duplicates, and the creator book", async () => {
@@ -66,8 +105,8 @@ describe("equipment catalog", () => {
       if (keywords.includes("mechanical gaming keyboard")) return [item(CREATOR_BOOK_ASIN, "Mechanical Keyboard"), item("UNRELATED", "Fantasy Novel")];
       return [];
     }));
-    const groups = await getEquipmentGroups("homepage");
-    expect(groups.map((group) => group.products.map((product) => product.asin))).toEqual([["DUPLICATE"], ["MOUSE"], [], []]);
+    const groups = await getEquipmentGroups();
+    expect(groups.slice(0, 4).map((group) => group.products.map((product) => product.asin))).toEqual([["DUPLICATE"], ["MOUSE"], [], []]);
   });
 
   it("caches each category for six hours", async () => {
@@ -76,13 +115,13 @@ describe("equipment catalog", () => {
     const clock = vi.spyOn(Date, "now");
     const start = 1_800_000_000_000;
     clock.mockReturnValue(start);
-    await getEquipmentGroups("results");
+    await getEquipmentGroups();
     clock.mockReturnValue(start + 6 * 60 * 60 * 1000 - 1);
-    await getEquipmentGroups("results");
-    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"))).toHaveLength(4);
+    await getEquipmentGroups();
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"))).toHaveLength(18);
     clock.mockReturnValue(start + 6 * 60 * 60 * 1000 + 1);
-    await getEquipmentGroups("results");
-    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"))).toHaveLength(8);
+    await getEquipmentGroups();
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("searchItems"))).toHaveLength(36);
     clock.mockRestore();
   });
 
@@ -103,7 +142,7 @@ describe("equipment catalog", () => {
       if (String(body.keywords).includes("Stream Deck")) return new Response("", { status: 503 });
       return Response.json({ searchResult: { items: [] } });
     }));
-    expect((await getEquipmentGroups("homepage")).map((group) => group.products)).toEqual([[], [], [], []]);
+    expect((await getEquipmentGroups()).map((group) => group.products)).toEqual(Array(18).fill([]));
     expect(await getCreatorBookProduct()).toBeNull();
     vi.restoreAllMocks();
   });

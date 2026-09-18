@@ -1,6 +1,6 @@
 import AdSlot from "@/components/AdSlot";
 import AmazonProductLink from "@/components/AmazonProductLink";
-import { getBannerProducts, getEquipmentGroups } from "@/lib/amazon";
+import { getBannerProducts, getEquipmentPicks } from "@/lib/amazon";
 
 interface AmazonBannerProps {
   placement: "sidebar" | "inline";
@@ -12,9 +12,7 @@ interface AmazonBannerProps {
 export default async function AmazonBanner({ placement, keywords, focusTerm, equipment = false }: AmazonBannerProps) {
   const limit = 4;
   const products = equipment
-    ? (await getEquipmentGroups("results")).flatMap((group) => group.products.length
-      ? [{ ...group.products[0], category: group.category }]
-      : [])
+    ? await getEquipmentPicks(4)
     : (await getBannerProducts(limit, keywords, focusTerm)).map((product) => ({ ...product, category: undefined }));
   if (!products.length && !equipment) return <AdSlot placement={placement} />;
 

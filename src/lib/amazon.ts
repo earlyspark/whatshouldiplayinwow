@@ -35,27 +35,48 @@ export interface AmazonProduct {
 
 export type EquipmentCategory =
   | "stream-controller" | "mmo-mouse" | "mechanical-keyboard" | "1440p-monitor"
-  | "microphone" | "4k-webcam" | "key-light" | "studio-headphones";
+  | "microphone" | "4k-webcam" | "key-light" | "studio-headphones"
+  | "gaming-chair" | "gaming-headset" | "desk-mat" | "game-controller" | "handheld-pc"
+  | "fantasy-books" | "tabletop-rpg" | "coop-board-game" | "family-board-game" | "miniature-painting";
 
 export interface EquipmentGroup {
   category: EquipmentCategory;
   products: AmazonProduct[];
 }
 
-const EQUIPMENT = {
-  homepage: [
-    { category: "stream-controller", keywords: "Elgato Stream Deck streaming controller", searchIndex: "Electronics", minPrice: 10000, include: /stream deck|stream controller|streaming controller/i },
-    { category: "mmo-mouse", keywords: "MMO gaming mouse 12 buttons", searchIndex: "Electronics", minPrice: 6000, include: /mmo.*mouse|mouse.*mmo|12.button.*mouse|mouse.*12.button/i },
-    { category: "mechanical-keyboard", keywords: "mechanical gaming keyboard", searchIndex: "Computers", minPrice: 10000, include: /mechanical.*keyboard|keyboard.*mechanical/i },
-    { category: "1440p-monitor", keywords: "1440p QHD gaming monitor", searchIndex: "Electronics", minPrice: 20000, include: /(?:1440p|qhd|2560.?x.?1440|wqhd).*monitor|monitor.*(?:1440p|qhd|2560.?x.?1440|wqhd)/i },
-  ],
-  results: [
-    { category: "microphone", keywords: "USB XLR streaming microphone", searchIndex: "Electronics", minPrice: 10000, include: /microphone|\bmic\b/i },
-    { category: "4k-webcam", keywords: "4K webcam streaming", searchIndex: "Electronics", minPrice: 12000, include: /(?:4k|uhd|2160p).*webcam|webcam.*(?:4k|uhd|2160p)/i },
-    { category: "key-light", keywords: "streaming key light video", searchIndex: "Electronics", minPrice: 7500, include: /key light|video light|studio light|streaming light/i },
-    { category: "studio-headphones", keywords: "studio monitor headphones", searchIndex: "Electronics", minPrice: 10000, include: /(?:studio|monitor|reference).*headphones|headphones.*(?:studio|monitor|reference)/i },
-  ],
-} as const;
+interface EquipmentProfile {
+  category: EquipmentCategory;
+  keywords: string;
+  searchIndex: string;
+  /** Amazon price floor in cents. */
+  minPrice: number;
+  include: RegExp;
+  exclude?: RegExp;
+}
+
+// Categories whose real products routinely mention pads or cables in the title get a narrower exclusion.
+const BASIC_EXCLUDE = /\b(?:replacement|spare|discontinued|no longer supported|renewed|refurbished)\b/i;
+
+const EQUIPMENT: EquipmentProfile[] = [
+  { category: "stream-controller", keywords: "Elgato Stream Deck streaming controller", searchIndex: "Electronics", minPrice: 10000, include: /stream deck|stream controller|streaming controller/i },
+  { category: "mmo-mouse", keywords: "MMO gaming mouse 12 buttons", searchIndex: "Electronics", minPrice: 6000, include: /mmo.*mouse|mouse.*mmo|12.button.*mouse|mouse.*12.button/i },
+  { category: "mechanical-keyboard", keywords: "mechanical gaming keyboard", searchIndex: "Computers", minPrice: 10000, include: /mechanical.*keyboard|keyboard.*mechanical/i },
+  { category: "1440p-monitor", keywords: "1440p QHD gaming monitor", searchIndex: "Electronics", minPrice: 20000, include: /(?:1440p|qhd|2560.?x.?1440|wqhd).*monitor|monitor.*(?:1440p|qhd|2560.?x.?1440|wqhd)/i },
+  { category: "microphone", keywords: "USB XLR streaming microphone", searchIndex: "Electronics", minPrice: 10000, include: /microphone|\bmic\b/i },
+  { category: "4k-webcam", keywords: "4K webcam streaming", searchIndex: "Electronics", minPrice: 12000, include: /(?:4k|uhd|2160p).*webcam|webcam.*(?:4k|uhd|2160p)/i },
+  { category: "key-light", keywords: "streaming key light video", searchIndex: "Electronics", minPrice: 7500, include: /key light|video light|studio light|streaming light/i },
+  { category: "studio-headphones", keywords: "studio monitor headphones", searchIndex: "Electronics", minPrice: 10000, include: /(?:studio|monitor|reference).*headphones|headphones.*(?:studio|monitor|reference)/i },
+  { category: "gaming-chair", keywords: "ergonomic gaming chair lumbar support", searchIndex: "OfficeProducts", minPrice: 15000, include: /chair/i },
+  { category: "gaming-headset", keywords: "wireless gaming headset with microphone", searchIndex: "Electronics", minPrice: 7000, include: /headset/i, exclude: BASIC_EXCLUDE },
+  { category: "desk-mat", keywords: "large gaming desk mat extended mouse pad", searchIndex: "Computers", minPrice: 2000, include: /desk (?:mat|pad)|mouse ?pad|mousepad/i, exclude: BASIC_EXCLUDE },
+  { category: "game-controller", keywords: "wireless PC game controller", searchIndex: "VideoGames", minPrice: 4000, include: /controller|gamepad/i, exclude: BASIC_EXCLUDE },
+  { category: "handheld-pc", keywords: "handheld gaming PC", searchIndex: "VideoGames", minPrice: 40000, include: /handheld|rog ally|legion go|steam deck/i },
+  { category: "fantasy-books", keywords: "epic fantasy book box set", searchIndex: "Books", minPrice: 3000, include: /box(?:ed)? set|collection|books? \d/i },
+  { category: "tabletop-rpg", keywords: "Dungeons & Dragons", searchIndex: "Books", minPrice: 1500, include: /dungeons ?(?:&|and) ?dragons|d&d/i },
+  { category: "coop-board-game", keywords: "cooperative strategy board game", searchIndex: "ToysAndGames", minPrice: 2500, include: /board game|cooperative|co-op/i },
+  { category: "family-board-game", keywords: "family board game for kids and adults", searchIndex: "ToysAndGames", minPrice: 2000, include: /game/i },
+  { category: "miniature-painting", keywords: "miniature painting starter kit", searchIndex: "ToysAndGames", minPrice: 2500, include: /(?:miniature|mini|wargam).*paint|paint.*(?:miniature|mini|wargam)/i },
+];
 
 const ACCESSORY_ONLY = /\b(?:case|cover|skin|mount|holder|adapter|cable|replacement|spare|keycaps?|mouse ?pad|boom arm|pop filter|shock mount|light bulb|diffuser|battery|charger|bundle of accessories|stand for|discontinued|no longer supported|renewed|refurbished)\b/i;
 
@@ -155,9 +176,21 @@ export function clearAmazonToken() {
   memoryCache.clear();
 }
 
+// Amazon throttles bursts of searches (such as every category expiring together) with 429s.
+const THROTTLE_RETRY_DELAYS_MS = [1000, 2000];
+
 async function callCatalog(config: AmazonConfig, operation: string, payload: Record<string, unknown>) {
+  for (const delay of THROTTLE_RETRY_DELAYS_MS) {
+    const response = await requestCatalog(config, operation, payload);
+    if (response.status !== 429) return readCatalog(response);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  return readCatalog(await requestCatalog(config, operation, payload));
+}
+
+async function requestCatalog(config: AmazonConfig, operation: string, payload: Record<string, unknown>) {
   const token = await accessToken(config);
-  const response = await fetch(`${CREATORS_API_HOST}/catalog/v1/${operation}`, {
+  return fetch(`${CREATORS_API_HOST}/catalog/v1/${operation}`, {
     method: "POST",
     cache: "no-store",
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -169,7 +202,9 @@ async function callCatalog(config: AmazonConfig, operation: string, payload: Rec
     },
     body: JSON.stringify({ partnerTag: config.partnerTag, resources: PRODUCT_RESOURCES, ...payload }),
   });
+}
 
+async function readCatalog(response: Response) {
   if (response.status === 401 || response.status === 403) {
     clearAmazonToken();
     throw new Error(`Amazon catalog request was rejected with status ${response.status}`);
@@ -245,13 +280,13 @@ export async function searchItems(keywords: string, itemCount: number, config: A
 }
 
 /** Each category is cached independently; sequential misses respect Amazon's request quota. */
-export async function getEquipmentGroups(page: "homepage" | "results"): Promise<EquipmentGroup[]> {
+export async function getEquipmentGroups(): Promise<EquipmentGroup[]> {
   const config = amazonConfig();
-  if (!config) return EQUIPMENT[page].map(({ category }) => ({ category, products: [] }));
+  if (!config) return EQUIPMENT.map(({ category }) => ({ category, products: [] }));
 
   const seen = new Set<string>([CREATOR_BOOK_ASIN]);
   const groups: EquipmentGroup[] = [];
-  for (const profile of EQUIPMENT[page]) {
+  for (const profile of EQUIPMENT) {
     const key = `${config.marketplace}:equipment:v1:${profile.category}:${profile.minPrice}`;
     const candidates = await cached(key, () => callCatalog(config, "searchItems", {
       keywords: profile.keywords,
@@ -266,12 +301,21 @@ export async function getEquipmentGroups(page: "homepage" | "results"): Promise<
     }));
     const products = candidates.filter((product) =>
       Boolean(product.imageUrl) && profile.include.test(product.title) &&
-      !ACCESSORY_ONLY.test(product.title) && !seen.has(product.asin),
+      !(profile.exclude ?? ACCESSORY_ONLY).test(product.title) && !seen.has(product.asin),
     );
     for (const product of products) seen.add(product.asin);
     groups.push({ category: profile.category, products });
   }
   return groups;
+}
+
+/** Random categories with one random product each, picked on the server for each render. */
+export async function getEquipmentPicks(count: number) {
+  const groups = (await getEquipmentGroups()).filter((group) => group.products.length);
+  return shuffle(groups).slice(0, count).map((group) => ({
+    ...group.products[Math.floor(Math.random() * group.products.length)],
+    category: group.category,
+  }));
 }
 
 export async function getCreatorBookProduct(): Promise<AmazonProduct | null> {
@@ -317,15 +361,6 @@ export async function getProductPool(overrideKeywords?: string): Promise<AmazonP
   }
 }
 
-function hashSeed(seed: string) {
-  let hash = 2166136261;
-  for (let i = 0; i < seed.length; i += 1) {
-    hash ^= seed.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return Math.abs(hash);
-}
-
 function shuffle<T>(items: T[]): T[] {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -346,11 +381,3 @@ export async function getBannerProducts(limit: number, keywords?: string, focusT
   return shuffle(relevant).slice(0, limit);
 }
 
-/** Deterministic by seed so a shared permalink shows the same product on every visit. */
-export async function getContextualProduct(seed: string, keywords?: string, focusTerm?: string): Promise<AmazonProduct | null> {
-  const pool = await getProductPool(keywords);
-  const candidates = pool
-    .filter((product) => !focusTerm || product.title.toLowerCase().includes(focusTerm.toLowerCase()));
-  if (!candidates.length) return null;
-  return candidates[hashSeed(seed) % candidates.length];
-}

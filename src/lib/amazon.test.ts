@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { amazonConfig, partnerTag } from "@/lib/amazon-config";
-import { clearAmazonToken, getBannerProducts, getContextualProduct, getProductPool } from "@/lib/amazon";
+import { clearAmazonToken, getBannerProducts, getProductPool } from "@/lib/amazon";
 
 const TOKEN_RESPONSE = { access_token: "token-abc", expires_in: 3600 };
 
@@ -293,32 +293,6 @@ describe("pool and rotation", () => {
   });
 });
 
-describe("getContextualProduct", () => {
-  it("returns the same product for the same seed", async () => {
-    vi.stubEnv("AMAZON_AD_ASINS", "");
-    vi.stubGlobal("fetch", stubAmazon(poolResponse(30)));
-
-    const first = await getContextualProduct("result-123:class");
-    const second = await getContextualProduct("result-123:class");
-    expect(first?.asin).toBe(second?.asin);
-  });
-
-  it("returns different products for different seeds", async () => {
-    vi.stubEnv("AMAZON_AD_ASINS", "");
-    vi.stubGlobal("fetch", stubAmazon(poolResponse(30)));
-
-    const seeds = ["a:class", "b:class", "c:class", "d:race", "e:race", "f:race"];
-    const picks = new Set<string>();
-    for (const seed of seeds) picks.add((await getContextualProduct(seed))!.asin);
-    expect(picks.size).toBeGreaterThan(1);
-  });
-
-  it("returns null when there is nothing to show", async () => {
-    vi.stubEnv("AMAZON_CREATORS_CREDENTIAL_ID", "");
-    expect(await getContextualProduct("seed")).toBeNull();
-  });
-});
-
 describe("keyword overrides", () => {
   it("searches the override query instead of the configured pool", async () => {
     vi.stubEnv("AMAZON_AD_KEYWORDS", "World of Warcraft");
@@ -370,10 +344,8 @@ describe("keyword overrides", () => {
     vi.stubGlobal("fetch", stubAmazon(response));
 
     const banner = await getBannerProducts(4, "World of Warcraft Warrior", "Warrior");
-    const contextual = await getContextualProduct("result-123:race", "World of Warcraft Warrior", "Warrior");
 
     expect(banner.map((product) => product.title).sort()).toEqual(["Warrior Gaming Mat", "WoW Warrior Shirt"]);
-    expect(contextual?.title).toContain("Warrior");
   });
 
   it("does not fetch a former pinned product for result-specific pools", async () => {

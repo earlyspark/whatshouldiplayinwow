@@ -5,7 +5,7 @@ import { getEquipmentGroups } from "@/lib/amazon";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const groups = await getEquipmentGroups("homepage");
+  const groups = await getEquipmentGroups();
   return NextResponse.json(
     { groups },
     {
