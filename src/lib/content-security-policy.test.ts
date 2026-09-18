@@ -12,6 +12,8 @@ describe("Content Security Policy", () => {
     expect(policy).toContain("connect-src 'self' https://www.google-analytics.com");
     expect(policy).toContain("https://nether.wowhead.com");
     expect(policy).toContain("https://m.media-amazon.com");
+    expect(policy).toMatch(/script-src [^;]*https:\/\/static\.cloudflareinsights\.com/);
+    expect(policy).toMatch(/connect-src [^;]*https:\/\/cloudflareinsights\.com/);
     expect(policy).not.toContain("'unsafe-eval'");
     expect(policy).not.toContain("*;");
   });
