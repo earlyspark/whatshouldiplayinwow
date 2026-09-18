@@ -69,7 +69,7 @@ Some questions say more about class and others say more about race. Each questio
 | When you started playing | 0.5 | 0.8 |
 | Atmosphere | 0.3 | 3 |
 
-The first question has a light effect on both scores. Earlier starts slightly favor racials that reward timed use, while recent or first-time play slightly favors lower-maintenance racials and classes with a forgiving solo start. Hunter gets a small boost at both ends: it is approachable for newcomers and evokes classic WoW for early players. These are soft preferences, not measures of skill; direct playstyle answers carry more weight. The Alliance and Horde descriptions are flavor text and do not change faction scoring.
+The first question has a light effect on both scores. Hunter gets a small boost at both ends: it is approachable for newcomers and evokes classic WoW for early players. Direct playstyle answers carry more weight. 
 
 ### 4. Your first ranked pick counts most
 

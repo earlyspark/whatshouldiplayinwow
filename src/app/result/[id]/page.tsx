@@ -97,7 +97,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
                 ))}
               </div>
               {hasWowheadTooltips && (
-                <p className="t-small mt-4 text-[var(--dim)]">Hover over a racial name for its current Wowhead tooltip. Saved results retain the descriptions from when they were created.</p>
+                <p className="t-small mt-4 text-[var(--dim)]">Some tooltips may still show older values.</p>
               )}
               <div className="mt-8 border-t border-[var(--line)] pt-8">
                 <p className="t-label text-[var(--dim)]">Class</p>
