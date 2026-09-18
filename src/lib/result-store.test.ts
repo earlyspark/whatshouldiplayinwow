@@ -11,13 +11,21 @@ import { resultExpiresAt } from "@/lib/result-retention";
 afterEach(() => vi.useRealTimers());
 
 describe("result retention", () => {
-  it("treats leap day as the final day of February the next year", () => {
-    expect(new Date(resultExpiresAt("2024-02-29T12:30:00.000Z")).toISOString()).toBe("2025-02-28T12:30:00.000Z");
+  it("expires a result 90 days after creation", () => {
+    expect(new Date(resultExpiresAt("2027-02-01T12:30:00.000Z")).toISOString()).toBe("2027-05-02T12:30:00.000Z");
   });
 
-  it("keeps a result until its 12-month window ends", async () => {
+  it("keeps results created under the 12-month policy until the start of 2027", () => {
+    expect(new Date(resultExpiresAt("2026-09-01T00:00:00.000Z")).toISOString()).toBe("2027-01-01T00:00:00.000Z");
+  });
+
+  it("treats an invalid creation date as expired", () => {
+    expect(resultExpiresAt("not a date")).toBeNaN();
+  });
+
+  it("keeps a result until its 90-day window ends", async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+    vi.setSystemTime(new Date("2027-03-01T00:00:00.000Z"));
     const answers = Object.fromEntries(questions.map((question) => [question.id, [question.options[0].id]])) as QuizAnswers;
     const result = createSavedResult("retention123", answers);
     await saveResult(result);

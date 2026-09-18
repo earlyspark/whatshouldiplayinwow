@@ -14,5 +14,5 @@ docs/the-site-is-set-twinkling-leaf.md
 *.tsbuildinfo
 .DS_Store
 npm-debug.log*
-scripts/redis-migrate/
+scripts/
 .claude/

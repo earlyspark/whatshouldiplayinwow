@@ -119,7 +119,7 @@ The race and class list, which combinations are allowed, and each race's racials
 
 The site's [How this works](https://whatshouldiplayinwowforever.com/methodology) page shows when the game information was last checked. Saved results also record a data version, which can stay the same when a review finds no change to the game data.
 
-**Shared results stay the same for 12 months.** Each result saves your answers, quiz version, and data version, so a shared link shows the same pick until it expires 12 months after creation. If the game data, quiz questions, or scoring changes before then, the result page offers a retake with the current version. Expired links show a not-found page.
+**Shared results stay the same for 90 days.** Each result saves your answers, quiz version, and data version, so a shared link shows the same pick until it expires 90 days after creation. If the game data, quiz questions, or scoring changes before then, the result page offers a retake with the current version. Expired links show a page that invites you to retake the quiz.
 
 The recommendations are about what you might enjoy playing, not a prediction of the best build on launch day.
 This quiz is just for entertainment purposes. Ultimately, choose whatever you want and have fun!

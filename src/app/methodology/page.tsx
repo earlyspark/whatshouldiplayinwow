@@ -69,7 +69,7 @@ export default function MethodologyPage() {
           <section id="privacy" className="surface mt-12 space-y-5 p-6 sm:p-8" aria-labelledby="privacy-title">
             <h2 id="privacy-title" className="t-section">Privacy and cookies</h2>
             <p className="t-small text-[var(--dim)]">
-              This quiz saves your answers, recommendation, result ID, data version, and creation date so your result link can be shared. Results are stored for 12 months after creation, then expire. Anyone with your result link can view that result.
+              This quiz saves your answers, recommendation, result ID, data version, and creation date so your result link can be shared. Results are stored for 90 days after creation, then expire. Anyone with your result link can view that result.
             </p>
             <p className="t-small text-[var(--dim)]">
               Completed quizzes also contribute to monthly aggregate counts, such as answers chosen and recommended classes. We do not keep a per-person breakdown of those counts, so we cannot reliably attribute or subtract one person&apos;s contribution after it has been counted.
