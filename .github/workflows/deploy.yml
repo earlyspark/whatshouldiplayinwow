@@ -23,6 +23,10 @@ env:
   NODE_VERSION: "22.23.2"
   NEXT_PUBLIC_SITE_URL: https://wowforever.letgravitydecide.com
   NEXT_PUBLIC_APP_ENV: production
+  # Static pages are prerendered here, and server components such as
+  # GoogleAnalytics read APP_ENV while doing it. Without this, the build
+  # bakes the development branch into every static page and GA never loads.
+  APP_ENV: production
 
 jobs:
   deploy:
@@ -82,6 +86,14 @@ jobs:
             test -f "release/assets/fonts/$font.ttf" || { echo "::error::assets/fonts/$font.ttf missing"; exit 1; }
           done
           echo "OG assets present."
+
+      - name: Verify analytics made it into the static pages
+        # The failure mode is silent: the site looks perfect while GA and the
+        # consent flow are missing. The root layout's client chunk only exists
+        # when GoogleAnalytics rendered, so its absence means APP_ENV was wrong.
+        run: |
+          grep -q 'app/layout-' .next/server/app/index.html || { echo "::error::index.html has no layout chunk — GoogleAnalytics did not render at build time"; exit 1; }
+          echo "Analytics present in prerendered pages."
 
       - name: Authorize SSH
         env:
