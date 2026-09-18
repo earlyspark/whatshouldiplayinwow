@@ -84,7 +84,7 @@ export default function MethodologyPage() {
               Google and its ad partners may process browser information to deliver and measure ads. Google Analytics measures page visits, quiz interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages.
             </p>
             <p className="t-small text-[var(--dim)]">
-              In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and manual AdSense ads off. Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
+              In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and AdSense ads off. Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
             </p>
             {isProductionDeployment() && (
               <p className="t-small text-[var(--dim)]">To change your choice, open <AnalyticsSettingsButton />.</p>
