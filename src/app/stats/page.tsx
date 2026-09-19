@@ -59,7 +59,6 @@ function StatsSection({ title, counts }: { title: string; counts: Record<string,
       {(total > 0 || hasFeedback) && (
         <div className="mt-8">
           <h3 className="t-card">Recommendation feedback</h3>
-          <p className="t-small mt-2 text-[var(--dim)]">Ratings from quiz-takers only. Each pick can receive one current rating; changing it replaces the earlier vote.</p>
           <div className="mt-3 space-y-2">
             {feedbackPositions.map((position, index) => {
               const up = counts[`feedback:${position}:up`] ?? 0;
@@ -112,10 +111,6 @@ export default async function StatsPage() {
       <Link href="/" className="link-bronze focus-ring">← Home</Link>
       <h1 className="t-display mt-8">Quiz stats</h1>
       <p className="t-body mb-8 mt-4 text-[var(--dim)]">
-        Counted once when the quiz-taker reaches their result page. Retakes count as new results; reloads and shared-link visits do not.
-        Ranked-answer percentages can add up to more than 100%. Totals begin when this feature is deployed, with no retroactive count.
-        Local and preview results are never tallied.
-        Recommendation feedback starts when this feature is deployed.
         Version-separated recommendation counts start when this update is deployed and are not backfilled; earlier results remain in the all-time and monthly totals.
       </p>
       {months.length === 0 && <p className="t-body mb-8">No production completions have been counted yet.</p>}
