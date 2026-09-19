@@ -106,17 +106,17 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p "${SSH_PORT:-22}" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Deploy
+      - name: Copy the new build without deleting old files
+        # The cached homepage names the previous build's hashed chunks. Keeping
+        # those files until after the Cloudflare purge means that page keeps
+        # working throughout the deploy.
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          # --delete keeps the server free of files dropped from the repo, but
-          # .env holds the server's own configuration and tmp/ is Passenger's,
-          # so both are excluded from deletion as well as from transfer.
-          rsync -az --delete \
+          rsync -az \
             --exclude '.env' \
             --exclude 'tmp/' \
             -e "ssh -i ~/.ssh/deploy_key -p ${SSH_PORT:-22}" \
@@ -132,44 +132,70 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$DEPLOY_PATH/tmp' && touch '$DEPLOY_PATH/tmp/restart.txt'"
 
-      - name: Wait for the app to come back
+      - name: Wait for the new build to serve the homepage
+        # A unique query string misses the Cloudflare cache, so this reaches the
+        # origin. Next writes the build ID into the HTML, and requiring three
+        # matches in a row catches a leftover process still serving the old build.
         env:
           SITE_URL: ${{ env.NEXT_PUBLIC_SITE_URL }}
         run: |
-          # Staging sits behind Directory Privacy, so 401 is a healthy response:
-          # it proves Apache and Passenger are up. 000 means nothing answered.
-          for attempt in $(seq 1 12); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE_URL/" || echo 000)
-            case "$code" in
-              200|401) echo "Healthy (HTTP $code)."; exit 0 ;;
-            esac
-            echo "attempt $attempt: HTTP $code"
-            sleep 10
+          build_id=$(cat .next/BUILD_ID)
+          matches=0
+          for attempt in $(seq 1 30); do
+            body=$(curl -s --max-time 10 "$SITE_URL/?deploy-check=$build_id-$attempt-$RANDOM" || true)
+            if printf '%s' "$body" | grep -qF "$build_id"; then
+              matches=$((matches + 1))
+              if [ "$matches" -ge 3 ]; then echo "New build $build_id is live."; exit 0; fi
+              continue
+            fi
+            matches=0
+            echo "attempt $attempt: new build not served yet"
+            sleep 5
           done
-          echo "::error::App did not become healthy after restart."
+          echo "::error::The new build did not come up; old files were kept so the cached site keeps working."
           exit 1
 
       - name: Purge the Cloudflare cache
-        # Cloudflare caches the prerendered homepage, whose HTML names this
-        # build's hashed chunks. rsync --delete removed the old chunks, so a
-        # stale cached page would load scripts that no longer exist.
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           SITE_URL: ${{ env.NEXT_PUBLIC_SITE_URL }}
         run: |
           if [ -z "$CLOUDFLARE_ZONE_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::warning::Cloudflare purge credentials are not set; skipping cache purge."
-            exit 0
+            echo "::error::Cloudflare purge credentials are not set; the cached homepage would reference deleted chunks."
+            exit 1
           fi
           response=$(curl -s -X POST \
             "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             -H "Content-Type: application/json" \
             --data '{"purge_everything":true}')
-          echo "$response" | grep -q '"success":true' || { echo "::error::Cloudflare purge failed: $response"; exit 1; }
+          printf '%s' "$response" | grep -q '"success":true' || { echo "::error::Cloudflare purge failed: $response"; exit 1; }
           echo "Cloudflare cache purged."
-          curl -s -o /dev/null --max-time 20 "$SITE_URL/" || true
+          # Purge takes effect within seconds; confirm the edge copy is the new build.
+          build_id=$(cat .next/BUILD_ID)
+          for attempt in $(seq 1 12); do
+            curl -s --max-time 10 "$SITE_URL/" | grep -qF "$build_id" && { echo "Cached homepage is the new build."; exit 0; }
+            sleep 5
+          done
+          echo "::error::Cloudflare still serves the old homepage; old files were kept so it keeps working."
+          exit 1
+
+      - name: Remove files the new build no longer uses
+        # --delete keeps the server free of files dropped from the repo, but
+        # .env holds the server's own configuration and tmp/ is Passenger's,
+        # so both are excluded from deletion as well as from transfer.
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          rsync -az --delete \
+            --exclude '.env' \
+            --exclude 'tmp/' \
+            -e "ssh -i ~/.ssh/deploy_key -p ${SSH_PORT:-22}" \
+            release/ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
 
       - name: Clean up the key
         if: always()
