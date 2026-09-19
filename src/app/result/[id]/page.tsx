@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Bree_Serif } from "next/font/google";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
@@ -11,6 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 import WowheadTooltips from "@/components/WowheadTooltips";
 import LogoHomeLink from "@/components/LogoHomeLink";
 import SupportButton from "@/components/SupportButton";
+import { supportButton as supportButtonFont } from "@/app/fonts";
 import { withArticle } from "@/lib/article";
 import { QUIZ_VERSION } from "@/data/questions";
 import { getResult } from "@/lib/result-store";
@@ -23,7 +23,6 @@ interface ResultPageProps { params: Promise<{ id: string }> }
 
 export const dynamic = "force-dynamic";
 const getCachedResult = cache(getResult);
-const supportButtonFont = Bree_Serif({ subsets: ["latin"], weight: "400", display: "swap" });
 
 export async function generateMetadata({ params }: ResultPageProps): Promise<Metadata> {
   const { id } = await params;

@@ -21,4 +21,16 @@ describe("SupportButton", () => {
     }));
     expect(button.props.href).toBe("https://buymeacoffee.com/earlyspark");
   });
+
+  it("tracks footer clicks under their own placement", () => {
+    const gtag = vi.fn();
+    vi.stubGlobal("window", { gtag, location: { href: "https://example.com/" } });
+
+    const button = SupportButton({ fontClassName: "test-font", variant: "compact" });
+    button.props.onClick();
+
+    expect(gtag).toHaveBeenCalledWith("event", "support_click", expect.objectContaining({
+      placement: "footer",
+    }));
+  });
 });

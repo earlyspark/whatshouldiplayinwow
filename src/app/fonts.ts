@@ -1,4 +1,4 @@
-import { Marcellus, EB_Garamond, IBM_Plex_Mono } from "next/font/google";
+import { Marcellus, EB_Garamond, IBM_Plex_Mono, Bree_Serif } from "next/font/google";
 
 export const display = Marcellus({
   subsets: ["latin"],
@@ -22,3 +22,5 @@ export const mono = IBM_Plex_Mono({
   variable: "--font-mono",
   fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
 });
+
+export const supportButton = Bree_Serif({ subsets: ["latin"], weight: "400", display: "swap" });
