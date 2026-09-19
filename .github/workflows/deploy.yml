@@ -149,6 +149,28 @@ jobs:
           echo "::error::App did not become healthy after restart."
           exit 1
 
+      - name: Purge the Cloudflare cache
+        # Cloudflare caches the prerendered homepage, whose HTML names this
+        # build's hashed chunks. rsync --delete removed the old chunks, so a
+        # stale cached page would load scripts that no longer exist.
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          SITE_URL: ${{ env.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          if [ -z "$CLOUDFLARE_ZONE_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::warning::Cloudflare purge credentials are not set; skipping cache purge."
+            exit 0
+          fi
+          response=$(curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}')
+          echo "$response" | grep -q '"success":true' || { echo "::error::Cloudflare purge failed: $response"; exit 1; }
+          echo "Cloudflare cache purged."
+          curl -s -o /dev/null --max-time 20 "$SITE_URL/" || true
+
       - name: Clean up the key
         if: always()
         run: rm -f ~/.ssh/deploy_key
