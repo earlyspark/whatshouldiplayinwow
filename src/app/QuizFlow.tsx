@@ -16,7 +16,7 @@ function rankLabel(index: number) {
   return ["1st", "2nd", "3rd"][index] ?? `${index + 1}th`;
 }
 
-export default function QuizFlow({ creatorCard, creatorBanner }: { creatorCard: React.ReactNode; creatorBanner: React.ReactNode }) {
+export default function QuizFlow({ creatorCard }: { creatorCard: React.ReactNode }) {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -227,8 +227,10 @@ export default function QuizFlow({ creatorCard, creatorBanner }: { creatorCard: 
     return (
       <section id="quiz" className="w-full" aria-label="Start the WoW Forever race and class quiz">
         <div className="mb-8 flex justify-center"><button ref={startButtonRef} onClick={start} className="btn focus-ring">Start the quiz</button></div>
-        <div className="mb-8">{creatorBanner}</div>
-        <QuizBanner questionIndex={-1} {...productPool} />
+        <div className="mb-8 grid gap-8 lg:grid-cols-2">
+          {creatorCard}
+          <QuizBanner questionIndex={-1} layout="sidebar" {...productPool} />
+        </div>
         <AdSenseUnit viewport="desktop" />
       </section>
     );

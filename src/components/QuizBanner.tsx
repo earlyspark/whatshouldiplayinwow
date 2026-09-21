@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AmazonProductLink from "@/components/AmazonProductLink";
 import type { EquipmentGroup } from "@/lib/amazon";
 import { selectQuizEquipment } from "@/lib/equipment-selection";
+import { AD_TILE_CLASS } from "@/lib/ad-styles";
 
 interface QuizBannerProps {
   questionIndex: number;
@@ -68,7 +69,7 @@ export default function QuizBanner({ questionIndex, layout = "banner", pool, vis
               {product.imageUrl && (
                 // Amazon images are served directly, without transformation.
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={product.imageUrl} alt="" loading="lazy" className={`w-full rounded-lg bg-white/90 object-contain p-2 ${layout === "sidebar" ? "h-24" : "h-28 sm:h-32"}`} />
+                <img src={product.imageUrl} alt="" loading="lazy" className={AD_TILE_CLASS} />
               )}
               <span className="t-small line-clamp-2 text-[var(--dim)] group-hover:text-[var(--bone)]">{product.title}</span>
             </AmazonProductLink>

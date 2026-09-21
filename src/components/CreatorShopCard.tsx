@@ -7,10 +7,10 @@ import { creatorMaps } from "@/lib/creator-maps";
 import AmazonProductLink from "@/components/AmazonProductLink";
 import { CREATOR_BOOK_ASIN } from "@/lib/amazon";
 import type { AdPlacement } from "@/lib/gtag";
+import { AD_TILE_CLASS } from "@/lib/ad-styles";
 
 const BOOK_TITLE = "Little Kids Coloring Book: Irvine and Orange County, California";
 
-const tileClass = "mx-auto aspect-[3/4] w-full max-w-[11rem] rounded-lg bg-white/90 object-contain p-2";
 const linkClass = "focus-ring group flex min-w-0 flex-col gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/[.04]";
 
 // Most pages showing this card are prerendered, where the catalog credentials
@@ -29,11 +29,11 @@ export default function CreatorShopCard({ placement = "result_creator_sidebar", 
           <CreatorVideoLink key={map.itemId} placement={placement} {...map} />
         ))}
         <CreatorShopLink placement={placement}>
-          <Image src={printImage} alt="" sizes="(min-width: 640px) 176px, 40vw" className={tileClass} />
+          <Image src={printImage} alt="" sizes="(min-width: 640px) 176px, 40vw" className={AD_TILE_CLASS} />
           <span className="t-small line-clamp-3 text-[var(--dim)] group-hover:text-[var(--bone)]">Sinister Squashling watercolor print</span>
         </CreatorShopLink>
         <AmazonProductLink href={bookUrl()} asin={CREATOR_BOOK_ASIN} category="creator-book" placement={placement} className={linkClass}>
-          <Image src={bookImage} alt="" sizes="(min-width: 640px) 176px, 40vw" className={tileClass} />
+          <Image src={bookImage} alt="" sizes="(min-width: 640px) 176px, 40vw" className={AD_TILE_CLASS} />
           <span className="t-small line-clamp-3 text-[var(--dim)] group-hover:text-[var(--bone)]">{BOOK_TITLE}</span>
         </AmazonProductLink>
       </div>

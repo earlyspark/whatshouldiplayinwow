@@ -50,10 +50,7 @@ export default function HomePage() {
           </div>
         </header>
 
-        <QuizFlow
-          creatorCard={<CreatorShopCard placement="quiz_creator" />}
-          creatorBanner={<CreatorShopCard placement="quiz_creator" layout="banner" />}
-        />
+        <QuizFlow creatorCard={<CreatorShopCard placement="quiz_creator" />} />
         <AdSenseUnit viewport="mobile" />
 
         <SiteFooter />

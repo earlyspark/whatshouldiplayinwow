@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { trackEvent, type AdPlacement } from "@/lib/gtag";
+import { AD_TILE_CLASS } from "@/lib/ad-styles";
 
 interface CreatorVideoLinkProps {
   href: string;
@@ -51,7 +52,7 @@ export default function CreatorVideoLink({ href, itemId, placement, title, video
         preload="metadata"
         poster={`${videoBase}-poster.webp`}
         aria-hidden="true"
-        className="mx-auto aspect-[3/4] w-full max-w-[11rem] rounded-lg bg-white/90 object-contain p-2"
+        className={AD_TILE_CLASS}
       >
         <source src={`${videoBase}.webm`} type="video/webm" />
         <source src={`${videoBase}.mp4`} type="video/mp4" />
