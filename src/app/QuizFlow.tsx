@@ -16,7 +16,7 @@ function rankLabel(index: number) {
   return ["1st", "2nd", "3rd"][index] ?? `${index + 1}th`;
 }
 
-export default function QuizFlow() {
+export default function QuizFlow({ creatorCard, creatorBanner }: { creatorCard: React.ReactNode; creatorBanner: React.ReactNode }) {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -227,6 +227,7 @@ export default function QuizFlow() {
     return (
       <section id="quiz" className="w-full" aria-label="Start the WoW Forever race and class quiz">
         <div className="mb-8 flex justify-center"><button ref={startButtonRef} onClick={start} className="btn focus-ring">Start the quiz</button></div>
+        <div className="mb-8">{creatorBanner}</div>
         <QuizBanner questionIndex={-1} {...productPool} />
         <AdSenseUnit viewport="desktop" />
       </section>
@@ -238,6 +239,7 @@ export default function QuizFlow() {
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="lg:hidden">
+        <div className="mb-8">{creatorCard}</div>
         <QuizBanner questionIndex={index} layout="sidebar" {...productPool} />
       </div>
       <div className="min-w-0 lg:col-start-1 lg:row-start-1">
@@ -336,6 +338,7 @@ export default function QuizFlow() {
       </AnimatePresence>
       </div>
       <div className="hidden lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:block">
+        <div className="mb-8">{creatorCard}</div>
         <QuizBanner questionIndex={index} layout="sidebar" {...productPool} />
         <AdSenseUnit viewport="desktop" />
       </div>

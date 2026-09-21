@@ -2,16 +2,16 @@
 
 import { trackEvent } from "@/lib/gtag";
 
-const ETSY_LISTING_URL = "https://www.etsy.com/listing/1081948944/sinister-squashling-framed-watercolor";
+const ETSY_LISTING_URL = "https://earlyspark.etsy.com/listing/1081948944";
 
-export default function CreatorShopLink({ children }: { children: React.ReactNode }) {
+export default function CreatorShopLink({ children, placement }: { children: React.ReactNode; placement: string }) {
   return (
     <a
       href={ETSY_LISTING_URL}
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => trackEvent("ad_click", {
-        placement: "result_creator_sidebar",
+        placement,
         destination_host: "etsy.com",
         item_id: "1081948944",
       })}

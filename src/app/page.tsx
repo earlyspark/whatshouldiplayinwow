@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import QuizFlow from "./QuizFlow";
 import AdSenseUnit from "@/components/AdSenseUnit";
+import CreatorShopCard from "@/components/CreatorShopCard";
 import LogoHomeLink from "@/components/LogoHomeLink";
 import SiteFooter from "@/components/SiteFooter";
 import { siteUrl } from "@/lib/site-url";
@@ -49,7 +50,10 @@ export default function HomePage() {
           </div>
         </header>
 
-        <QuizFlow />
+        <QuizFlow
+          creatorCard={<CreatorShopCard placement="quiz_creator" />}
+          creatorBanner={<CreatorShopCard placement="quiz_creator" layout="banner" />}
+        />
         <AdSenseUnit viewport="mobile" />
 
         <SiteFooter />

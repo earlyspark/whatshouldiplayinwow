@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ErrorAnalytics from "@/components/ErrorAnalytics";
 import NotFoundAds from "@/components/NotFoundAds";
+import CreatorShopCard from "@/components/CreatorShopCard";
 
 export default function ResultNotFound() {
   return (
@@ -14,7 +15,8 @@ export default function ResultNotFound() {
         </p>
         <Link href="/#quiz" className="btn focus-ring mt-8">Take the quiz again</Link>
       </div>
-      <div className="w-full max-w-[78rem] text-left">
+      <div className="w-full max-w-[78rem] space-y-8 text-left">
+        <CreatorShopCard placement="not_found_creator" layout="banner" />
         <NotFoundAds />
       </div>
     </main>
