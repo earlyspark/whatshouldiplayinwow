@@ -6,7 +6,7 @@ interface AmazonProductLinkProps {
   href: string;
   asin: string;
   category?: string;
-  placement: "sidebar" | "inline";
+  placement: string;
   className?: string;
   children: React.ReactNode;
 }

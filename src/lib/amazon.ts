@@ -318,13 +318,6 @@ export async function getEquipmentPicks(count: number) {
   }));
 }
 
-export async function getCreatorBookProduct(): Promise<AmazonProduct | null> {
-  const config = amazonConfig();
-  if (!config) return null;
-  const products = await cached(`${config.marketplace}:creator-book:${CREATOR_BOOK_ASIN}`, () => getItemsByAsin([CREATOR_BOOK_ASIN], config));
-  return products.find((product) => product.asin === CREATOR_BOOK_ASIN) ?? null;
-}
-
 async function searchPool(keywords: string, size: number, config: AmazonConfig) {
   const products = new Map<string, AmazonProduct>();
   const pageSize = Math.min(10, size);

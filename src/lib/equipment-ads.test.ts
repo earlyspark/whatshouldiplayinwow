@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CREATOR_BOOK_ASIN, clearAmazonToken, getCreatorBookProduct, getEquipmentGroups, getEquipmentPicks } from "@/lib/amazon";
+import { CREATOR_BOOK_ASIN, clearAmazonToken, getEquipmentGroups, getEquipmentPicks } from "@/lib/amazon";
 
 const titles: Record<string, string> = {
   "stream deck": "Elgato Stream Deck XL Streaming Controller",
@@ -125,15 +125,7 @@ describe("equipment catalog", () => {
     clock.mockRestore();
   });
 
-  it("loads the book by ASIN separately and preserves its Amazon image, title and affiliate URL", async () => {
-    const fetchMock = mockCatalog();
-    vi.stubGlobal("fetch", fetchMock);
-    const book = await getCreatorBookProduct();
-    expect(book).toMatchObject({ asin: CREATOR_BOOK_ASIN, title: "Children's Book", url: expect.stringContaining("tag=test-20"), imageUrl: expect.stringContaining("m.media-amazon.com") });
-    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("getItems"))).toHaveLength(1);
-  });
-
-  it("leaves failed categories and an unavailable book empty", async () => {
+  it("leaves failed categories empty", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       if (String(input).includes("/auth/o2/token")) return Response.json({ access_token: "token", expires_in: 3600 });
@@ -143,7 +135,6 @@ describe("equipment catalog", () => {
       return Response.json({ searchResult: { items: [] } });
     }));
     expect((await getEquipmentGroups()).map((group) => group.products)).toEqual(Array(18).fill([]));
-    expect(await getCreatorBookProduct()).toBeNull();
     vi.restoreAllMocks();
   });
 });

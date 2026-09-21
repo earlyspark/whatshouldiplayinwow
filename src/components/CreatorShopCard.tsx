@@ -1,13 +1,25 @@
 import Image from "next/image";
 import printImage from "../../assets/sinister-squashling.webp";
+import bookImage from "../../assets/little-kids-coloring-book.webp";
 import CreatorShopLink from "@/components/CreatorShopLink";
 import CreatorVideoLink from "@/components/CreatorVideoLink";
 import { creatorMaps } from "@/lib/creator-maps";
 import AmazonProductLink from "@/components/AmazonProductLink";
-import { getCreatorBookProduct } from "@/lib/amazon";
+import { CREATOR_BOOK_ASIN } from "@/lib/amazon";
 
-export default async function CreatorShopCard({ placement = "result_creator_sidebar", layout = "sidebar" }: { placement?: string; layout?: "banner" | "sidebar" }) {
-  const book = await getCreatorBookProduct();
+const BOOK_TITLE = "Little Kids Coloring Book: Irvine and Orange County, California";
+
+const tileClass = "mx-auto aspect-[3/4] w-full max-w-[11rem] rounded-lg bg-white/90 object-contain p-2";
+const linkClass = "focus-ring group flex min-w-0 flex-col gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/[.04]";
+
+// Most pages showing this card are prerendered, where the catalog credentials
+// are absent, so the book is static rather than fetched from Amazon.
+function bookUrl() {
+  const tag = process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG;
+  return `https://www.amazon.com/dp/${CREATOR_BOOK_ASIN}${tag ? `?tag=${tag}` : ""}`;
+}
+
+export default function CreatorShopCard({ placement = "result_creator_sidebar", layout = "sidebar" }: { placement?: string; layout?: "banner" | "sidebar" }) {
   return (
     <aside className="surface w-full p-5" aria-label="Hey, i made this">
       <p className="t-label text-[var(--dim)]">Hey, i made this</p>
@@ -16,22 +28,13 @@ export default async function CreatorShopCard({ placement = "result_creator_side
           <CreatorVideoLink key={map.itemId} placement={placement} {...map} />
         ))}
         <CreatorShopLink placement={placement}>
-          <Image
-            src={printImage}
-            alt=""
-            sizes="(min-width: 640px) 176px, 40vw"
-            className="mx-auto aspect-[3/4] w-full max-w-[11rem] rounded-lg bg-white/90 object-contain p-2"
-          />
+          <Image src={printImage} alt="" sizes="(min-width: 640px) 176px, 40vw" className={tileClass} />
           <span className="t-small line-clamp-3 text-[var(--dim)] group-hover:text-[var(--bone)]">Sinister Squashling watercolor print</span>
         </CreatorShopLink>
-        {book && <AmazonProductLink href={book.url} asin={book.asin} category="creator-book" placement="sidebar" className="focus-ring group flex min-w-0 flex-col gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/[.04]">
-            {book.imageUrl && (
-              // Amazon images are served directly, without transformation.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={book.imageUrl} alt="" width={book.imageWidth ?? undefined} height={book.imageHeight ?? undefined} loading="lazy" className="mx-auto aspect-[3/4] w-full max-w-[11rem] rounded-lg bg-white/90 object-contain p-2" />
-            )}
-            <span className="t-small line-clamp-3 text-[var(--dim)] group-hover:text-[var(--bone)]">{book.title}</span>
-          </AmazonProductLink>}
+        <AmazonProductLink href={bookUrl()} asin={CREATOR_BOOK_ASIN} category="creator-book" placement={placement} className={linkClass}>
+          <Image src={bookImage} alt="" sizes="(min-width: 640px) 176px, 40vw" className={tileClass} />
+          <span className="t-small line-clamp-3 text-[var(--dim)] group-hover:text-[var(--bone)]">{BOOK_TITLE}</span>
+        </AmazonProductLink>
       </div>
       <p className="t-small mt-4 text-[var(--dim)]">
         Visit my <a href="https://earlyspark.etsy.com" target="_blank" rel="noopener noreferrer" className="focus-ring underline underline-offset-2 hover:text-[var(--bone)]">Etsy store</a> and shop my coloring book on Amazon.
