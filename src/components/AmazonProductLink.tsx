@@ -1,12 +1,12 @@
 "use client";
 
-import { trackEvent } from "@/lib/gtag";
+import { trackEvent, type AdPlacement } from "@/lib/gtag";
 
 interface AmazonProductLinkProps {
   href: string;
   asin: string;
   category?: string;
-  placement: string;
+  placement: AdPlacement;
   className?: string;
   children: React.ReactNode;
 }

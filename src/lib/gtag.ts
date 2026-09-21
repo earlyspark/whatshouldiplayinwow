@@ -9,6 +9,14 @@ declare global {
 
 export type EventParams = Record<string, string | number | boolean | undefined>;
 
+/** Every `placement` an ad_click may report. Keep GA's buckets from splitting on a typo. */
+export type AdPlacement =
+  | "inline"
+  | "sidebar"
+  | "quiz_creator"
+  | "result_creator_sidebar"
+  | "not_found_creator";
+
 export function prepareGtag() {
   window.dataLayer ??= [];
   window.gtag ??= function gtag() {

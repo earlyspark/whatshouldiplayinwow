@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { trackEvent } from "@/lib/gtag";
+import { trackEvent, type AdPlacement } from "@/lib/gtag";
 
 interface CreatorVideoLinkProps {
   href: string;
   itemId: string;
-  placement: string;
+  placement: AdPlacement;
   title: string;
   videoBase: string;
 }

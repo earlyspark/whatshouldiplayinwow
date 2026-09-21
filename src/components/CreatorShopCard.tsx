@@ -6,6 +6,7 @@ import CreatorVideoLink from "@/components/CreatorVideoLink";
 import { creatorMaps } from "@/lib/creator-maps";
 import AmazonProductLink from "@/components/AmazonProductLink";
 import { CREATOR_BOOK_ASIN } from "@/lib/amazon";
+import type { AdPlacement } from "@/lib/gtag";
 
 const BOOK_TITLE = "Little Kids Coloring Book: Irvine and Orange County, California";
 
@@ -19,7 +20,7 @@ function bookUrl() {
   return `https://www.amazon.com/dp/${CREATOR_BOOK_ASIN}${tag ? `?tag=${tag}` : ""}`;
 }
 
-export default function CreatorShopCard({ placement = "result_creator_sidebar", layout = "sidebar" }: { placement?: string; layout?: "banner" | "sidebar" }) {
+export default function CreatorShopCard({ placement = "result_creator_sidebar", layout = "sidebar" }: { placement?: AdPlacement; layout?: "banner" | "sidebar" }) {
   return (
     <aside className="surface w-full p-5" aria-label="Hey, i made this">
       <p className="t-label text-[var(--dim)]">Hey, i made this</p>

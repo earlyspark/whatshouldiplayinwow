@@ -1,10 +1,10 @@
 "use client";
 
-import { trackEvent } from "@/lib/gtag";
+import { trackEvent, type AdPlacement } from "@/lib/gtag";
 
 const ETSY_LISTING_URL = "https://earlyspark.etsy.com/listing/1081948944";
 
-export default function CreatorShopLink({ children, placement }: { children: React.ReactNode; placement: string }) {
+export default function CreatorShopLink({ children, placement }: { children: React.ReactNode; placement: AdPlacement }) {
   return (
     <a
       href={ETSY_LISTING_URL}
