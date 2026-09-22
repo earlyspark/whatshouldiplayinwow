@@ -126,7 +126,7 @@ This quiz is just for entertainment purposes. Ultimately, choose whatever you wa
 
 ## Built with
 
-Next.js, React, Tailwind CSS and Upstash Redis, running as a Node server behind Cloudflare.
+Next.js, React and Tailwind CSS.
 
 ## License
 
