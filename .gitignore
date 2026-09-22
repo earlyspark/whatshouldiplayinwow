@@ -6,7 +6,7 @@ AGENTS.md
 CLAUDE.md
 agents.md
 claude.md
-docs/QUIZ_SCORING_HISTORY.local.md
+docs/*.local.md
 .agents/
 docs/adsense-setup.md
 docs/the-site-is-set-twinkling-leaf.md
