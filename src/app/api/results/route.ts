@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { clientIp } from "@/lib/client-ip";
 import { deployEnv } from "@/lib/deploy-env";
 import { hasRedisConfig, redisConfig } from "@/lib/redis-config";
 import { answersSchema } from "@/lib/result-schema";
@@ -31,13 +32,7 @@ export async function POST(request: NextRequest) {
 
     const limiter = rateLimiter();
     if (limiter) {
-      // Behind Cloudflare -> Apache, cf-connecting-ip is the authoritative client
-      // address; x-forwarded-for can be rewritten by intermediate proxies. Falling
-      // back to a single proxy IP would rate limit every visitor as one bucket.
-      const ip = request.headers.get("cf-connecting-ip")
-        ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-        ?? "anonymous";
-      const { success, reset } = await limiter.limit(ip);
+      const { success, reset } = await limiter.limit(clientIp(request));
       if (!success) {
         // reset is an epoch timestamp for when the window frees up again.
         const retryAfter = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
