@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pairingSearchString, parsePairingParams } from "@/lib/pairings-params";
+import { matchesRoleFilter, pairingSearchString, parsePairingParams } from "@/lib/pairings-params";
 
 const parse = (query: string) => parsePairingParams(new URLSearchParams(query));
 
@@ -25,6 +25,12 @@ describe("parsePairingParams", () => {
     expect(parse("spec=paladin-holy&race=orc").raceId).toBeNull();
   });
 
+  it("opens older melee and ranged filter links on the DPS filter", () => {
+    expect(parse("role=melee").role).toBe("dps");
+    expect(parse("role=ranged").role).toBe("dps");
+    expect(parse("role=dps").role).toBe("dps");
+  });
+
   it("rejects inherited object property names", () => {
     expect(parse("spec=toString&class=constructor&race=__proto__")).toEqual(parse(""));
     expect(parse("spec=priest-discipline&race=toString").raceId).toBeNull();
@@ -43,5 +49,15 @@ describe("pairingSearchString", () => {
 
   it("omits defaults", () => {
     expect(pairingSearchString(parse(""))).toBe("");
+  });
+});
+
+describe("matchesRoleFilter", () => {
+  it("treats melee and ranged specs as DPS", () => {
+    expect(matchesRoleFilter(["melee"], "dps")).toBe(true);
+    expect(matchesRoleFilter(["ranged"], "dps")).toBe(true);
+    expect(matchesRoleFilter(["healer"], "dps")).toBe(false);
+    expect(matchesRoleFilter(["melee", "tank"], "tank")).toBe(true);
+    expect(matchesRoleFilter(["tank"], "all")).toBe(true);
   });
 });

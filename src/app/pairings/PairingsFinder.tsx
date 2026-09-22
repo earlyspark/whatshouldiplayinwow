@@ -7,14 +7,14 @@ import type { PairingMode } from "@/data/pairings-config";
 import { classById, classes, raceById, races, type Faction } from "@/data/forever";
 import { specById, specRoles, specsForClass, type Role } from "@/data/specs";
 import { rankPartners, type PairingModeResult, type PairingRow } from "@/lib/pairings";
-import { pairingSearchString, parsePairingParams, type PairingSelection, type RoleFilter } from "@/lib/pairings-params";
+import { matchesRoleFilter, pairingSearchString, parsePairingParams, roleFilters, type PairingSelection, type RoleFilter } from "@/lib/pairings-params";
 import { trackEvent } from "@/lib/gtag";
 import { wowheadRacialUrl, wowheadSpellUrl } from "@/lib/wowhead-tooltips";
 
 const modeLabels: Record<PairingMode, string> = { pve: "PvE", pvp: "PvP" };
 const modeContexts: Record<PairingMode, string> = { pve: "Leveling and dungeons", pvp: "World PvP and battlegrounds" };
-const roleLabels: Record<Role, string> = { tank: "Tank", healer: "Healer", melee: "Melee", ranged: "Ranged" };
-const roleFilters: RoleFilter[] = ["all", "tank", "healer", "melee", "ranged"];
+const roleLabels: Record<Role, string> = { tank: "Tank", healer: "Healer", melee: "Melee DPS", ranged: "Ranged DPS" };
+const filterLabels: Record<RoleFilter, string> = { all: "All roles", tank: "Tank", healer: "Healer", dps: "DPS" };
 const factionLabels: Record<Faction, string> = { alliance: "Alliance", horde: "Horde" };
 
 const selectClass = "focus-ring mt-1 block w-full min-h-11 cursor-pointer border border-[var(--control-line)] bg-[var(--raised)] px-3 py-2 text-[var(--bone)] disabled:cursor-not-allowed disabled:opacity-40";
@@ -125,7 +125,7 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
     () => (selection.specId ? rankPartners(selection.specId, selection.faction, selection.sort) : []),
     [selection.specId, selection.faction, selection.sort],
   );
-  const visibleRows = selection.role === "all" ? rows : rows.filter((row) => specRoles(row.spec).includes(selection.role as Role));
+  const visibleRows = rows.filter((row) => matchesRoleFilter(specRoles(row.spec), selection.role));
   const raceOptions = races.filter((race) =>
     (!selection.classId || race.classes.includes(selection.classId)) && (!selection.faction || race.faction === selection.faction));
   const raceNote = raceListNote(selection);
@@ -133,7 +133,7 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
   const myLabel = mySpec
     ? `${selection.raceId ? `${raceById[selection.raceId].name} ` : ""}${mySpec.name} ${classById[mySpec.classId].name}`
     : null;
-  const roleNoun = selection.role === "all" ? "" : `${roleLabels[selection.role as Role].toLowerCase()} `;
+  const roleNoun = selection.role === "all" ? "" : `${selection.role === "dps" ? "DPS" : filterLabels[selection.role].toLowerCase()} `;
   const status = mySpec
     ? `${visibleRows.length} ${roleNoun}${visibleRows.length === 1 ? "pairing" : "pairings"}, sorted by ${modeLabels[selection.sort]} fit`
     : "";
@@ -282,7 +282,7 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
                 <div className="flex flex-wrap gap-2" role="group" aria-label="Filter pairings by role">
                   {roleFilters.map((role) => (
                     <button key={role} type="button" aria-pressed={selection.role === role} className={chipClass(selection.role === role)} onClick={() => update({ role })}>
-                      {role === "all" ? "All roles" : roleLabels[role]}
+                      {filterLabels[role]}
                     </button>
                   ))}
                 </div>

@@ -2,7 +2,7 @@ import type { PairingMode } from "@/data/pairings-config";
 import { classById, isValidCombination, raceById, type ClassId, type Faction, type RaceId } from "@/data/forever";
 import { isSpecId, specById, type Role, type SpecId } from "@/data/specs";
 
-export type RoleFilter = Role | "all";
+export type RoleFilter = "all" | "tank" | "healer" | "dps";
 
 export interface PairingSelection {
   classId: ClassId | null;
@@ -13,7 +13,15 @@ export interface PairingSelection {
   role: RoleFilter;
 }
 
-const roleFilters: RoleFilter[] = ["all", "tank", "healer", "melee", "ranged"];
+export const roleFilters: RoleFilter[] = ["all", "tank", "healer", "dps"];
+// Links shared before the filter merged melee and ranged into one DPS option.
+const legacyRoleFilters: Record<string, RoleFilter> = { melee: "dps", ranged: "dps" };
+
+export function matchesRoleFilter(roles: Role[], filter: RoleFilter) {
+  if (filter === "all") return true;
+  if (filter === "dps") return roles.includes("melee") || roles.includes("ranged");
+  return roles.includes(filter);
+}
 
 interface ParamReader { get(name: string): string | null }
 
@@ -31,14 +39,15 @@ export function parsePairingParams(params: ParamReader): PairingSelection {
   const faction: Faction | null = raceId
     ? raceById[raceId].faction
     : factionParam === "alliance" || factionParam === "horde" ? factionParam : null;
-  const roleParam = params.get("role") as RoleFilter | null;
+  const roleParam = params.get("role");
+  const role = roleParam ? legacyRoleFilters[roleParam] ?? roleFilters.find((filter) => filter === roleParam) : undefined;
   return {
     classId,
     specId: spec?.id ?? null,
     raceId,
     faction,
     sort: params.get("sort") === "pvp" ? "pvp" : "pve",
-    role: roleParam && roleFilters.includes(roleParam) ? roleParam : "all",
+    role: role ?? "all",
   };
 }
 
