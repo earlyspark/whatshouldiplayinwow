@@ -1,4 +1,4 @@
-export const DATA_VERSION = "2026-09-17";
+export const DATA_VERSION = "2026-09-22";
 export const DATA_CHECKED_AT = "2026-09-17";
 export const DATA_CHECKED_LABEL = "September 2026";
 
@@ -10,6 +10,10 @@ export const DATA_SOURCES = [
   {
     label: "World of Warcraft: Forever — Deep Dive Panel Recap",
     url: "https://worldofwarcraft.blizzard.com/en-us/news/24303313/world-of-warcraft-forever-deep-dive-panel-recap",
+  },
+  {
+    label: "World of Warcraft: Forever — Create the Hero You Want to Be",
+    url: "https://worldofwarcraft.blizzard.com/en-us/news/24304075",
   },
   {
     label: "Wowhead — All Racials and Available Class-Race Combinations",
@@ -83,9 +87,9 @@ export const races: RaceProfile[] = [
     classes: ["hunter", "mage", "paladin", "priest", "rogue", "warlock", "warrior"],
     racials: [
       { name: "Will to Survive", description: "Removes a stun effect." },
-      { name: "Perception", description: "Temporarily improves detection of stealthed enemies." },
-      { name: "Sword Specialization", description: "Increases critical strike chance while using swords." },
-      { name: "The Human Spirit", description: "Increases Spirit." },
+      { name: "Perception", description: "Improves detection of stealthed enemies for 20 sec." },
+      { name: "Sword Specialization", description: "Increases spell and ability critical strike chance by 2% while using swords." },
+      { name: "The Human Spirit", description: "Increases Spirit by 5%." },
     ],
   },
   {
@@ -96,8 +100,8 @@ export const races: RaceProfile[] = [
     racials: [
       { name: "Stoneform", description: "Removes and grants temporary immunity to Bleeds, Poisons, and Diseases while reducing Physical damage taken." },
       { name: "Find Treasure", description: "Tracks nearby treasure alongside other tracking abilities." },
-      { name: "Mace Specialization", description: "Increases critical strike chance while using a mace." },
-      { name: "Big Game Hunter", description: "Increases damage dealt to Beasts." },
+      { name: "Mace Specialization", description: "Increases spell and ability critical strike chance by 1% while using a mace." },
+      { name: "Big Game Hunter", description: "Increases damage dealt to Beasts by 5%." },
     ],
   },
   {
@@ -106,10 +110,10 @@ export const races: RaceProfile[] = [
     summary: "Night Elves reward players drawn to nature, careful positioning, stealth, and short windows of heightened power.",
     classes: ["druid", "hunter", "priest", "rogue", "warrior"],
     racials: [
-      { name: "Elune’s Light", description: "Temporarily increases critical strike chance." },
+      { name: "Elune’s Light", description: "Increases critical strike chance by 10% for 15 sec." },
       { name: "Shadowmeld", description: "Reduces detection while immobile; using it in combat discourages attacks but lengthens its cooldown." },
       { name: "Quickness", description: "Increases dodge chance by 1% and run speed by 2%, with improved stealth for Night Elf Rogues and Druids." },
-      { name: "Wisp Spirit", description: "Greatly increases movement speed while dead." },
+      { name: "Wisp Spirit", description: "Increases movement speed by 75% while dead." },
     ],
   },
   {
@@ -130,10 +134,10 @@ export const races: RaceProfile[] = [
     summary: "Orcs fit decisive players who like offensive windows, resisting stuns, and meeting magical danger with force.",
     classes: ["hunter", "mage", "rogue", "shaman", "warlock", "warrior"],
     racials: [
-      { name: "Blood Fury", description: "Temporarily increases Attack Power and Spell Power." },
+      { name: "Blood Fury", description: "Increases Attack Power and Spell Power by 10% for 15 sec." },
       { name: "Shatter Curse", description: "Removes and grants immunity to Curses and Banes, and reduces Magical damage taken by 15% for 8 sec." },
-      { name: "Hardiness", description: "Reduces stun duration." },
-      { name: "Axe Specialization", description: "Increases critical strike chance while using axes." },
+      { name: "Hardiness", description: "Reduces stun duration by 20%." },
+      { name: "Axe Specialization", description: "Increases spell and ability critical strike chance by 1% while using axes." },
     ],
   },
   {
@@ -143,9 +147,9 @@ export const races: RaceProfile[] = [
     classes: ["mage", "paladin", "priest", "rogue", "warlock", "warrior"],
     racials: [
       { name: "Will of the Forsaken", description: "Removes Charm, Fear, and Sleep effects." },
-      { name: "Cannibalize", description: "Restores Health and Mana while consuming a nearby corpse." },
+      { name: "Cannibalize", description: "Restores 35% of Health and Mana over time while consuming a nearby corpse." },
       { name: "Touch of the Grave", description: "Attacks and spells have a 5% or 10% chance, depending on class, to drain up to 5% of maximum Health from the target." },
-      { name: "Underwater Breathing", description: "Greatly extends underwater breath." },
+      { name: "Underwater Breathing", description: "Extends underwater breath by 300%." },
     ],
   },
   {
@@ -154,8 +158,8 @@ export const races: RaceProfile[] = [
     summary: "Tauren bring extra durability, an emergency area stun, outdoor momentum, and a natural affinity for gathering herbs.",
     classes: ["druid", "hunter", "shaman", "warrior"],
     racials: [
-      { name: "War Stomp", description: "Stuns nearby enemies for a short duration." },
-      { name: "Endurance", description: "Increases total Health and hit chance." },
+      { name: "War Stomp", description: "Stuns nearby enemies for 2 sec." },
+      { name: "Endurance", description: "Increases total Health by 5% and hit chance by 1%." },
       { name: "Plainsrunning", description: "Gains 1% movement speed every 5 sec while moving, up to 30%; damage or standing still reduces it." },
       { name: "Cultivation", description: "Grows bonus herbs that do not require Herbalism to gather." },
     ],
@@ -166,10 +170,10 @@ export const races: RaceProfile[] = [
     summary: "Trolls fit players who enjoy timed bursts of speed, strong recovery, and situational advantages against beasts.",
     classes: ["hunter", "mage", "priest", "rogue", "shaman", "warlock", "warrior"],
     racials: [
-      { name: "Berserking", description: "Temporarily increases casting and attack speed." },
+      { name: "Berserking", description: "Increases casting and attack speed by 10% for 10 sec." },
       { name: "Rapid Regeneration", description: "Regenerates 50% of maximum Health over 6 sec; movement, action, or damage cancels it." },
       { name: "Regeneration", description: "Increases Health regeneration by 10%, with 10% of total regeneration continuing in combat." },
-      { name: "Beast Slaying", description: "Increases damage dealt to Beasts." },
+      { name: "Beast Slaying", description: "Increases damage dealt to Beasts by 5%." },
     ],
   },
   {
@@ -178,10 +182,10 @@ export const races: RaceProfile[] = [
     summary: "High Order Skyborne combine movement and haste with restorative ley-line utility and an arcane Alliance identity.",
     classes: ["druid", "hunter", "mage", "rogue", "warrior"],
     racials: [
-      { name: "Walk on Air", description: "Glides downward through the air for a short duration." },
+      { name: "Walk on Air", description: "Glides downward through the air for 10 sec." },
       { name: "Read Ley Line", description: "Increases Health and Mana regeneration by 100% for 15 sec, or 15 min near a ley line." },
-      { name: "Wind Blessed", description: "Increases melee, ranged, and spellcasting Haste." },
-      { name: "Elemental Insight", description: "Increases damage dealt to Elementals." },
+      { name: "Wind Blessed", description: "Increases melee, ranged, and spellcasting Haste by 1%." },
+      { name: "Elemental Insight", description: "Increases damage dealt to Elementals by 5%." },
     ],
   },
   {
@@ -190,10 +194,10 @@ export const races: RaceProfile[] = [
     summary: "Windshaper Skyborne combine movement and haste with a sustained travel blessing and an elemental Horde identity.",
     classes: ["druid", "hunter", "rogue", "shaman", "warrior"],
     racials: [
-      { name: "Walk on Air", description: "Glides downward through the air for a short duration." },
+      { name: "Walk on Air", description: "Glides downward through the air for 10 sec." },
       { name: "Skysight", description: "Increases movement and mounted speed by 10% for 30 sec, or 15 min near an elemental convergence." },
-      { name: "Wind Blessed", description: "Increases melee, ranged, and spellcasting Haste." },
-      { name: "Elemental Insight", description: "Increases damage dealt to Elementals." },
+      { name: "Wind Blessed", description: "Increases melee, ranged, and spellcasting Haste by 1%." },
+      { name: "Elemental Insight", description: "Increases damage dealt to Elementals by 5%." },
     ],
   },
 ];
