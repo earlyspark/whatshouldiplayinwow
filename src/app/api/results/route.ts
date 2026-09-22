@@ -5,7 +5,7 @@ import { Redis } from "@upstash/redis";
 import { deployEnv } from "@/lib/deploy-env";
 import { hasRedisConfig, redisConfig } from "@/lib/redis-config";
 import { answersSchema } from "@/lib/result-schema";
-import { createSavedResult, validateAnswers } from "@/lib/scoring";
+import { createSavedResult, InvalidAnswersError, validateAnswers } from "@/lib/scoring";
 import { saveResult } from "@/lib/result-store";
 
 const MAX_REQUEST_BYTES = 16_384;
@@ -85,8 +85,10 @@ export async function POST(request: NextRequest) {
     await saveResult(result);
     return NextResponse.json({ id, receipt }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to create a result.";
-    const clientError = message.startsWith("Missing answer") || message.includes("accepts") || message.includes("invalid") || message.includes("conflicts");
-    return NextResponse.json({ error: clientError ? message : "Unable to create your result right now." }, { status: clientError ? 400 : 500 });
+    // Only the validator's own messages are safe to echo; anything else could carry storage internals.
+    if (error instanceof InvalidAnswersError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Unable to create your result right now." }, { status: 500 });
   }
 }

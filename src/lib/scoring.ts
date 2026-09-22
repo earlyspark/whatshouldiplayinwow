@@ -105,22 +105,30 @@ export function q4CombinationBonus(classId: ClassId, rankedChoices: string[]) {
   return best;
 }
 
+/** Marks a rejection caused by the submitted answers, whose message is safe to return to the client. */
+export class InvalidAnswersError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidAnswersError";
+  }
+}
+
 export function validateAnswers(answers: QuizAnswers) {
   const knownIds = new Set<string>(questions.map((question) => question.id));
-  if (Object.keys(answers).some((id) => !knownIds.has(id))) throw new Error("The quiz contains an invalid question.");
+  if (Object.keys(answers).some((id) => !knownIds.has(id))) throw new InvalidAnswersError("The quiz contains an invalid question.");
   for (const question of questions) {
     const chosen = answers[question.id];
-    if (!chosen?.length) throw new Error(`Missing answer for ${question.id}.`);
-    if (question.type === "single" && chosen.length !== 1) throw new Error(`${question.id} accepts one answer.`);
+    if (!chosen?.length) throw new InvalidAnswersError(`Missing answer for ${question.id}.`);
+    if (question.type === "single" && chosen.length !== 1) throw new InvalidAnswersError(`${question.id} accepts one answer.`);
     if (question.type === "ranked" && chosen.length > (question.maxRank ?? 3)) {
-      throw new Error(`${question.id} accepts up to ${question.maxRank ?? 3} answers.`);
+      throw new InvalidAnswersError(`${question.id} accepts up to ${question.maxRank ?? 3} answers.`);
     }
     if (question.id === "q12" && chosen.includes("none") && chosen.length > 1) {
-      throw new Error("q12 cannot combine 'None of these' with other answers.");
+      throw new InvalidAnswersError("q12 cannot combine 'None of these' with other answers.");
     }
-    if (new Set(chosen).size !== chosen.length) throw new Error(`${question.id} contains duplicate answers.`);
+    if (new Set(chosen).size !== chosen.length) throw new InvalidAnswersError(`${question.id} contains duplicate answers.`);
     const validIds = new Set(question.options.map((option) => option.id));
-    if (chosen.some((id) => !validIds.has(id))) throw new Error(`${question.id} contains an invalid answer.`);
+    if (chosen.some((id) => !validIds.has(id))) throw new InvalidAnswersError(`${question.id} contains an invalid answer.`);
   }
 }
 
