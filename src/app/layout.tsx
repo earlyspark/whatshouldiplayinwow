@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { body, display, mono } from "./fonts";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import SiteHeader from "@/components/SiteHeader";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#171220",
+  // Discord uses this for the link-embed side bar; it also tints mobile browser toolbars.
+  themeColor: "#c8964a",
 };
 
 export const metadata: Metadata = {
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a href="#main-content" className="focus-ring fixed left-3 top-3 z-50 -translate-y-24 bg-[var(--bone)] px-4 py-2 text-sm font-semibold text-[var(--ground)] focus:translate-y-0">
           Skip to content
         </a>
+        <SiteHeader />
         {children}
         <GoogleAnalytics />
       </body>

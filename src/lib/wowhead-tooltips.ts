@@ -31,3 +31,7 @@ export function wowheadRacialUrl(raceId: string, racialName: string, classId?: s
     racialSpellIds[raceId as RaceId]?.[racialName];
   return spellId ? `https://www.wowhead.com/forever/spell=${spellId}` : null;
 }
+
+export function wowheadSpellUrl(spellId: number) {
+  return `https://www.wowhead.com/forever/spell=${spellId}`;
+}

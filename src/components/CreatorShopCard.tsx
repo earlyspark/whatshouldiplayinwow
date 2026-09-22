@@ -20,11 +20,13 @@ function bookUrl() {
   return `https://www.amazon.com/dp/${CREATOR_BOOK_ASIN}${tag ? `?tag=${tag}` : ""}`;
 }
 
-export default function CreatorShopCard({ placement = "result_creator_sidebar", layout = "sidebar" }: { placement?: AdPlacement; layout?: "banner" | "sidebar" }) {
+const gridColumns = { banner: "grid-cols-2 lg:grid-cols-4", row: "grid-cols-2 sm:grid-cols-4", sidebar: "grid-cols-2" };
+
+export default function CreatorShopCard({ placement = "result_creator_sidebar", layout = "sidebar" }: { placement?: AdPlacement; layout?: "banner" | "row" | "sidebar" }) {
   return (
     <aside className="surface w-full p-5" aria-label="Hey, i made this">
       <p className="t-label text-[var(--dim)]">Hey, i made this</p>
-      <div className={`mt-4 grid grid-cols-2 gap-3 ${layout === "banner" ? "lg:grid-cols-4" : ""}`}>
+      <div className={`mt-4 grid gap-3 ${gridColumns[layout]}`}>
         {creatorMaps.map((map) => (
           <CreatorVideoLink key={map.itemId} placement={placement} {...map} />
         ))}

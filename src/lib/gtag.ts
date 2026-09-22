@@ -15,7 +15,8 @@ export type AdPlacement =
   | "sidebar"
   | "quiz_creator"
   | "result_creator_sidebar"
-  | "not_found_creator";
+  | "not_found_creator"
+  | "pairings_creator";
 
 export function prepareGtag() {
   window.dataLayer ??= [];
@@ -46,7 +47,7 @@ export function trackPageView(measurementId: string, pathname: string) {
 
 export function errorRouteGroup(pathname: string) {
   if (/^\/result\/[^/]+\/?$/.test(pathname)) return "/result/[id]";
-  if (pathname === "/" || pathname === "/methodology" || pathname === "/stats") return pathname;
+  if (pathname === "/" || pathname === "/pairings" || pathname === "/methodology" || pathname === "/stats") return pathname;
   return "/other";
 }
 

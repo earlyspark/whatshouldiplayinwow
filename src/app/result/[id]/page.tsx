@@ -8,7 +8,6 @@ import AdSenseUnit from "@/components/AdSenseUnit";
 import CreatorShopCard from "@/components/CreatorShopCard";
 import SiteFooter from "@/components/SiteFooter";
 import WowheadTooltips from "@/components/WowheadTooltips";
-import LogoHomeLink from "@/components/LogoHomeLink";
 import SupportButton from "@/components/SupportButton";
 import { supportButton as supportButtonFont } from "@/app/fonts";
 import { withArticle } from "@/lib/article";
@@ -51,11 +50,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
 
   return (
     <main id="main-content" className="min-h-screen">
-      {hasWowheadTooltips && <WowheadTooltips resultId={id} />}
+      {hasWowheadTooltips && <WowheadTooltips refreshKey={id} />}
       <ResultCompletion id={id} />
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
-        <header className="pt-4 sm:pt-5">
-          <LogoHomeLink />
+        <header className="pt-8 sm:pt-10">
           <div className="flex flex-col items-start gap-5">
             <p className="t-eyebrow text-[var(--bronze)]">What should I play in WoW: Forever?</p>
             <h1 className="t-display">{title}</h1>
@@ -117,6 +115,15 @@ export default async function ResultPage({ params }: ResultPageProps) {
                     <ResultFeedback position={index === 0 ? "runner-up-1" : "runner-up-2"} name={`${alternative.raceName} ${alternative.className}`} />
                   </article>
                 ))}
+              </div>
+            </section>
+
+            <section className="surface p-6 sm:p-8" aria-labelledby="pairings-title">
+              <p className="t-label text-[var(--dim)]">Playing with someone?</p>
+              <h2 id="pairings-title" className="t-section mt-3">See which specs pair best with yours</h2>
+              <p className="t-body mt-3 text-[var(--dim)]">Pick your {result.primary.className} spec to compare pairings for PvE and PvP, with a suggested race for each.</p>
+              <div className="mt-6">
+                <Link href={`/pairings?class=${result.primary.classId}&race=${result.primary.raceId}`} className="btn-outline focus-ring">See spec pairings</Link>
               </div>
             </section>
 

@@ -71,6 +71,18 @@ body > main { position: relative; z-index: 1; }
   .result-ads { width: 100%; }
 }
 
+/* Spec pairings puts its creator card and ad in a sidebar when one exists, otherwise inline with the results. */
+.pairings-sidebar { display: none; }
+@media (min-width: 1024px) and (orientation: landscape) {
+  /* Stretching the column gives the sticky ad room to travel alongside the results. */
+  .pairings-sidebar { display: block; align-self: stretch; }
+  .pairings-inline { display: none; }
+}
+/* The sidebar ad is about 450px tall; on shorter windows it would crowd the view, so it scrolls normally. */
+@media (min-width: 1024px) and (orientation: landscape) and (min-height: 720px) {
+  .pairings-sticky { position: sticky; top: 1.5rem; }
+}
+
 @media (max-width: 640px) {
   body::before { right: -38vw; opacity: 0.1; }
 }

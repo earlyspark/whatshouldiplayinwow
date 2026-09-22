@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import QuizFlow from "./QuizFlow";
 import AdSenseUnit from "@/components/AdSenseUnit";
 import CreatorShopCard from "@/components/CreatorShopCard";
-import LogoHomeLink from "@/components/LogoHomeLink";
 import SiteFooter from "@/components/SiteFooter";
 import { siteUrl } from "@/lib/site-url";
 
@@ -28,9 +28,7 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
 
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
-        <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
-          <LogoHomeLink />
-
+        <header className="pb-7 pt-8 sm:pb-9 sm:pt-10">
           <div className="flex flex-col items-start gap-5">
             <p className="t-eyebrow text-[var(--bronze)]">World of Warcraft: Forever</p>
             <h1 className="t-display">Which race and class should you play?</h1>
@@ -46,6 +44,9 @@ export default function HomePage() {
                 World of Warcraft: Forever
               </a>
               . Take this quiz to find out what matches your style and share with your friends!
+            </p>
+            <p className="t-small text-[var(--dim)]">
+              Already know your pick? <Link href="/pairings" className="link-bronze focus-ring">See which specs pair best with it</Link>.
             </p>
           </div>
         </header>

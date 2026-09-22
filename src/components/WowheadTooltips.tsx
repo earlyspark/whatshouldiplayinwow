@@ -9,7 +9,7 @@ type WowheadWindow = Window & {
 
 const SCRIPT_ID = "wowhead-tooltips-script";
 
-export default function WowheadTooltips({ resultId }: { resultId: string }) {
+export default function WowheadTooltips({ refreshKey }: { refreshKey: string }) {
   useEffect(() => {
     const wowheadWindow = window as WowheadWindow;
     wowheadWindow.whTooltips = { colorLinks: true, iconizeLinks: true, renameLinks: true };
@@ -27,7 +27,7 @@ export default function WowheadTooltips({ resultId }: { resultId: string }) {
     refresh();
 
     return () => script?.removeEventListener("load", refresh);
-  }, [resultId]);
+  }, [refreshKey]);
 
   return null;
 }

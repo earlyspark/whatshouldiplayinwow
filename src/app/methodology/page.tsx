@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import LogoHomeLink from "@/components/LogoHomeLink";
 import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
 import SiteFooter from "@/components/SiteFooter";
 import AnalyticsSettingsButton from "@/components/AnalyticsSettingsButton";
 import { isProductionDeployment } from "@/lib/deploy-env";
 import { DATA_CHECKED_LABEL, DATA_SOURCES } from "@/data/forever";
+import { SPEC_DATA_SOURCES } from "@/data/specs";
 import { siteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
@@ -37,8 +37,7 @@ export default function MethodologyPage() {
   return (
     <main id="main-content">
       <div className="mx-auto w-full max-w-[78rem] px-5 sm:px-8">
-        <header className="pb-7 pt-4 sm:pb-9 sm:pt-5">
-          <LogoHomeLink />
+        <header className="pb-7 pt-8 sm:pb-9 sm:pt-10">
           <div className="flex flex-col items-start gap-5">
             <p className="t-eyebrow text-[var(--bronze)]">World of Warcraft: Forever</p>
             <h1 className="t-display">How this works</h1>
@@ -52,6 +51,12 @@ export default function MethodologyPage() {
             <p className="t-body text-[var(--dim)]">Your main result is the strongest match. One alternative keeps the class but changes the race; the other gives you a different class to consider. Think of them as nearby paths. Most importantly: this is about what you may enjoy playing, not a prediction of the best launch-day build!</p>
           </section>
 
+          <section id="pairings" className="mt-12 space-y-5" aria-labelledby="pairings-title">
+            <h2 id="pairings-title" className="t-section">Spec pairings</h2>
+            <p className="t-body text-[var(--dim)]">Pick your class and spec, and it shows how well every other spec pairs with yours. PvE covers leveling and dungeons; PvP covers world PvP and battlegrounds.</p>
+            <p className="t-body text-[var(--dim)]">A pairing scores well when your roles fit together, like a tank with a healer, and when the other spec brings things you don&apos;t have yourself, such as a dispel, an interrupt, a stun, or a resurrection. Races don&apos;t change which specs rank highest. They only decide which race is suggested for each pairing, based on how useful its racials are in PvE or PvP.</p>
+          </section>
+
           <section className="surface mt-12 p-6 sm:p-8">
             <p id="sources" className="t-label text-[var(--dim)]">Behind the data</p>
             <h2 className="t-section mt-3">Sources checked on: {DATA_CHECKED_LABEL}</h2>
@@ -59,6 +64,7 @@ export default function MethodologyPage() {
             <p className="t-small mt-6 text-[var(--dim)]">Current sources:</p>
             <ul className="mt-3 list-disc space-y-1 pl-6 marker:text-[var(--bronze)]">
               {DATA_SOURCES.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="link-bronze focus-ring">{source.label}</a></li>)}
+              {SPEC_DATA_SOURCES.filter((source) => !DATA_SOURCES.some((item) => item.url === source.url)).map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="link-bronze focus-ring">{source.label}</a></li>)}
             </ul>
           </section>
 
@@ -81,7 +87,7 @@ export default function MethodologyPage() {
               Your browser uses session storage to keep an unfinished quiz, the one-time receipt used to count a completed quiz, and a separate copy of that receipt for rating your result. The counting copy is deleted after use; the rating copy normally clears when the tab session ends. We use your IP address to limit result creation and protect the service; hosting providers may also process request logs.
             </p>
             <p className="t-small text-[var(--dim)]">
-              Google and its ad partners may process browser information to deliver and measure ads. Google Analytics measures page visits, quiz interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages. Cloudflare, which delivers the site, also measures page visits and load speed without cookies.
+              Google and its ad partners may process browser information to deliver and measure ads. Google Analytics measures page visits, quiz and spec pairing interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages. Cloudflare, which delivers the site, also measures page visits and load speed without cookies.
             </p>
             <p className="t-small text-[var(--dim)]">
               In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and AdSense ads off. Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
@@ -90,7 +96,7 @@ export default function MethodologyPage() {
               <p className="t-small text-[var(--dim)]">To change your choice, open <AnalyticsSettingsButton />.</p>
             )}
             <p className="t-small text-[var(--dim)]">
-              Amazon supplies affiliate product images and links; clicking a paid link takes you to Amazon, which applies its own privacy practices. Result pages may load Wowhead&apos;s tooltip script when a racial ability has a Wowhead link. These services can receive browser request information when their resources load.
+              Amazon supplies affiliate product images and links; clicking a paid link takes you to Amazon, which applies its own privacy practices. Result pages and spec pairings may load Wowhead&apos;s tooltip script to show ability tooltips. Spec pairings doesn&apos;t save your picks; they live only in the page link. These services can receive browser request information when their resources load.
             </p>
             <p className="t-small text-[var(--dim)]">
               The site is an unofficial project by <a href="https://earlyspark.com" className="link-bronze focus-ring">earlyspark</a>. For privacy questions, email <a href="mailto:business@earlyspark.com" className="link-bronze focus-ring">business@earlyspark.com</a>.
