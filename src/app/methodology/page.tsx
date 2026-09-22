@@ -68,8 +68,9 @@ export default function MethodologyPage() {
             </ul>
           </section>
 
-          <div className="mt-12 flex justify-center">
+          <div className="mt-12 flex flex-wrap justify-center gap-4">
             <Link href="/" className="btn focus-ring">Go to the quiz</Link>
+            <Link href="/pairings" className="btn-outline focus-ring">See what pairs with your spec</Link>
           </div>
 
           <section id="privacy" className="surface mt-12 space-y-5 p-6 sm:p-8" aria-labelledby="privacy-title">

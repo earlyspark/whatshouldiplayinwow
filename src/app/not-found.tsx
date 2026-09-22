@@ -11,7 +11,10 @@ export default function NotFound() {
         <p className="t-label text-[var(--bronze)]">Lost in Azeroth</p>
         <h1 className="t-display mt-4">This page could not be found.</h1>
         <p className="t-body mt-5 text-[var(--dim)]">The address may be incomplete, or a shared result may have expired.</p>
-        <Link href="/#quiz" className="btn focus-ring mt-8">Take the quiz</Link>
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <Link href="/#quiz" className="btn focus-ring">Take the quiz</Link>
+          <Link href="/pairings" className="btn-outline focus-ring">See what pairs with your spec</Link>
+        </div>
       </div>
       <div className="w-full max-w-[78rem] space-y-8 text-left">
         <CreatorShopCard placement="not_found_creator" layout="banner" />
