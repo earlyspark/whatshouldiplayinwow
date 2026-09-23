@@ -47,6 +47,7 @@ export function trackPageView(measurementId: string, pathname: string) {
 
 export function errorRouteGroup(pathname: string) {
   if (/^\/result\/[^/]+\/?$/.test(pathname)) return "/result/[id]";
+  if (/^\/pairings\/[^/]+\/?$/.test(pathname)) return "/pairings/[spec]";
   if (pathname === "/" || pathname === "/pairings" || pathname === "/methodology" || pathname === "/stats") return pathname;
   return "/other";
 }

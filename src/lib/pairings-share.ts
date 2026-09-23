@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import { PAIRINGS_VERSION, type PairingMode } from "@/data/pairings-config";
 import { classById, raceById } from "@/data/forever";
-import { specById } from "@/data/specs";
+import { specById, type SpecId } from "@/data/specs";
 import { withArticle } from "@/lib/article";
 import { rankPartners, type PairingRow } from "@/lib/pairings";
-import type { PairingSelection } from "@/lib/pairings-params";
+import { pairingPath, specSlug, type PairingSelection } from "@/lib/pairings-params";
+import { siteUrl } from "@/lib/site-url";
 
 export const SHARE_TOP_COUNT = 3;
 
@@ -40,11 +42,34 @@ export function selectionShare(selection: PairingSelection): SelectionShare | nu
   const subject = withArticle(label);
   return {
     label,
-    title: `WoW Forever Spec Pairings for ${subject}`,
+    title: `What Pairs Well With ${subject} in WoW Forever?`,
     description: `Best in PvE: ${names(top.pve)}. Best in PvP: ${names(top.pvp)}.`,
     imageAlt: `Top PvE and PvP spec pairings for ${subject} in WoW Forever`,
     heading: `How specs pair with ${subject}`,
     top,
+  };
+}
+
+export function specHeading(specId: SpecId) {
+  const spec = specById[specId];
+  return `What pairs well with ${withArticle(`${spec.name} ${classById[spec.classId].name}`)}?`;
+}
+
+// Canonical drops race, faction, sort and role so each spec is one indexed page; og:url keeps the shared selection so its unfurl matches.
+export function pairingsMetadata(selection: PairingSelection): Metadata {
+  const share = selectionShare(selection);
+  const title = share?.title ?? genericShare.title;
+  const description = share?.description ?? genericShare.description;
+  const image = { url: shareImagePath(selection), width: 1200, height: 630, alt: share?.imageAlt ?? genericShare.imageAlt };
+  const canonical = `${siteUrl}/pairings${selection.specId ? `/${specSlug(selection.specId)}` : ""}`;
+  const url = share ? `${siteUrl}${pairingPath({ ...selection, sort: "pve", role: "all" })}` : canonical;
+  return {
+    // Absolute skips the layout suffix, which pushed the title past what Google shows.
+    title: { absolute: title },
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, type: "website", url, siteName: "What Should I Play?", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 

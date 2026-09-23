@@ -16,7 +16,7 @@ After the last question you land on a result page with its own shareable link:
 
 ## Spec pairings
 
-[Spec pairings](https://whatshouldiplayinwowforever.com/pairings) is for players who already know what they'll play. Pick your class and specialization (race is optional) to see which specs pair best with yours for PvE (leveling and dungeons) and PvP (world PvP and battlegrounds). Each pairing suggests a race and explains what each of you brings, citing specific abilities. Like the quiz, it uses fixed rules with no randomness, and the page link keeps your selection so you can share it.
+[Spec pairings](https://whatshouldiplayinwowforever.com/pairings) is for players who already know what they'll play. Pick your class and specialization (race is optional) to see which specs pair best with yours for PvE (leveling and dungeons) and PvP (world PvP and battlegrounds). Each pairing suggests a race and explains what each of you brings, citing specific abilities. Each spec has its own page, such as [Protection Warrior](https://whatshouldiplayinwowforever.com/pairings/protection-warrior). Like the quiz, it uses fixed rules with no randomness, and the page link keeps your selection so you can share it.
 
 ## The questions
 

@@ -52,5 +52,6 @@ describe("Google tag queue", () => {
     expect(JSON.stringify(event)).not.toMatch(/ABCDEFGHIJKL|secret/);
     expect(errorRouteGroup("/private/email@example.com")).toBe("/other");
     expect(errorRouteGroup("/pairings")).toBe("/pairings");
+    expect(errorRouteGroup("/pairings/protection-warrior")).toBe("/pairings/[spec]");
   });
 });

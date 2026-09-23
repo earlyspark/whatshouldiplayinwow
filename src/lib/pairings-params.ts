@@ -1,6 +1,6 @@
 import type { PairingMode } from "@/data/pairings-config";
 import { classById, isValidCombination, raceById, type ClassId, type Faction, type RaceId } from "@/data/forever";
-import { isSpecId, specById, type Role, type SpecId } from "@/data/specs";
+import { isSpecId, specById, specs, type Role, type SpecId } from "@/data/specs";
 
 export type RoleFilter = "all" | "tank" | "healer" | "dps";
 
@@ -25,10 +25,24 @@ export function matchesRoleFilter(roles: Role[], filter: RoleFilter) {
 
 interface ParamReader { get(name: string): string | null }
 
+// Spec name before class, matching how players search ("protection-warrior").
+const slugBySpec = Object.fromEntries(
+  specs.map((spec) => [spec.id, `${spec.name}-${spec.classId}`.toLowerCase().replace(/\s+/g, "-")]),
+) as Record<SpecId, string>;
+const specBySlug = Object.fromEntries(Object.entries(slugBySpec).map(([id, slug]) => [slug, id])) as Record<string, SpecId>;
+
+export function specSlug(specId: SpecId) {
+  return slugBySpec[specId];
+}
+
+export function specIdFromSlug(slug: string): SpecId | null {
+  return Object.hasOwn(specBySlug, slug) ? specBySlug[slug] : null;
+}
+
 // Drops any value that doesn't fit the rest of the selection, so a hand-edited URL can't produce an illegal pair.
-export function parsePairingParams(params: ParamReader): PairingSelection {
+export function parsePairingParams(params: ParamReader, pathSpecId: SpecId | null = null): PairingSelection {
   const specParam = params.get("spec");
-  const spec = specParam && isSpecId(specParam) ? specById[specParam] : null;
+  const spec = pathSpecId ? specById[pathSpecId] : specParam && isSpecId(specParam) ? specById[specParam] : null;
   const classParam = params.get("class");
   const classId = spec?.classId ?? (classParam && Object.hasOwn(classById, classParam) ? (classParam as ClassId) : null);
   const raceParam = params.get("race");
@@ -51,14 +65,21 @@ export function parsePairingParams(params: ParamReader): PairingSelection {
   };
 }
 
-export function pairingSearchString(selection: PairingSelection) {
+export function pairingSearchString(selection: PairingSelection, { specInPath = false } = {}) {
   const params = new URLSearchParams();
-  if (selection.classId) params.set("class", selection.classId);
-  if (selection.specId) params.set("spec", selection.specId);
+  if (!specInPath || !selection.specId) {
+    if (selection.classId) params.set("class", selection.classId);
+    if (selection.specId) params.set("spec", selection.specId);
+  }
   if (selection.raceId) params.set("race", selection.raceId);
   else if (selection.faction) params.set("faction", selection.faction);
   if (selection.sort !== "pve") params.set("sort", selection.sort);
   if (selection.role !== "all") params.set("role", selection.role);
   const query = params.toString();
   return query ? `?${query}` : "";
+}
+
+export function pairingPath(selection: PairingSelection) {
+  if (!selection.specId) return `/pairings${pairingSearchString(selection)}`;
+  return `/pairings/${specSlug(selection.specId)}${pairingSearchString(selection, { specInPath: true })}`;
 }

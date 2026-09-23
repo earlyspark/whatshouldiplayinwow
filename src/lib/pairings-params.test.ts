@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { matchesRoleFilter, pairingSearchString, parsePairingParams } from "@/lib/pairings-params";
+import { specs } from "@/data/specs";
+import { matchesRoleFilter, pairingPath, pairingSearchString, parsePairingParams, specIdFromSlug, specSlug } from "@/lib/pairings-params";
 
 const parse = (query: string) => parsePairingParams(new URLSearchParams(query));
 
@@ -49,6 +50,45 @@ describe("pairingSearchString", () => {
 
   it("omits defaults", () => {
     expect(pairingSearchString(parse(""))).toBe("");
+  });
+});
+
+describe("spec slugs", () => {
+  it("round-trips every spec with a unique slug", () => {
+    const slugs = specs.map((spec) => specSlug(spec.id));
+    expect(new Set(slugs).size).toBe(specs.length);
+    for (const spec of specs) expect(specIdFromSlug(specSlug(spec.id))).toBe(spec.id);
+  });
+
+  it("puts the spec name before the class", () => {
+    expect(specSlug("warrior-protection")).toBe("protection-warrior");
+    expect(specSlug("hunter-beast-mastery")).toBe("beast-mastery-hunter");
+  });
+
+  it("rejects unknown slugs and inherited property names", () => {
+    expect(specIdFromSlug("bard-lute")).toBeNull();
+    expect(specIdFromSlug("share-image")).toBeNull();
+    expect(specIdFromSlug("toString")).toBeNull();
+  });
+
+  it("prefers the spec from the path over the query", () => {
+    expect(parsePairingParams(new URLSearchParams("spec=mage-fire&race=dwarf"), "warrior-protection")).toMatchObject({
+      classId: "warrior",
+      specId: "warrior-protection",
+      raceId: "dwarf",
+    });
+  });
+});
+
+describe("pairingPath", () => {
+  it("puts the spec in the path and keeps the rest in the query", () => {
+    expect(pairingPath(parse("spec=warrior-protection&race=dwarf&sort=pvp&role=healer"))).toBe("/pairings/protection-warrior?race=dwarf&sort=pvp&role=healer");
+    expect(pairingPath(parse("spec=shaman-restoration&faction=horde"))).toBe("/pairings/restoration-shaman?faction=horde");
+  });
+
+  it("stays on the main page without a spec", () => {
+    expect(pairingPath(parse("class=priest&race=dwarf"))).toBe("/pairings?class=priest&race=dwarf");
+    expect(pairingPath(parse(""))).toBe("/pairings");
   });
 });
 

@@ -1,14 +1,15 @@
 "use client";
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import WowheadTooltips from "@/components/WowheadTooltips";
 import ShareActions from "./ShareActions";
 import type { PairingMode } from "@/data/pairings-config";
 import { classById, classes, raceById, races, type Faction } from "@/data/forever";
 import { specById, specRoles, specsForClass, type Role } from "@/data/specs";
 import { rankPartners, type PairingModeResult, type PairingRow } from "@/lib/pairings";
-import { matchesRoleFilter, pairingSearchString, parsePairingParams, roleFilters, type PairingSelection, type RoleFilter } from "@/lib/pairings-params";
+import { matchesRoleFilter, pairingPath, parsePairingParams, roleFilters, specIdFromSlug, specSlug, type PairingSelection, type RoleFilter } from "@/lib/pairings-params";
 import { trackEvent } from "@/lib/gtag";
 import { wowheadRacialUrl, wowheadSpellUrl } from "@/lib/wowhead-tooltips";
 
@@ -103,9 +104,9 @@ function joinList(items: string[]) {
 
 export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { intro: ReactNode; sidebar: ReactNode; inlineCreatorCard: ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
+  const { spec: specParam } = useParams<{ spec?: string }>();
   const searchParams = useSearchParams();
-  const selection = parsePairingParams(searchParams);
+  const selection = parsePairingParams(searchParams, specParam ? specIdFromSlug(specParam) : null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const classSelectRef = useRef<HTMLSelectElement>(null);
@@ -113,13 +114,13 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
 
   const reset = () => {
     setExpanded(null);
-    router.replace(pathname, { scroll: false });
+    router.replace("/pairings", { scroll: false });
     trackEvent("pairing_reset");
     classSelectRef.current?.focus();
   };
 
   const update = (next: Partial<PairingSelection>) => {
-    router.replace(`${pathname}${pairingSearchString({ ...selection, ...next })}`, { scroll: false });
+    router.replace(pairingPath({ ...selection, ...next }), { scroll: false });
   };
 
   const rows = useMemo(
@@ -165,11 +166,12 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
           <FitBar result={row.pvp} mode="pvp" emphasized={selection.sort === "pvp"} />
         </button>
         <div id={detailId} hidden={!open} className="inset mb-4 grid gap-6 p-5 xl:grid-cols-2">
-          {open && (
-            <>
-              <ModeDetail row={row} mode="pve" />
-              <ModeDetail row={row} mode="pvp" />
-            </>
+          <ModeDetail row={row} mode="pve" />
+          <ModeDetail row={row} mode="pvp" />
+          {row.spec.id !== selection.specId && (
+            <p className="t-small xl:col-span-2">
+              <Link href={`/pairings/${specSlug(row.spec.id)}`} className="link-bronze focus-ring">See what pairs well with {row.spec.name} {row.className}</Link>
+            </p>
           )}
         </div>
       </li>
