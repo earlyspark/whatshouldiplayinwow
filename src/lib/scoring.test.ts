@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { classes, isValidCombination, raceById, races, type ClassId } from "@/data/forever";
 import { questions, QUIZ_VERSION } from "@/data/questions";
 import { questionWeights, scoring } from "@/data/scoring-config";
-import { normalizedRankFactors, q4CombinationBonus, scoreQuiz } from "@/lib/scoring";
+import { classPointsForAnswer, normalizedRankFactors, q4CombinationBonus, scoreQuiz } from "@/lib/scoring";
 import type { QuizAnswers } from "@/lib/result-schema";
 
 const frontline: QuizAnswers = {
@@ -152,7 +152,7 @@ describe("quiz definition", () => {
 
   it("contrasts saved cooldown windows with sustained ability use without changing Q6 scoring", () => {
     const q6 = questions.find((question) => question.id === "q6")!;
-    expect(QUIZ_VERSION).toBe("1.24.0");
+    expect(QUIZ_VERSION).toBe("1.25.0");
     expect(q6.options.find((option) => option.id === "wait-opening")?.label).toBe("Hold my big cooldowns for an opening");
     expect(q6.options.find((option) => option.id === "stick-plan")?.label).toBe("Keep my core abilities rolling through the chaos");
     expect(q6.options.find((option) => option.id === "stick-plan")?.description).toContain("damage, healing, or control");
@@ -423,7 +423,7 @@ describe("scoring", () => {
     expect(scoring.q5["ranged-magic"].classes?.warlock).toBe(3);
     expect(scoring.q7.central.classes?.warlock).toBe(3);
     expect(scoring.q7.optional.classes?.warlock).toBe(1);
-    expect(scoring.q7.optional.classes?.hunter).toBe(2);
+    expect(scoring.q7.optional.classes?.hunter).toBe(1);
     const weaponWithOptionalPet = persona({
       q3: ["dungeons", "leveling"], q4: ["damage", "control"], q5: ["ranged-companion"],
       q6: ["stick-plan"], q7: ["optional"], q8: ["solo", "small-group"],
@@ -432,6 +432,40 @@ describe("scoring", () => {
     const result = scoreQuiz(weaponWithOptionalPet);
     expect(result.primary.classId).toBe("hunter");
     expect(result.alternatives[1].classId).toBe("warlock");
+  });
+
+  it("scales Hunter's weapon-and-companion credit with the stated pet preference", () => {
+    const threeRanks = normalizedRankFactors(3);
+    for (const [preference, raw] of [["central", 3], ["optional", 2], ["none", 1]] as const) {
+      const answers = persona({ q5: ["ranged-companion", "ranged-magic", "quick-melee"], q7: [preference] });
+      expect(classPointsForAnswer("q5", "ranged-companion", "hunter", answers)).toBe(raw);
+      expect(raw * questionWeights.q5.class * threeRanks[0]).toBeCloseTo(raw * 5 / 3);
+      expect(classPointsForAnswer("q5", "ranged-companion", "warlock", answers)).toBe(1);
+    }
+    expect(scoring.q7.optional.classes?.hunter).toBe(1);
+    expect(scoreQuiz(answersByClass.hunter).primary.classId).toBe("hunter");
+
+    const closeHunter = persona({
+      q3: ["exploration"], q4: ["damage"], q5: ["ranged-companion"],
+      q6: ["act-fast"], q7: ["central"], q8: ["small-group"],
+      q9: ["martial"], q12: ["prep"], q13: ["focused"],
+    });
+    expect(scoreQuiz(closeHunter).primary.classId).toBe("hunter");
+    expect(scoreQuiz({ ...closeHunter, q7: ["optional"] }).primary.classId).toBe("warrior");
+  });
+
+  it("reflects Rogue's recovery and repetition costs without excluding a strong stealth fit", () => {
+    expect(scoring.q12.downtime.classes?.rogue).toBe(-2);
+    expect(scoring.q12.repetition.classes?.rogue).toBe(1);
+    expect(-2 * questionWeights.q12.class * normalizedRankFactors(3)[0]).toBeCloseTo(-5 / 3);
+    expect(scoreQuiz(answersByClass.rogue).primary.classId).toBe("rogue");
+
+    const closeRogue = persona({
+      q3: ["pvp"], q4: ["adapt"], q5: ["quick-melee"], q6: ["act-fast"],
+      q7: ["none"], q8: ["open-world"], q9: ["martial"], q12: ["none"], q13: ["focused"],
+    });
+    expect(scoreQuiz(closeRogue).primary.classId).toBe("rogue");
+    expect(scoreQuiz({ ...closeRogue, q12: ["downtime"] }).primary.classId).toBe("warrior");
   });
 
   it("keeps Warlock for shadow spellcasters with a demon and settles close caster cases by fantasy", () => {

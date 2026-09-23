@@ -8,6 +8,14 @@ export interface OptionScore {
   races?: ScoreMap<RaceId>;
 }
 
+// A ranged weapon remains a Hunter signal, but the companion part of the
+// answer matters less when the player does not want to rely on a pet.
+export const hunterRangedCompanionPointsByPetPreference = {
+  central: 3,
+  optional: 2,
+  none: 1,
+} as const;
+
 // This describes how much combat timing a race's racial kit asks of the player,
 // not player skill. Every race still has active and passive benefits.
 const racialTimingDemand: Record<RaceId, 1 | 2 | 3> = {
@@ -114,7 +122,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   },
   q7: {
     central: { classes: { hunter: 3, warlock: 3 } },
-    optional: { classes: { hunter: 2, warlock: 1, druid: 1, shaman: 1, mage: 1, priest: 1 } },
+    optional: { classes: { hunter: 1, warlock: 1, druid: 1, shaman: 1, mage: 1, priest: 1 } },
     none: { classes: { warrior: 2, rogue: 2, mage: 2, priest: 2, paladin: 2, shaman: 1, druid: 1 } },
   },
   q8: {
@@ -177,7 +185,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
   },
   q12: {
     downtime: {
-      classes: { mage: -2, priest: -2, shaman: -2, warlock: -1, warrior: -1 },
+      classes: { mage: -2, priest: -2, shaman: -2, rogue: -2, warlock: -1, warrior: -1 },
       races: { undead: 3, troll: 3, "skyborne-alliance": 2, tauren: 1 },
     },
     prep: { classes: { warlock: -3, rogue: -2, hunter: -2, mage: -1, druid: -1, shaman: -1 } },
@@ -185,7 +193,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
       classes: { warrior: -3, priest: -2, shaman: -1, warlock: -1 },
       races: { gnome: 3, human: 3, undead: 3, dwarf: 2, "night-elf": 1, orc: 1 },
     },
-    repetition: { classes: { druid: 3, shaman: 3, rogue: 2, hunter: 2, mage: 2, warlock: 2, paladin: 2, priest: 2, warrior: 1 } },
+    repetition: { classes: { druid: 3, shaman: 3, rogue: 1, hunter: 2, mage: 2, warlock: 2, paladin: 2, priest: 2, warrior: 1 } },
     juggling: { classes: { druid: -3, shaman: -2, warlock: -2, hunter: -1, rogue: -1, mage: -1 } },
     none: {},
   },

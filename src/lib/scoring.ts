@@ -11,7 +11,7 @@ import {
   type RaceId,
 } from "@/data/forever";
 import { questionById, questions, QUIZ_VERSION, type QuestionId } from "@/data/questions";
-import { questionWeights, scoring } from "@/data/scoring-config";
+import { hunterRangedCompanionPointsByPetPreference, questionWeights, scoring } from "@/data/scoring-config";
 import type { CandidateSnapshot, QuizAnswers, SavedResult } from "@/lib/result-schema";
 
 const RANK_FACTORS: Record<number, number[]> = {
@@ -67,6 +67,13 @@ const raceMaximum = Object.values(questionWeights).reduce((sum, weight) => sum +
 
 export function normalizedRankFactors(count: number) {
   return RANK_FACTORS[Math.min(Math.max(count, 1), 3)];
+}
+
+export function classPointsForAnswer(questionId: QuestionId, optionId: string, classId: ClassId, answers: QuizAnswers) {
+  if (questionId === "q5" && optionId === "ranged-companion" && classId === "hunter") {
+    return hunterRangedCompanionPointsByPetPreference[answers.q7[0] as keyof typeof hunterRangedCompanionPointsByPetPreference];
+  }
+  return scoring[questionId]?.[optionId]?.classes?.[classId] ?? 0;
 }
 
 function selectedLabel(questionId: QuestionId, optionId: string) {
@@ -152,7 +159,7 @@ function scoreCandidate(raceId: RaceId, classId: ClassId, answers: QuizAnswers):
       const optionScore = scoring[question.id]?.[optionId];
       const factor = question.type === "ranked" ? factors[index] : 1;
       const moodFactor = question.id === "q11" ? atmosphereWeight : 1;
-      const classValue = (optionScore?.classes?.[classId] ?? 0) * questionWeights[question.id].class * factor * moodFactor;
+      const classValue = classPointsForAnswer(question.id, optionId, classId, answers) * questionWeights[question.id].class * factor * moodFactor;
       const raceValue = (optionScore?.races?.[raceId] ?? 0) * questionWeights[question.id].race * factor * moodFactor;
       classScore += classValue;
       raceScore += raceValue;

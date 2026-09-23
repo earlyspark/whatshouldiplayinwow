@@ -51,7 +51,7 @@ The quiz scores all 56 race and class combinations available in Forever and neve
 
 ### 2. Each answer gives points to classes and races
 
-Most answers add up to 3 points to the classes and races they fit. For example, *Protect others* favors frontline tanks most, but also credits Priest shields and the protective pets of Warlocks and Hunters. *Keep allies alive* favors healers, while *Ranged weapons & a companion* favors Hunter, with a smaller cue for a Warlock's demon. Questions 12 and 13 can also subtract points (as low as −3 before question and rank weights) when a class conflicts with a frustration or a preference for focused play.
+Most answers add up to 3 points to the classes and races they fit. For example, *Protect others* favors frontline tanks most, but also credits Priest shields and the protective pets of Warlocks and Hunters. *Keep allies alive* favors healers. *Ranged weapons & a companion* gives Hunter more credit when you say a pet is central, and less when you would rather play without one; it also gives a smaller cue for a Warlock's demon. Questions 12 and 13 can also subtract points (as low as −3 before question and rank weights) when a class conflicts with a frustration or a preference for focused play.
 
 ### 3. Questions carry different weight
 
@@ -100,6 +100,7 @@ Saved results retain a combined numeric score for compatibility with older recor
 - **Faction is just a preference.** Choosing Alliance or Horde gives that faction's races a large boost, but a strong enough match on the other side can still win.
 - **Community players get more say in atmosphere.** Ranking *Community & the vibes* doesn't favor either faction. Instead, it makes the race and class points from your atmosphere answer count more: ×1.5 when ranked first, ×1.3 second, ×1.15 third. The class effect remains small compared with fighting style and character fantasy.
 - **Focused play is a strong preference, not an exclusion.** Choosing a defined playstyle boosts focused classes and lowers adaptable classes. Strong answers elsewhere can still favor an adaptable class.
+- **Frustrations can distinguish close fits.** Disliking downtime weighs against Rogue, while disliking repetition gives it only a small positive cue. Strong stealth and quick-melee preferences can still favor Rogue.
 - **Racial utility follows the actual kit.** Night Elf's Quickness gives a small endurance cue. Skyborne movement abilities do not receive crafting points; the Alliance Skyborne's Read Ley Line contributes to the answer about finding a useful resource or tool. Both Skyborne variants have active movement abilities, so both receive a moderate timing score.
 
 ### Picking the alternatives
