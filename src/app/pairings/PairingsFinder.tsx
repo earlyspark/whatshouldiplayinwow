@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import WowheadTooltips from "@/components/WowheadTooltips";
+import ShareActions from "./ShareActions";
 import type { PairingMode } from "@/data/pairings-config";
 import { classById, classes, raceById, races, type Faction } from "@/data/forever";
 import { specById, specRoles, specsForClass, type Role } from "@/data/specs";
@@ -311,6 +312,12 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
                 )}
               </div>
               <p className="t-small mt-6 text-[var(--dim)]">Some tooltips may still show older values.</p>
+
+              <section className="surface mt-10 p-6 sm:p-8" aria-labelledby="pairings-share-title">
+                <h2 id="pairings-share-title" className="t-section">Share the results with your friends</h2>
+                <p className="t-body mt-3 text-[var(--dim)]">Send this link to whoever you&apos;re playing with so they can see how your specs pair.</p>
+                <div className="mt-6"><ShareActions onRespec={reset} /></div>
+              </section>
             </section>
           )}
         </div>
