@@ -29,20 +29,47 @@ export function prepareGtag() {
 
 function send(command: string, name: string, params: EventParams) {
   if (typeof window === "undefined" || typeof window.gtag !== "function") return;
-  window.gtag(command, name, { ...params, page_location: redactedPageUrl(window.location.href).toString(), transport_type: "beacon" });
+  window.gtag(command, name, { page_location: redactedPageUrl(window.location.href).toString(), ...params, transport_type: "beacon" });
 }
 
 export function trackEvent(name: string, params: EventParams = {}) {
   send("event", name, params);
 }
 
-export function trackPageView(measurementId: string, pathname: string) {
-  const safePath = typeof window === "undefined" ? pathname : redactedPageUrl(window.location.href).pathname;
-  send("event", "page_view", {
+// Next.js streams async generateMetadata titles after client navigations, so document.title is briefly empty.
+const TITLE_WAIT_MS = 1000;
+
+export function trackPageView(measurementId: string): () => void {
+  if (typeof window === "undefined" || typeof document === "undefined") return () => {};
+  const url = redactedPageUrl(window.location.href);
+  const sendPageView = (title?: string) => send("event", "page_view", {
     send_to: measurementId,
-    page_path: safePath,
-    page_title: typeof document === "undefined" ? undefined : document.title,
+    page_path: url.pathname,
+    page_location: url.toString(),
+    page_title: title || undefined,
   });
+
+  if (document.title || typeof MutationObserver === "undefined") {
+    sendPageView(document.title);
+    return () => {};
+  }
+
+  let sent = false;
+  const flush = (includeTitle: boolean) => {
+    if (sent) return;
+    sent = true;
+    observer.disconnect();
+    clearTimeout(timer);
+    window.removeEventListener("pagehide", onPageHide);
+    sendPageView(includeTitle ? document.title : undefined);
+  };
+  const onPageHide = () => flush(true);
+  const observer = new MutationObserver(() => { if (document.title) flush(true); });
+  observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  const timer = setTimeout(() => flush(true), TITLE_WAIT_MS);
+  window.addEventListener("pagehide", onPageHide);
+  // A newer route's title must not be attributed to this path.
+  return () => flush(false);
 }
 
 export function errorRouteGroup(pathname: string) {

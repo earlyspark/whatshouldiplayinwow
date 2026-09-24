@@ -1,7 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { errorRouteGroup, prepareGtag, trackEvent, trackPageError, trackPageView } from "@/lib/gtag";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("Google tag queue", () => {
   it("queues commands in the Arguments format Google tag processes", () => {
@@ -23,7 +26,7 @@ describe("Google tag queue", () => {
     vi.stubGlobal("document", { title: "Result" });
 
     prepareGtag();
-    trackPageView("G-TEST", "/result/ABCDEFGHIJKL");
+    trackPageView("G-TEST");
 
     expect(Array.from(browser.dataLayer[0] as IArguments)).toEqual([
       "event", "page_view", expect.objectContaining({
@@ -53,5 +56,68 @@ describe("Google tag queue", () => {
     expect(errorRouteGroup("/private/email@example.com")).toBe("/other");
     expect(errorRouteGroup("/pairings")).toBe("/pairings");
     expect(errorRouteGroup("/pairings/protection-warrior")).toBe("/pairings/[spec]");
+  });
+
+  describe("page views while a streamed title is pending", () => {
+    let browser: { dataLayer: unknown[]; gtag: Window["gtag"]; location: { href: string }; addEventListener: ReturnType<typeof vi.fn>; removeEventListener: ReturnType<typeof vi.fn> };
+    let page: { title: string; documentElement: object };
+    let onMutation: () => void;
+    const pageViews = () => browser.dataLayer.map((entry) => Array.from(entry as IArguments)).filter((entry) => entry[1] === "page_view");
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      browser = { dataLayer: [], gtag: undefined, location: { href: "https://example.com/result/ABCDEFGHIJKL" }, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+      page = { title: "", documentElement: {} };
+      vi.stubGlobal("window", browser);
+      vi.stubGlobal("document", page);
+      vi.stubGlobal("MutationObserver", class {
+        constructor(callback: () => void) { onMutation = callback; }
+        observe() {}
+        disconnect() {}
+      });
+      prepareGtag();
+    });
+
+    it("waits for the title before sending", () => {
+      trackPageView("G-TEST");
+      expect(pageViews()).toHaveLength(0);
+
+      page.title = "You should play a Troll Shaman | What Should I Play?";
+      onMutation();
+      vi.advanceTimersByTime(5000);
+
+      expect(pageViews()).toEqual([["event", "page_view", expect.objectContaining({
+        page_path: "/result/[id]", page_title: "You should play a Troll Shaman | What Should I Play?",
+      })]]);
+      expect(browser.removeEventListener).toHaveBeenCalledWith("pagehide", expect.any(Function));
+    });
+
+    it("sends without a title when none arrives in time", () => {
+      trackPageView("G-TEST");
+      vi.advanceTimersByTime(1000);
+
+      expect(pageViews()).toHaveLength(1);
+      expect(pageViews()[0][2]).toMatchObject({ page_path: "/result/[id]", page_title: undefined });
+    });
+
+    it("sends once without the next route's title when the route changes first", () => {
+      const cleanup = trackPageView("G-TEST");
+      page.title = "Quiz stats | What Should I Play?";
+      cleanup();
+      onMutation();
+      vi.advanceTimersByTime(5000);
+
+      expect(pageViews()).toHaveLength(1);
+      expect(pageViews()[0][2]).toMatchObject({ page_location: "https://example.com/result/[id]", page_title: undefined });
+    });
+
+    it("sends when the visitor leaves before the title arrives", () => {
+      trackPageView("G-TEST");
+      const [event, onPageHide] = browser.addEventListener.mock.calls[0];
+      expect(event).toBe("pagehide");
+      onPageHide();
+
+      expect(pageViews()).toHaveLength(1);
+    });
   });
 });

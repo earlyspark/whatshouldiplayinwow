@@ -7,9 +7,8 @@ import { trackPageView } from "@/lib/gtag";
 export default function GoogleAnalyticsPageViews({ measurementId }: { measurementId: string }) {
   const pathname = usePathname();
 
-  useEffect(() => {
-    trackPageView(measurementId, pathname);
-  }, [measurementId, pathname]);
+  // pathname re-runs the effect on each client navigation.
+  useEffect(() => trackPageView(measurementId), [measurementId, pathname]);
 
   return null;
 }
