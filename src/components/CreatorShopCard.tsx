@@ -24,8 +24,8 @@ const gridColumns = { banner: "grid-cols-2 lg:grid-cols-4", row: "grid-cols-2 sm
 
 export default function CreatorShopCard({ placement = "result_creator_sidebar", layout = "sidebar" }: { placement?: AdPlacement; layout?: "banner" | "row" | "sidebar" }) {
   return (
-    <aside className="surface w-full p-5" aria-label="Hey, i made this">
-      <p className="t-label text-[var(--dim)]">Hey, i made this</p>
+    <aside className="surface w-full p-5" aria-label="Buy my wares">
+      <p className="t-label text-[var(--dim)]">Buy my wares</p>
       <div className={`mt-4 grid gap-3 ${gridColumns[layout]}`}>
         {creatorMaps.map((map) => (
           <CreatorVideoLink key={map.itemId} placement={placement} {...map} />
