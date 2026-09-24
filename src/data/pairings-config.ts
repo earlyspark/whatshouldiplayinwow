@@ -1,6 +1,6 @@
 import type { Capability, Role } from "@/data/specs";
 
-export const PAIRINGS_VERSION = "1.0.0";
+export const PAIRINGS_VERSION = "1.0.1";
 
 export type PairingMode = "pve" | "pvp";
 
@@ -84,13 +84,13 @@ export const racialPairingValue: Record<PairingMode, Record<string, number>> = {
     "Berserking": 2,
     "Blood Fury": 2,
     "Wind Blessed": 2,
-    "Eureka!": 1.5,
     "Elune’s Light": 1.5,
     "Stoneform": 1.5,
     "Cannibalize": 1.5,
     "Rapid Regeneration": 1.5,
     "Read Ley Line": 1.5,
     "Expansive Mind": 1,
+    "Eureka!": 1,
     "Regeneration": 1,
     "Big Game Hunter": 1,
     "Beast Slaying": 1,

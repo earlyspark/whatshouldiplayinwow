@@ -1,4 +1,4 @@
-export const DATA_VERSION = "2026-09-22";
+export const DATA_VERSION = "2026-09-24";
 export const DATA_CHECKED_AT = "2026-09-17";
 export const DATA_CHECKED_LABEL = "September 2026";
 
@@ -123,7 +123,7 @@ export const races: RaceProfile[] = [
     classes: ["mage", "priest", "rogue", "warlock", "warrior"],
     racials: [
       { name: "Escape Artist", description: "Provides brief immunity to roots and snares." },
-      { name: "Eureka!", description: "Reduces the resource cost of the next three abilities and increases their damage by 10%; Priest healing also benefits." },
+      { name: "Eureka!", description: "The next three damaging abilities cost 10% less and deal 10% more damage; Priest healing also benefits." },
       { name: "Expansive Mind", description: "Increases maximum Mana, Energy, or Rage by 5%, according to class." },
       { name: "Engineering Specialization", description: "Makes engineering devices more reliable." },
     ],
@@ -148,7 +148,7 @@ export const races: RaceProfile[] = [
     racials: [
       { name: "Will of the Forsaken", description: "Removes Charm, Fear, and Sleep effects." },
       { name: "Cannibalize", description: "Restores 35% of Health and Mana over time while consuming a nearby corpse." },
-      { name: "Touch of the Grave", description: "Attacks and spells have a 5% or 10% chance, depending on class, to drain up to 5% of maximum Health from the target." },
+      { name: "Touch of the Grave", description: "Damaging attacks and spells have a 5% or 10% chance, depending on class, to drain up to 5% of maximum Health from the target." },
       { name: "Underwater Breathing", description: "Extends underwater breath by 300%." },
     ],
   },
@@ -161,7 +161,7 @@ export const races: RaceProfile[] = [
       { name: "War Stomp", description: "Stuns nearby enemies for 2 sec." },
       { name: "Endurance", description: "Increases total Health by 5% and hit chance by 1%." },
       { name: "Plainsrunning", description: "Gains 1% movement speed every 5 sec while moving, up to 30%; damage or standing still reduces it." },
-      { name: "Cultivation", description: "Grows bonus herbs that do not require Herbalism to gather." },
+      { name: "Cultivation", description: "Grows bonus herbs that do not require Herbalism to gather; each herb needs a minimum character level." },
     ],
   },
   {
