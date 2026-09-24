@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
-import { AD_CONSENT_CHANGED_EVENT, AD_CONSENT_KEY, ADSENSE_CLIENT } from "@/lib/ad-consent";
+import { AD_CONSENT_CHANGED_EVENT, AD_CONSENT_KEY, ADSENSE_CLIENT, ADSENSE_ENABLED } from "@/lib/ad-consent";
 
 const SLOT = "3425545545";
 
@@ -10,7 +10,13 @@ declare global {
   interface Window { adsbygoogle?: unknown[]; }
 }
 
-export default function AdSenseUnit({ viewport }: { viewport?: "mobile" | "desktop" }) {
+type AdSenseUnitProps = { viewport?: "mobile" | "desktop" };
+
+export default function AdSenseUnit(props: AdSenseUnitProps) {
+  return ADSENSE_ENABLED ? <AdSenseSlot {...props} /> : null;
+}
+
+function AdSenseSlot({ viewport }: AdSenseUnitProps) {
   const [allowed, setAllowed] = useState(false);
   const [preview, setPreview] = useState(false);
   const [scriptReady, setScriptReady] = useState(false);

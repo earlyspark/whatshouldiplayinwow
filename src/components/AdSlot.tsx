@@ -2,6 +2,8 @@
 
 import { trackEvent } from "@/lib/gtag";
 
+const SHOW_EMPTY_PLACEHOLDER = false;
+
 interface AdSlotProps {
   placement: "sidebar" | "inline";
   href?: string;
@@ -18,6 +20,9 @@ export default function AdSlot({ placement, href, headline, body }: AdSlotProps)
       destination_host: new URL(href, window.location.href).hostname,
     });
   };
+
+  // Empty "Reserved ad space" boxes read as low-value content to ad reviewers; true shows them again.
+  if (!SHOW_EMPTY_PLACEHOLDER && !(href && headline)) return null;
 
   return (
     <aside className={`${size} flex w-full items-center justify-center border border-dashed border-[var(--line)] p-5 text-center`} aria-label="Advertisement">

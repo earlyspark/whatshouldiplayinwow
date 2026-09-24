@@ -5,7 +5,7 @@ import Script from "next/script";
 import AnalyticsConsent from "./AnalyticsConsent";
 import GoogleAnalyticsPageViews from "./GoogleAnalyticsPageViews";
 import { ANALYTICS_CONSENT_CHANGED_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics-consent";
-import { AD_CONSENT_CHANGED_EVENT, AD_CONSENT_KEY, ADSENSE_CLIENT } from "@/lib/ad-consent";
+import { AD_CONSENT_CHANGED_EVENT, AD_CONSENT_KEY, ADSENSE_CLIENT, ADSENSE_ENABLED } from "@/lib/ad-consent";
 import { prepareGtag } from "@/lib/gtag";
 
 type TCData = {
@@ -97,10 +97,12 @@ export function openConsentSettings() {
 }
 
 export default function ConsentManager({ measurementId }: { measurementId?: string }) {
-  const [region, setRegion] = useState<"europe" | "other" | null>(null);
+  // Google's EEA consent message loads through the AdSense script, so without AdSense everyone gets the site banner.
+  const [region, setRegion] = useState<"europe" | "other" | null>(ADSENSE_ENABLED ? null : "other");
   const [europeDecision, setEuropeDecision] = useState(false);
   const onEuropeanDecision = useCallback(() => setEuropeDecision(true), []);
   useEffect(() => {
+    if (!ADSENSE_ENABLED) return;
     let active = true;
     fetch("/api/consent-region", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : { european: true })

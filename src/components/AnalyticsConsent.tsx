@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ANALYTICS_CONSENT_CHANGED_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics-consent";
-import { AD_CONSENT_CHANGED_EVENT, AD_CONSENT_KEY } from "@/lib/ad-consent";
+import { AD_CONSENT_CHANGED_EVENT, AD_CONSENT_KEY, ADSENSE_ENABLED } from "@/lib/ad-consent";
 
 const SETTINGS_EVENT = "wow-forever-open-analytics-settings";
 type Choice = "accepted" | "declined";
@@ -78,9 +78,9 @@ export default function AnalyticsConsent() {
         <section aria-labelledby="cookie-consent-title" className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4">
           <div className={`mx-auto max-w-2xl rounded-md border border-[var(--bronze-dim)] bg-[var(--surface)] p-3 shadow-2xl sm:p-4 ${settingsOpen && choice !== null ? "sm:flex sm:items-center sm:justify-between sm:gap-5" : "flex items-center justify-between gap-3 sm:gap-5"}`}>
             <div className="min-w-0">
-              <h2 id="cookie-consent-title" className="text-sm font-semibold text-[var(--bone)]">Ads and analytics cookies</h2>
+              <h2 id="cookie-consent-title" className="text-sm font-semibold text-[var(--bone)]">{ADSENSE_ENABLED ? "Ads and analytics cookies" : "Analytics cookies"}</h2>
               <p className="mt-0.5 text-sm text-[var(--dim)]">
-                Accept loads Google ads and analytics. Details in{" "}
+                {ADSENSE_ENABLED ? "Accept loads Google ads and analytics." : "Accept loads Google Analytics."} Details in{" "}
                 <Link href="/methodology#privacy" className="link-bronze focus-ring">privacy and cookies</Link>.
               </p>
             </div>

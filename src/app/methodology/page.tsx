@@ -6,6 +6,7 @@ import AmazonBanner from "@/components/AmazonBanner";
 import SiteFooter from "@/components/SiteFooter";
 import AnalyticsSettingsButton from "@/components/AnalyticsSettingsButton";
 import { isProductionDeployment } from "@/lib/deploy-env";
+import { ADSENSE_ENABLED } from "@/lib/ad-consent";
 import { DATA_CHECKED_LABEL, DATA_SOURCES } from "@/data/forever";
 import { SPEC_DATA_SOURCES } from "@/data/specs";
 import { siteUrl } from "@/lib/site-url";
@@ -88,10 +89,13 @@ export default function MethodologyPage() {
               Your browser uses session storage to keep an unfinished quiz, the one-time receipt used to count a completed quiz, and a separate copy of that receipt for rating your result. The counting copy is deleted after use; the rating copy normally clears when the tab session ends. We use your IP address to limit result creation and protect the service; hosting providers may also process request logs.
             </p>
             <p className="t-small text-[var(--dim)]">
-              Google and its ad partners may process browser information to deliver and measure ads. Google Analytics measures page visits, quiz and spec pairing interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages. Cloudflare, which delivers the site, also measures page visits and load speed without cookies.
+              {ADSENSE_ENABLED && "Google and its ad partners may process browser information to deliver and measure ads. "}Google Analytics measures page visits, quiz and spec pairing interactions, affiliate-link clicks, and error pages only when analytics consent is granted. Error events group routes without sending result IDs or error messages. Cloudflare, which delivers the site, also measures page visits and load speed without cookies.
             </p>
             <p className="t-small text-[var(--dim)]">
-              In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and AdSense ads off. Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
+              {ADSENSE_ENABLED
+                ? <>In the EEA, UK, and Switzerland, Google&apos;s consent message handles ads and analytics choices, including detailed options. Elsewhere, the site&apos;s single banner lets you accept or decline both. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag and AdSense ads off.</>
+                : <>The site&apos;s banner lets you accept or decline analytics. The site saves its choice in this browser&apos;s local storage. Declining keeps the Google Analytics tag off.</>}
+              {" "}Changing a choice stops future activity and clears first-party analytics cookies where the browser allows.
             </p>
             {isProductionDeployment() && (
               <p className="t-small text-[var(--dim)]">To change your choice, open <AnalyticsSettingsButton />.</p>

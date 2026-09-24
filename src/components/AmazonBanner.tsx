@@ -14,7 +14,7 @@ export default async function AmazonBanner({ placement, keywords, focusTerm, equ
   const products = equipment
     ? await getEquipmentPicks(4)
     : (await getBannerProducts(limit, keywords, focusTerm)).map((product) => ({ ...product, category: undefined }));
-  if (!products.length && !equipment) return <AdSlot placement={placement} />;
+  if (!products.length) return <AdSlot placement={placement} />;
 
   const isSidebar = placement === "sidebar";
 
@@ -27,7 +27,7 @@ export default async function AmazonBanner({ placement, keywords, focusTerm, equ
         Advertisement
       </span>
 
-      {products.length ? <div className={isSidebar ? "mt-4 grid grid-cols-2 gap-3" : "mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4"}>
+      <div className={isSidebar ? "mt-4 grid grid-cols-2 gap-3" : "mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4"}>
         {products.map((product) => (
           <AmazonProductLink
             key={product.asin}
@@ -54,7 +54,7 @@ export default async function AmazonBanner({ placement, keywords, focusTerm, equ
             </span>
           </AmazonProductLink>
         ))}
-      </div> : <div className="t-small mt-4 text-[var(--dim)]">Reserved ad space</div>}
+      </div>
 
       <p className="t-small mt-4 text-[var(--dim)]">
         Ads help me pay the bills for this site, thanks for supporting a small creator! As an Amazon Associate, this site earns from qualifying purchases.
