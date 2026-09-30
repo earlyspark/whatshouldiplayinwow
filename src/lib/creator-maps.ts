@@ -6,9 +6,9 @@ export const creatorMaps = [
     videoBase: "/creator/eastern-kingdoms",
   },
   {
-    itemId: "757389490",
-    href: "https://earlyspark.etsy.com/listing/757389490",
-    title: "Kalimdor gold foil map print",
-    videoBase: "/creator/kalimdor",
+    itemId: "4585402474",
+    href: "https://earlyspark.etsy.com/listing/4585402474",
+    title: "Horde lantern pencil holder DIY kit",
+    videoBase: "/creator/horde-lantern",
   },
 ];
