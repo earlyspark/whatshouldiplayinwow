@@ -9,6 +9,18 @@ const topIds = (specId: SpecId, faction: Faction, mode: "pve" | "pvp", count: nu
   rankPartners(specId, faction, mode).slice(0, count).map((row) => row.spec.id);
 
 describe("spec data", () => {
+  it("includes new baseline Druid resurrection and Warrior kill-triggered healing", () => {
+    for (const spec of specsForClass("druid")) {
+      expect(spec.abilities).toContainEqual({ capability: "rez", name: "Revive", spellId: 437138 });
+    }
+    for (const spec of specsForClass("warrior")) {
+      expect(spec.abilities).toContainEqual({ capability: "kill-heal", name: "Victory Rush", spellId: 402927 });
+      if (spec.id === "warrior-fury") {
+        expect(spec.abilities).toContainEqual({ capability: "self-heal", name: "Blood Craze", spellId: 16487 });
+      }
+    }
+  });
+
   it("has three specs for every class", () => {
     for (const classId of new Set(specs.map((spec) => spec.classId))) {
       expect(specsForClass(classId)).toHaveLength(3);

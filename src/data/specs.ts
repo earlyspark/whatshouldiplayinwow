@@ -1,9 +1,11 @@
 import type { ClassId } from "@/data/forever";
 
-// Talent data comes from the Wowhead Forever talent calculator, which Wowhead labels as BlizzCon test data until a beta client is datamined.
-export const SPEC_DATA_CHECKED_AT = "2026-09-22";
+// Spec kits combine Blizzard's beta class deep dives with Wowhead's Forever talent and spell data.
+export const SPEC_DATA_CHECKED_AT = "2026-10";
 
 export const SPEC_DATA_SOURCES = [
+  { label: "Blizzard — Priest and Warrior Class Deep Dives", url: "https://news.blizzard.com/en-us/article/24301514/world-of-warcraft-forever-class-deep-dives-priest-and-warrior" },
+  { label: "Blizzard — Hunter and Druid Class Deep Dives", url: "https://news.blizzard.com/en-us/article/24301515/world-of-warcraft-forever-class-deep-dives-hunter-and-druid" },
   { label: "Wowhead — Forever Talent Calculator", url: "https://www.wowhead.com/forever/talent-calc" },
   {
     label: "World of Warcraft: Forever — Deep Dive Panel Recap",
@@ -31,6 +33,7 @@ export type Capability =
   | "aoe-damage"
   | "off-heal"
   | "self-heal"
+  | "kill-heal"
   | "external-defensive"
   | "mana-support"
   | "healing-reduction"
@@ -71,6 +74,7 @@ const a = (capability: Capability, name: string, spellId: number): SpecAbility =
 const classKits: Record<ClassId, SpecAbility[]> = {
   druid: [
     a("battle-rez", "Rebirth", 20484),
+    a("rez", "Revive", 437138),
     a("dispel-curse", "Remove Curse", 2782),
     a("dispel-poison", "Abolish Poison", 2893),
     a("root-slow", "Entangling Roots", 339),
@@ -139,6 +143,7 @@ const classKits: Record<ClassId, SpecAbility[]> = {
     a("dispel-magic", "Devour Magic", 19505),
   ],
   warrior: [
+    a("kill-heal", "Victory Rush", 402927),
     a("interrupt", "Pummel", 6552),
     a("root-slow", "Hamstring", 1715),
     a("hard-cc", "Intimidating Shout", 5246),

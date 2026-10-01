@@ -1,6 +1,6 @@
 import type { Capability, Role } from "@/data/specs";
 
-export const PAIRINGS_VERSION = "1.0.1";
+export const PAIRINGS_VERSION = "1.1.0";
 
 export type PairingMode = "pve" | "pvp";
 
@@ -39,6 +39,7 @@ export const capabilityWeights: Record<PairingMode, Record<Capability, number>> 
     "aoe-damage": 2,
     "off-heal": 1.5,
     "self-heal": 1.5,
+    "kill-heal": 0.5,
     "external-defensive": 1.5,
     "mana-support": 2,
     "healing-reduction": 0,
@@ -66,6 +67,7 @@ export const capabilityWeights: Record<PairingMode, Record<Capability, number>> 
     "aoe-damage": 0.5,
     "off-heal": 1.5,
     "self-heal": 1.5,
+    "kill-heal": 0,
     "external-defensive": 2.5,
     "mana-support": 1,
     "healing-reduction": 2.5,

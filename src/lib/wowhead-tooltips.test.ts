@@ -1,8 +1,31 @@
 import { describe, expect, it } from "vitest";
 import { races } from "@/data/forever";
+import { priestRacials } from "@/data/priest-racials";
 import { wowheadRacialUrl } from "@/lib/wowhead-tooltips";
 
 describe("Forever racial tooltips", () => {
+  it("has two Priest-only spells and Forever tooltip links for every playable Priest race", () => {
+    const priestRaces = races.filter((race) => race.classes.includes("priest"));
+    expect(priestRaces).toHaveLength(6);
+    for (const race of priestRaces) {
+      const spells = priestRacials[race.id];
+      expect(spells, race.id).toHaveLength(2);
+      for (const spell of spells ?? []) {
+        expect(spell.name).toBeTruthy();
+        expect(spell.description).toBeTruthy();
+        expect(spell.spellId).toBeGreaterThan(0);
+      }
+    }
+    expect(Object.fromEntries(priestRaces.map((race) => [race.id, priestRacials[race.id]?.map((spell) => spell.spellId)]))).toEqual({
+      human: [1277370, 13896],
+      dwarf: [13908, 1277331],
+      "night-elf": [10797, 2651],
+      gnome: [1277455, 1277462],
+      troll: [9035, 18137],
+      undead: [2652, 1277324],
+    });
+  });
+
   it("links every racial for every playable race and class pair", () => {
     for (const race of races) {
       for (const classId of race.classes) {

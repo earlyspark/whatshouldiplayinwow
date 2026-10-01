@@ -12,8 +12,10 @@ import SupportButton from "@/components/SupportButton";
 import { supportButton as supportButtonFont } from "@/app/fonts";
 import { withArticle } from "@/lib/article";
 import { QUIZ_VERSION } from "@/data/questions";
+import { DATA_VERSION, type RaceId } from "@/data/forever";
+import { priestRacials } from "@/data/priest-racials";
 import { getResult } from "@/lib/result-store";
-import { wowheadRacialUrl } from "@/lib/wowhead-tooltips";
+import { wowheadRacialUrl, wowheadSpellUrl } from "@/lib/wowhead-tooltips";
 import ResultActions from "./ResultActions";
 import ResultCompletion from "./ResultCompletion";
 import { ResultFeedback, ResultFeedbackProvider } from "./ResultFeedback";
@@ -46,6 +48,9 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const quizChanged = result.quizVersion !== QUIZ_VERSION;
   const title = `${result.primary.raceName} ${result.primary.className}`;
   const summary = `This pick balances ${result.primary.classTagline} with ${result.primary.raceTagline}.`;
+  const priestOnlyRacials = result.dataVersion === DATA_VERSION && result.primary.classId === "priest"
+    ? priestRacials[result.primary.raceId as RaceId]
+    : undefined;
   const hasWowheadTooltips = result.primary.racials.some((racial) => wowheadRacialUrl(result.primary.raceId, racial.name, result.primary.classId));
 
   return (
@@ -95,6 +100,21 @@ export default async function ResultPage({ params }: ResultPageProps) {
               </div>
               {hasWowheadTooltips && (
                 <p className="t-small mt-4 text-[var(--dim)]">Some tooltips may still show older values.</p>
+              )}
+              {priestOnlyRacials && (
+                <div className="mt-8">
+                  <h3 className="t-card">Priest abilities for {result.primary.raceName}</h3>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {priestOnlyRacials.map((spell) => (
+                      <article key={spell.name} className="inset border-l-2 border-l-[var(--plum)] p-4">
+                        <h4>
+                          <a href={wowheadSpellUrl(spell.spellId)} target="_blank" rel="noopener noreferrer">{spell.name}</a>
+                        </h4>
+                        <p className="t-small mt-1 text-[var(--dim)]">{spell.description}</p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
               )}
               <div className="mt-8 border-t border-[var(--line)] pt-8">
                 <p className="t-label text-[var(--dim)]">Class</p>

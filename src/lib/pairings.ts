@@ -61,6 +61,7 @@ const capabilityPhrase: Record<Capability, string> = {
   "aoe-damage": "handles packs of enemies.",
   "off-heal": "can patch you up between fights.",
   "self-heal": "sustains itself, so you can keep pulling.",
+  "kill-heal": "can heal after securing a kill.",
   "external-defensive": "can protect you in an emergency.",
   "mana-support": "cuts down your drinking breaks.",
   "healing-reduction": "cuts enemy healing.",

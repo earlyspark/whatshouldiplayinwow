@@ -1,8 +1,16 @@
-export const DATA_VERSION = "2026-09-24";
-export const DATA_CHECKED_AT = "2026-09-17";
-export const DATA_CHECKED_LABEL = "September 2026";
+export const DATA_VERSION = "2026-10-01";
+export const DATA_CHECKED_AT = "2026-10";
+export const DATA_CHECKED_LABEL = "October 2026";
 
 export const DATA_SOURCES = [
+  {
+    label: "World of Warcraft: Forever — Priest and Warrior Class Deep Dives",
+    url: "https://news.blizzard.com/en-us/article/24301514/world-of-warcraft-forever-class-deep-dives-priest-and-warrior",
+  },
+  {
+    label: "World of Warcraft: Forever — Hunter and Druid Class Deep Dives",
+    url: "https://news.blizzard.com/en-us/article/24301515/world-of-warcraft-forever-class-deep-dives-hunter-and-druid",
+  },
   {
     label: "World of Warcraft: Forever — What’s Next Panel Recap",
     url: "https://worldofwarcraft.blizzard.com/en-us/news/24303862/world-of-warcraft-forever-whats-next-panel-recap",
