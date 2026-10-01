@@ -23,14 +23,19 @@ export type Capability =
   | "dispel-poison"
   | "dispel-disease"
   | "purge"
+  | "chance-purge"
   | "interrupt"
   | "stun"
+  | "chance-stun"
   | "hard-cc"
+  | "opener-cc"
   | "root-slow"
   | "peel"
+  | "chance-peel"
   | "stealth"
   | "burst"
   | "aoe-damage"
+  | "cleave-damage"
   | "off-heal"
   | "self-heal"
   | "kill-heal"
@@ -82,6 +87,8 @@ const classKits: Record<ClassId, SpecAbility[]> = {
     a("party-buff", "Mark of the Wild", 1126),
   ],
   hunter: [
+    a("pet", "Call Pet", 883),
+    a("aoe-damage", "Multi-Shot", 2643),
     a("root-slow", "Concussive Shot", 5116),
     a("hard-cc", "Freezing Trap", 1499),
     a("travel-utility", "Aspect of the Pack", 13159),
@@ -117,6 +124,7 @@ const classKits: Record<ClassId, SpecAbility[]> = {
   rogue: [
     a("interrupt", "Kick", 1766),
     a("hard-cc", "Blind", 2094),
+    a("opener-cc", "Sap", 6770),
     a("stun", "Kidney Shot", 408),
     a("stealth", "Stealth", 1784),
     a("root-slow", "Crippling Poison", 3408),
@@ -167,6 +175,7 @@ const definitions: SpecDefinition[] = [
     a("burst", "Berserk", 417141),
     a("aoe-damage", "Swipe", 779),
     a("off-heal", "Regrowth", 8936),
+    a("self-heal", "Frenzied Regeneration", 22842),
   ] },
   { id: "druid-restoration", classId: "druid", name: "Restoration", role: "healer", talents: [] },
   { id: "hunter-beast-mastery", classId: "hunter", name: "Beast Mastery", role: "ranged", talents: [
@@ -178,10 +187,8 @@ const definitions: SpecDefinition[] = [
     a("hard-cc", "Scatter Shot", 19503),
     a("burst", "Rapid Fire", 3045),
     a("party-buff", "Trueshot Aura", 1299346),
-    a("aoe-damage", "Multi-Shot", 2643),
   ] },
   { id: "hunter-survival", classId: "hunter", name: "Survival", role: "melee", talents: [
-    a("pet", "Call Pet", 883),
     a("peel", "Entrapment", 19184),
     a("root-slow", "Counterattack", 19306),
   ] },
@@ -192,10 +199,10 @@ const definitions: SpecDefinition[] = [
   { id: "mage-fire", classId: "mage", name: "Fire", role: "ranged", talents: [
     a("burst", "Combustion", 11129),
     a("aoe-damage", "Blast Wave", 11113),
-    a("stun", "Impact", 11103),
+    a("chance-stun", "Impact", 11103),
   ] },
   { id: "mage-frost", classId: "mage", name: "Frost", role: "ranged", talents: [
-    a("peel", "Frostbite", 11071),
+    a("chance-peel", "Frostbite", 11071),
     a("aoe-damage", "Blizzard", 10),
   ] },
   { id: "paladin-holy", classId: "paladin", name: "Holy", role: "healer", talents: [] },
@@ -222,11 +229,10 @@ const definitions: SpecDefinition[] = [
   ] },
   { id: "rogue-combat", classId: "rogue", name: "Combat", role: "melee", talents: [
     a("burst", "Adrenaline Rush", 13750),
-    a("aoe-damage", "Blade Flurry", 13877),
+    a("cleave-damage", "Blade Flurry", 13877),
   ] },
   { id: "rogue-subtlety", classId: "rogue", name: "Subtlety", role: "melee", talents: [
     a("burst", "Premeditation", 14183),
-    a("hard-cc", "Sap", 6770),
   ] },
   { id: "shaman-elemental", classId: "shaman", name: "Elemental", role: "ranged", talents: [
     a("burst", "Lava Burst", 408490),
@@ -248,12 +254,12 @@ const definitions: SpecDefinition[] = [
   { id: "warlock-destruction", classId: "warlock", name: "Destruction", role: "ranged", talents: [
     a("burst", "Shadowburn", 17877),
     a("aoe-damage", "Rain of Fire", 5740),
-    a("stun", "Pyroclasm", 18073),
+    a("chance-stun", "Pyroclasm", 18073),
   ] },
   { id: "warrior-arms", classId: "warrior", name: "Arms", role: "melee", talents: [
     a("healing-reduction", "Mortal Strike", 12294),
-    a("peel", "Improved Hamstring", 12289),
-    a("aoe-damage", "Sweeping Strikes", 12292),
+    a("chance-peel", "Improved Hamstring", 12289),
+    a("cleave-damage", "Sweeping Strikes", 12292),
   ] },
   { id: "warrior-fury", classId: "warrior", name: "Fury", role: "melee", talents: [
     a("burst", "Death Wish", 12328),
@@ -262,7 +268,7 @@ const definitions: SpecDefinition[] = [
     a("self-heal", "Blood Craze", 16487),
   ] },
   { id: "warrior-protection", classId: "warrior", name: "Protection", role: "tank", talents: [
-    a("purge", "Shield Slam", 23922),
+    a("chance-purge", "Shield Slam", 23922),
     a("stun", "Concussion Blow", 12809),
     a("aoe-damage", "Thunder Clap", 6343),
   ] },

@@ -21,6 +21,39 @@ describe("spec data", () => {
     }
   });
 
+  it("credits the shared Hunter kit and form-specific Feral healing", () => {
+    for (const spec of specsForClass("hunter")) {
+      expect(spec.abilities).toContainEqual({ capability: "aoe-damage", name: "Multi-Shot", spellId: 2643 });
+      expect(spec.abilities.some((ability) => ability.capability === "pet")).toBe(true);
+    }
+    expect(specById["hunter-beast-mastery"].abilities).toContainEqual({ capability: "pet", name: "Bestial Wrath", spellId: 19574 });
+    expect(specById["hunter-marksmanship"].abilities).toContainEqual({ capability: "pet", name: "Call Pet", spellId: 883 });
+    expect(specById["druid-feral"].abilities).toContainEqual({ capability: "self-heal", name: "Frenzied Regeneration", spellId: 22842 });
+  });
+
+  it("treats Shield Slam as a chance to purge, unlike Shaman Purge", () => {
+    expect(specById["warrior-protection"].abilities).toContainEqual({ capability: "chance-purge", name: "Shield Slam", spellId: 23922 });
+    expect(specById["warrior-protection"].abilities.some((ability) => ability.capability === "purge")).toBe(false);
+    expect(specById["shaman-elemental"].abilities).toContainEqual({ capability: "purge", name: "Purge", spellId: 370 });
+    expect(capabilityWeights.pvp["chance-purge"]).toBeLessThan(capabilityWeights.pvp.purge);
+  });
+
+  it("keeps conditional control and two-target cleave distinct from reliable abilities", () => {
+    expect(specById["mage-fire"].abilities).toContainEqual({ capability: "chance-stun", name: "Impact", spellId: 11103 });
+    expect(specById["warlock-destruction"].abilities).toContainEqual({ capability: "chance-stun", name: "Pyroclasm", spellId: 18073 });
+    expect(specById["mage-frost"].abilities).toContainEqual({ capability: "chance-peel", name: "Frostbite", spellId: 11071 });
+    expect(specById["warrior-arms"].abilities).toContainEqual({ capability: "chance-peel", name: "Improved Hamstring", spellId: 12289 });
+    expect(specById["rogue-combat"].abilities).toContainEqual({ capability: "cleave-damage", name: "Blade Flurry", spellId: 13877 });
+    expect(specById["warrior-arms"].abilities).toContainEqual({ capability: "cleave-damage", name: "Sweeping Strikes", spellId: 12292 });
+    for (const spec of specsForClass("rogue")) {
+      expect(spec.abilities).toContainEqual({ capability: "opener-cc", name: "Sap", spellId: 6770 });
+      expect(spec.abilities).toContainEqual({ capability: "hard-cc", name: "Blind", spellId: 2094 });
+    }
+    expect(capabilityWeights.pvp["chance-stun"]).toBeLessThan(capabilityWeights.pvp.stun);
+    expect(capabilityWeights.pve["cleave-damage"]).toBeLessThan(capabilityWeights.pve["aoe-damage"]);
+    expect(capabilityWeights.pvp["opener-cc"]).toBeLessThan(capabilityWeights.pvp["hard-cc"]);
+  });
+
   it("has three specs for every class", () => {
     for (const classId of new Set(specs.map((spec) => spec.classId))) {
       expect(specsForClass(classId)).toHaveLength(3);
@@ -142,6 +175,17 @@ describe("pairing personas", () => {
   it("flags missing healing for two pure damage dealers in PvE", () => {
     const rogue = rankPartners("rogue-combat", "horde").find((row) => row.spec.id === "warrior-arms")!;
     expect(rogue.pve.gaps).toContain("a way to heal between pulls");
+  });
+
+  it("does not treat a partner's self-heal as healing for both players", () => {
+    const warlock = rankPartners("rogue-combat", "horde").find((row) => row.spec.id === "warlock-affliction")!;
+    expect(warlock.pve.gaps).toContain("a way to heal between pulls");
+  });
+
+  it("still flags a reliable purge as missing when Protection Warrior only brings Shield Slam", () => {
+    const warrior = rankPartners("rogue-combat", "horde", "pvp").find((row) => row.spec.id === "warrior-protection")!;
+    expect(warrior.pvp.gaps).toContain("a reliable purge");
+    expect(warrior.pvp.reasons.some((reason) => reason.ability?.capability === "chance-purge" && reason.text.includes("chance"))).toBe(true);
   });
 
   it("does not credit mana support to a rage or energy class", () => {

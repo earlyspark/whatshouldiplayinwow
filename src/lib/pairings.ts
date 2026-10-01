@@ -51,23 +51,28 @@ const capabilityPhrase: Record<Capability, string> = {
   "dispel-poison": "cures your poisons.",
   "dispel-disease": "cures your diseases.",
   "purge": "strips enemy buffs.",
+  "chance-purge": "has a chance to strip an enemy buff.",
   "interrupt": "interrupts enemy casts.",
   "stun": "adds another stun.",
+  "chance-stun": "sometimes stuns enemies.",
   "hard-cc": "locks down an extra enemy.",
+  "opener-cc": "can control an enemy before combat begins.",
   "root-slow": "slows or roots enemies.",
   "peel": "keeps melee off you.",
+  "chance-peel": "can sometimes keep melee off you.",
   "stealth": "lets you choose when fights start.",
   "burst": "adds a burst window.",
   "aoe-damage": "handles packs of enemies.",
+  "cleave-damage": "hits an additional nearby enemy.",
   "off-heal": "can patch you up between fights.",
-  "self-heal": "sustains itself, so you can keep pulling.",
+  "self-heal": "can recover health while fighting.",
   "kill-heal": "can heal after securing a kill.",
   "external-defensive": "can protect you in an emergency.",
   "mana-support": "cuts down your drinking breaks.",
   "healing-reduction": "cuts enemy healing.",
   "fear-protection": "protects you from fear.",
   "movement-freedom": "frees you from slows and roots.",
-  "pet": "brings a pet that takes hits.",
+  "pet": "can bring a pet that takes hits.",
   "party-buff": "adds a group buff.",
   "travel-utility": "speeds up your travel.",
 };
@@ -75,9 +80,9 @@ const capabilityPhrase: Record<Capability, string> = {
 const gapNoun: Partial<Record<Capability, string>> = {
   "rez": "an out-of-combat resurrection",
   "dispel-magic": "a magic dispel",
-  "purge": "a purge",
+  "purge": "a reliable purge",
   "interrupt": "an interrupt",
-  "stun": "a stun",
+  "stun": "a reliable stun",
   "hard-cc": "hard crowd control",
   "peel": "strong peel",
   "burst": "a burst cooldown",
@@ -177,7 +182,7 @@ export function bestRace(classId: ClassId, faction: Faction, mode: PairingMode) 
 function gapsFor(mine: SpecProfile, partner: SpecProfile, mode: PairingMode) {
   const covered = new Set([...capabilitySet(mine), ...capabilitySet(partner)]);
   const gaps: string[] = [];
-  if (mode === "pve" && mine.role !== "healer" && partner.role !== "healer" && !covered.has("off-heal") && !covered.has("self-heal")) {
+  if (mode === "pve" && mine.role !== "healer" && partner.role !== "healer" && !covered.has("off-heal")) {
     gaps.push("a way to heal between pulls");
   }
   const weights = capabilityWeights[mode];

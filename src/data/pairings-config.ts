@@ -1,6 +1,6 @@
 import type { Capability, Role } from "@/data/specs";
 
-export const PAIRINGS_VERSION = "1.1.0";
+export const PAIRINGS_VERSION = "1.2.0";
 
 export type PairingMode = "pve" | "pvp";
 
@@ -29,14 +29,19 @@ export const capabilityWeights: Record<PairingMode, Record<Capability, number>> 
     "dispel-poison": 1.5,
     "dispel-disease": 1,
     "purge": 0.5,
+    "chance-purge": 0.25,
     "interrupt": 2,
     "stun": 1,
+    "chance-stun": 0.5,
     "hard-cc": 2,
+    "opener-cc": 0.5,
     "root-slow": 0.5,
     "peel": 0.5,
+    "chance-peel": 0.25,
     "stealth": 0.5,
     "burst": 1,
     "aoe-damage": 2,
+    "cleave-damage": 1,
     "off-heal": 1.5,
     "self-heal": 1.5,
     "kill-heal": 0.5,
@@ -57,14 +62,19 @@ export const capabilityWeights: Record<PairingMode, Record<Capability, number>> 
     "dispel-poison": 2,
     "dispel-disease": 1,
     "purge": 2.5,
+    "chance-purge": 1.25,
     "interrupt": 2.5,
     "stun": 3,
+    "chance-stun": 1,
     "hard-cc": 2.5,
+    "opener-cc": 1,
     "root-slow": 2,
     "peel": 2.5,
+    "chance-peel": 1,
     "stealth": 1.5,
     "burst": 3,
     "aoe-damage": 0.5,
+    "cleave-damage": 0.25,
     "off-heal": 1.5,
     "self-heal": 1.5,
     "kill-heal": 0,
