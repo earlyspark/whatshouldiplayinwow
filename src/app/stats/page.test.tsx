@@ -1,7 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { PAIRINGS_VERSION } from "@/data/pairings-config";
+import { QUIZ_VERSION } from "@/data/questions";
+import StatsPage from "./page";
 import { VersionFeedback } from "./VersionFeedback";
 import { versionClassFeedbackField, versionFeedbackField, versionPairedFeedbackField } from "@/lib/feedback-stats";
+
+vi.mock("@/lib/quiz-stats", () => ({ readMonthlyQuizStats: vi.fn(async () => []) }));
+
+describe("stats version labels", () => {
+  it("shows the current quiz version even before it has results", async () => {
+    const html = renderToStaticMarkup(await StatsPage());
+    expect(html).toContain(`Current quiz version ${QUIZ_VERSION}`);
+    expect(html).toContain(`Pairings version ${PAIRINGS_VERSION}`);
+    expect(html).toContain(`Quiz version ${QUIZ_VERSION}`);
+  });
+});
 
 describe("version feedback display", () => {
   it("labels same-class and different-class alternatives and uses both-rated denominators", () => {

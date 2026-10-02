@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { questions, QUIZ_VERSION, type QuizOption } from "@/data/questions";
+import { questions, QUIZ_CONTENT_VERSION, QUIZ_VERSION, type QuizOption } from "@/data/questions";
 import QuizBanner, { useQuizProductPool } from "@/components/QuizBanner";
 import AdSenseUnit from "@/components/AdSenseUnit";
 import { trackEvent } from "@/lib/gtag";
 
 type Answers = Record<string, string[]>;
 
-const storageKey = `wow-forever-quiz:${QUIZ_VERSION}`;
+const storageKey = `wow-forever-quiz:${QUIZ_CONTENT_VERSION}`;
 
 function rankLabel(index: number) {
   return ["1st", "2nd", "3rd"][index] ?? `${index + 1}th`;

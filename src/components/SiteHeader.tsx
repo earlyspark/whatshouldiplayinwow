@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import crest from "../../assets/crest.png";
-import { QUIZ_VERSION } from "@/data/questions";
+import { QUIZ_CONTENT_VERSION } from "@/data/questions";
 
 const navLinks = [
   { href: "/", label: "Quiz" },
@@ -50,7 +50,7 @@ export default function SiteHeader() {
             onNavigate={(event) => {
               event.preventDefault();
               setOpen(false);
-              try { sessionStorage.removeItem(`wow-forever-quiz:${QUIZ_VERSION}`); }
+              try { sessionStorage.removeItem(`wow-forever-quiz:${QUIZ_CONTENT_VERSION}`); }
               catch {}
               if (window.location.pathname === "/") window.location.reload();
               else router.push("/");

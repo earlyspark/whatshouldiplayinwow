@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { classes, isValidCombination, raceById, races, type ClassId } from "@/data/forever";
-import { questions, QUIZ_VERSION } from "@/data/questions";
+import { questions, QUIZ_CONTENT_VERSION, QUIZ_VERSION } from "@/data/questions";
 import { questionWeights, scoring } from "@/data/scoring-config";
 import { classPointsForAnswer, normalizedRankFactors, q4CombinationBonus, scoreQuiz } from "@/lib/scoring";
 import type { QuizAnswers } from "@/lib/result-schema";
@@ -152,12 +152,16 @@ describe("quiz definition", () => {
 
   it("contrasts saved cooldown windows with sustained ability use without changing Q6 scoring", () => {
     const q6 = questions.find((question) => question.id === "q6")!;
-    expect(QUIZ_VERSION).toBe("1.25.0");
     expect(q6.options.find((option) => option.id === "wait-opening")?.label).toBe("Hold my big cooldowns for an opening");
     expect(q6.options.find((option) => option.id === "stick-plan")?.label).toBe("Keep my core abilities rolling through the chaos");
     expect(q6.options.find((option) => option.id === "stick-plan")?.description).toContain("damage, healing, or control");
     expect(scoring.q6["wait-opening"].classes?.rogue).toBe(3);
     expect(scoring.q6["stick-plan"].classes?.priest).toBe(3);
+  });
+
+  it("uses the current quiz release version for new result cohorts", () => {
+    expect(QUIZ_VERSION).toBe("1.26.0");
+    expect(QUIZ_CONTENT_VERSION).toBe("1.25.0");
   });
 
   it("names Q10's control and debuff response without changing its racial credit", () => {

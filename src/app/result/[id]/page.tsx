@@ -11,9 +11,9 @@ import WowheadTooltips from "@/components/WowheadTooltips";
 import SupportButton from "@/components/SupportButton";
 import { supportButton as supportButtonFont } from "@/app/fonts";
 import { withArticle } from "@/lib/article";
-import { QUIZ_VERSION } from "@/data/questions";
 import { DATA_VERSION, type RaceId } from "@/data/forever";
 import { priestRacials } from "@/data/priest-racials";
+import { quizQuestionsOrScoringChanged } from "@/lib/quiz-version";
 import { getResult } from "@/lib/result-store";
 import { wowheadRacialUrl, wowheadSpellUrl } from "@/lib/wowhead-tooltips";
 import ResultActions from "./ResultActions";
@@ -45,7 +45,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const { id } = await params;
   const result = await getCachedResult(id);
   if (!result) notFound();
-  const quizChanged = result.quizVersion !== QUIZ_VERSION;
+  const quizChanged = quizQuestionsOrScoringChanged(result.quizVersion);
   const title = `${result.primary.raceName} ${result.primary.className}`;
   const summary = `This pick balances ${result.primary.classTagline} with ${result.primary.raceTagline}.`;
   const priestOnlyRacials = result.dataVersion === DATA_VERSION && result.primary.classId === "priest"

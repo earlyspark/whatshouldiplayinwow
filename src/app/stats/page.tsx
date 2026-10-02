@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { classes, races } from "@/data/forever";
-import { questions } from "@/data/questions";
+import { PAIRINGS_VERSION } from "@/data/pairings-config";
+import { questions, QUIZ_VERSION } from "@/data/questions";
 import { feedbackPositions } from "@/lib/feedback-types";
 import { readMonthlyQuizStats, type MonthlyQuizStats } from "@/lib/quiz-stats";
 import { VersionFeedback } from "./VersionFeedback";
@@ -102,16 +103,18 @@ function StatsSection({ title, counts }: { title: string; counts: Record<string,
 export default async function StatsPage() {
   const months = await readMonthlyQuizStats();
   const allTime = combinedCounts(months);
-  const versionIds = [...new Set(Object.keys(allTime).flatMap((key) => {
+  const historicalVersions = Object.keys(allTime).flatMap((key) => {
     const match = key.match(/^version:([^:]+):(?:result:class:|feedback:)/);
     return match ? [match[1]] : [];
-  }))].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+  });
+  const versionIds = [...new Set([QUIZ_VERSION, ...historicalVersions])].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
   return (
     <main id="main-content" className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
       <Link href="/" className="link-bronze focus-ring">← Home</Link>
       <h1 className="t-display mt-8">Quiz stats</h1>
+      <p className="t-small mt-3 text-[var(--dim)]">Current quiz version {QUIZ_VERSION} · Pairings version {PAIRINGS_VERSION}</p>
       <p className="t-body mb-8 mt-4 text-[var(--dim)]">
-        Version-separated recommendation counts start when this update is deployed and are not backfilled; earlier results remain in the all-time and monthly totals.
+        Version sections count quiz recommendations by quiz version; month sections group them by completion date. Version-separated counts are not backfilled; earlier results remain in the all-time and monthly totals.
       </p>
       {months.length === 0 && <p className="t-body mb-8">No production completions have been counted yet.</p>}
       <div className="space-y-8">
