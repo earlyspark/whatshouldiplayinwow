@@ -135,24 +135,31 @@ jobs:
       - name: Wait for the new build to serve the homepage
         # A unique query string misses the Cloudflare cache, so this reaches the
         # origin. Next writes the build ID into the HTML, and requiring three
-        # matches in a row catches a leftover process still serving the old build.
+        # matches in a row, spaced apart, catches a leftover process still
+        # serving the old build.
+        #
+        # The query string must not contain the build ID, and only a 200 counts:
+        # a Cloudflare challenge page echoes the requested URL, so a challenged
+        # request would otherwise match without the site being reached at all.
         env:
           SITE_URL: ${{ env.NEXT_PUBLIC_SITE_URL }}
         run: |
           build_id=$(cat .next/BUILD_ID)
+          page="$RUNNER_TEMP/origin-homepage.html"
           matches=0
           for attempt in $(seq 1 30); do
-            body=$(curl -s --max-time 10 "$SITE_URL/?deploy-check=$build_id-$attempt-$RANDOM" || true)
-            if printf '%s' "$body" | grep -qF "$build_id"; then
+            status=$(curl -s --max-time 10 -o "$page" -w '%{http_code}' "$SITE_URL/?deploy-check=$GITHUB_RUN_ID-$attempt-$RANDOM" || true)
+            if [ "$status" = "200" ] && grep -qF "$build_id" "$page"; then
               matches=$((matches + 1))
               if [ "$matches" -ge 3 ]; then echo "New build $build_id is live."; exit 0; fi
+              sleep 2
               continue
             fi
             matches=0
-            echo "attempt $attempt: new build not served yet"
+            echo "attempt $attempt: new build not served yet (HTTP $status)"
             sleep 5
           done
-          echo "::error::The new build did not come up; old files were kept so the cached site keeps working."
+          echo "::error::The new build did not come up (last HTTP status $status); old files were kept so the cached site keeps working."
           exit 1
 
       - name: Purge the Cloudflare cache
@@ -174,11 +181,16 @@ jobs:
           echo "Cloudflare cache purged."
           # Purge takes effect within seconds; confirm the edge copy is the new build.
           build_id=$(cat .next/BUILD_ID)
+          # Only a 200 counts, and the status is logged, so a challenge or error
+          # page is not mistaken for the old homepage.
+          page="$RUNNER_TEMP/edge-homepage.html"
           for attempt in $(seq 1 12); do
-            curl -s --max-time 10 "$SITE_URL/" | grep -qF "$build_id" && { echo "Cached homepage is the new build."; exit 0; }
+            status=$(curl -s --max-time 10 -o "$page" -w '%{http_code}' "$SITE_URL/" || true)
+            if [ "$status" = "200" ] && grep -qF "$build_id" "$page"; then echo "Cached homepage is the new build."; exit 0; fi
+            echo "attempt $attempt: homepage is not the new build (HTTP $status)"
             sleep 5
           done
-          echo "::error::Cloudflare still serves the old homepage; old files were kept so it keeps working."
+          echo "::error::Cloudflare does not serve the new homepage (last HTTP status $status); old files were kept so the cached site keeps working."
           exit 1
 
       - name: Remove files the new build no longer uses
