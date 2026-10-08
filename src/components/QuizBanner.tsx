@@ -48,6 +48,7 @@ export function useQuizProductPool() {
 
 export default function QuizBanner({ questionIndex, layout = "banner", pool, visitOffset, loaded, count }: QuizBannerProps) {
   const products = selectQuizEquipment(pool.groups, visitOffset, questionIndex, count);
+  if (loaded && !products.length) return null;
 
   return (
     <aside
@@ -77,9 +78,7 @@ export default function QuizBanner({ questionIndex, layout = "banner", pool, vis
         </div>
       ) : (
         <div className="mt-4 flex min-h-36 items-center justify-center text-center">
-          <span className="t-small text-[var(--dim)]">
-            {loaded ? "Product picks unavailable right now" : "Loading product picks…"}
-          </span>
+          <span className="t-small text-[var(--dim)]">Loading product picks…</span>
         </div>
       )}
       <p className="t-small mt-4 text-[var(--dim)]">
