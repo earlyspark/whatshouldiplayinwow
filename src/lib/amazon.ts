@@ -204,10 +204,16 @@ async function requestCatalog(config: AmazonConfig, operation: string, payload: 
   });
 }
 
+class CatalogRejectedError extends Error {
+  constructor(readonly status: number) {
+    super(`Amazon catalog request was rejected with status ${status}`);
+  }
+}
+
 async function readCatalog(response: Response) {
   if (response.status === 401 || response.status === 403) {
     clearAmazonToken();
-    throw new Error(`Amazon catalog request was rejected with status ${response.status}`);
+    throw new CatalogRejectedError(response.status);
   }
   if (!response.ok) throw new Error(`Amazon catalog request failed with status ${response.status}`);
 
@@ -256,7 +262,9 @@ async function cached(key: string, load: () => Promise<AmazonProduct[]>): Promis
     try {
       products = await load();
     } catch (error) {
-      console.error("Amazon catalog fetch failed", error);
+      // Amazon answers 403 while the account is under its sales threshold; console.error would raise the dev overlay.
+      if (error instanceof CatalogRejectedError && error.status === 403) console.warn("Amazon catalog fetch rejected", error.message);
+      else console.error("Amazon catalog fetch failed", error);
       products = [];
       ttl = FAILURE_TTL_SECONDS;
     }
