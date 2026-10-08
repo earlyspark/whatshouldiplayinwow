@@ -10,7 +10,7 @@ import { QUIZ_CONTENT_VERSION } from "@/data/questions";
 const navLinks = [
   { href: "/", label: "Quiz" },
   { href: "/pairings", label: "Spec pairings" },
-  { href: "/methodology", label: "How it works" },
+  { href: "/methodology", label: "How it works & privacy" },
   { href: "/about", label: "About" },
 ];
 
