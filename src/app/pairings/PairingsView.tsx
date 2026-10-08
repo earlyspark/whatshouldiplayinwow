@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import AdSenseUnit from "@/components/AdSenseUnit";
-import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
 import CreatorShopCard from "@/components/CreatorShopCard";
 import SiteFooter from "@/components/SiteFooter";
@@ -46,11 +45,9 @@ export default function PairingsView({ heading, path, specId = null }: { heading
             sidebar={
               <>
                 <CreatorShopCard placement="pairings_creator" />
-                <div className="pairings-sticky mt-5">
-                  <Suspense fallback={<AdSlot placement="sidebar" />}>
-                    <AmazonBanner placement="sidebar" equipment />
-                  </Suspense>
-                </div>
+                <Suspense fallback={null}>
+                  <AmazonBanner placement="sidebar" equipment className="pairings-sticky mt-5" />
+                </Suspense>
               </>
             }
             inlineCreatorCard={<CreatorShopCard placement="pairings_creator" layout="row" />}
@@ -59,11 +56,9 @@ export default function PairingsView({ heading, path, specId = null }: { heading
 
         <SpecBrowse currentSpecId={specId} />
 
-        <div className="pairings-inline mt-8">
-          <Suspense fallback={<AdSlot placement="inline" />}>
-            <AmazonBanner placement="inline" equipment />
-          </Suspense>
-        </div>
+        <Suspense fallback={null}>
+          <AmazonBanner placement="inline" equipment className="pairings-inline mt-8" />
+        </Suspense>
         <AdSenseUnit viewport="mobile" />
 
         <SiteFooter />

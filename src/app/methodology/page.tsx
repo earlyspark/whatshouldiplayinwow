@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
 import SiteFooter from "@/components/SiteFooter";
 import AnalyticsSettingsButton from "@/components/AnalyticsSettingsButton";
@@ -109,11 +108,9 @@ export default function MethodologyPage() {
           </section>
         </article>
 
-        <div className="mt-8">
-          <Suspense fallback={<AdSlot placement="inline" />}>
-            <AmazonBanner placement="inline" keywords="World of Warcraft" />
-          </Suspense>
-        </div>
+        <Suspense fallback={null}>
+          <AmazonBanner placement="inline" keywords="World of Warcraft" className="mt-8" />
+        </Suspense>
 
         <SiteFooter />
       </div>

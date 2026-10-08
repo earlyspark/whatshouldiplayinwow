@@ -1,4 +1,3 @@
-import AdSlot from "@/components/AdSlot";
 import AmazonProductLink from "@/components/AmazonProductLink";
 import { getBannerProducts, getEquipmentPicks } from "@/lib/amazon";
 
@@ -7,20 +6,21 @@ interface AmazonBannerProps {
   keywords?: string;
   focusTerm?: string;
   equipment?: boolean;
+  className?: string;
 }
 
-export default async function AmazonBanner({ placement, keywords, focusTerm, equipment = false }: AmazonBannerProps) {
+export default async function AmazonBanner({ placement, keywords, focusTerm, equipment = false, className = "" }: AmazonBannerProps) {
   const limit = 4;
   const products = equipment
     ? await getEquipmentPicks(4)
     : (await getBannerProducts(limit, keywords, focusTerm)).map((product) => ({ ...product, category: undefined }));
-  if (!products.length) return <AdSlot placement={placement} />;
+  if (!products.length) return null;
 
   const isSidebar = placement === "sidebar";
 
   return (
     <aside
-      className="surface w-full p-5"
+      className={`surface w-full p-5 ${className}`}
       aria-label="Advertisement"
     >
       <span className="t-label block text-[var(--dim)]">

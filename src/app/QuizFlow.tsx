@@ -33,7 +33,7 @@ export default function QuizFlow({ creatorCard, creatorBanner }: { creatorCard: 
   const advanceLockRef = useRef(false);
   const progressRef = useRef({ started: false, index: 0, completed: false });
   const productPool = useQuizProductPool();
-  const adsEmpty = productPool.loaded && !productPool.pool.groups.some((group) => group.products.length);
+  const hasAmazonProducts = productPool.loaded && productPool.pool.groups.some((group) => group.products.length);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -228,8 +228,8 @@ export default function QuizFlow({ creatorCard, creatorBanner }: { creatorCard: 
     return (
       <section id="quiz" className="w-full" aria-label="Start the WoW Forever race and class quiz">
         <div className="mb-8 flex justify-center"><button ref={startButtonRef} onClick={start} className="btn focus-ring">Start the quiz</button></div>
-        <div className={`mb-8 grid gap-8 ${adsEmpty ? "" : "lg:grid-cols-2"}`}>
-          {adsEmpty ? creatorBanner : creatorCard}
+        <div className={`mb-8 grid gap-8 ${hasAmazonProducts ? "lg:grid-cols-2" : ""}`}>
+          {hasAmazonProducts ? creatorCard : creatorBanner}
           <QuizBanner questionIndex={-1} layout="sidebar" {...productPool} />
         </div>
         <AdSenseUnit viewport="desktop" />

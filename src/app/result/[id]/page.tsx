@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
-import AdSlot from "@/components/AdSlot";
 import AmazonBanner from "@/components/AmazonBanner";
 import AdSenseUnit from "@/components/AdSenseUnit";
 import CreatorShopCard from "@/components/CreatorShopCard";
@@ -156,7 +155,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
           </ResultFeedbackProvider>
           <div className="result-ads space-y-5">
             <CreatorShopCard />
-            <Suspense fallback={<AdSlot placement="sidebar" />}><AmazonBanner placement="sidebar" equipment /></Suspense>
+            <Suspense fallback={null}><AmazonBanner placement="sidebar" equipment /></Suspense>
             <AdSenseUnit />
           </div>
         </div>

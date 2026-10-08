@@ -48,7 +48,7 @@ export function useQuizProductPool() {
 
 export default function QuizBanner({ questionIndex, layout = "banner", pool, visitOffset, loaded, count }: QuizBannerProps) {
   const products = selectQuizEquipment(pool.groups, visitOffset, questionIndex, count);
-  if (loaded && !products.length) return null;
+  if (!loaded || !products.length) return null;
 
   return (
     <aside
@@ -56,31 +56,25 @@ export default function QuizBanner({ questionIndex, layout = "banner", pool, vis
       aria-label="Advertisement"
     >
       <span className="t-label block text-[var(--dim)]">Advertisement</span>
-      {products.length ? (
-        <div className={`mt-4 grid grid-cols-2 gap-3 ${layout === "banner" ? "lg:grid-cols-4" : ""}`}>
-          {products.map(({ product, category }) => (
-            <AmazonProductLink
-              key={product.asin}
-              href={product.url}
-              asin={product.asin}
-              category={category}
-              placement="inline"
-              className={`focus-ring group flex min-w-0 flex-col gap-2 rounded-xl bg-white/[.03] transition-colors hover:bg-white/[.07] ${layout === "sidebar" ? "p-2" : "p-3"}`}
-            >
-              {product.imageUrl && (
-                // Amazon images are served directly, without transformation.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={product.imageUrl} alt="" loading="lazy" className={AD_TILE_CLASS} />
-              )}
-              <span className="t-small line-clamp-2 text-[var(--dim)] group-hover:text-[var(--bone)]">{product.title}</span>
-            </AmazonProductLink>
-          ))}
-        </div>
-      ) : (
-        <div className="mt-4 flex min-h-36 items-center justify-center text-center">
-          <span className="t-small text-[var(--dim)]">Loading product picks…</span>
-        </div>
-      )}
+      <div className={`mt-4 grid grid-cols-2 gap-3 ${layout === "banner" ? "lg:grid-cols-4" : ""}`}>
+        {products.map(({ product, category }) => (
+          <AmazonProductLink
+            key={product.asin}
+            href={product.url}
+            asin={product.asin}
+            category={category}
+            placement="inline"
+            className={`focus-ring group flex min-w-0 flex-col gap-2 rounded-xl bg-white/[.03] transition-colors hover:bg-white/[.07] ${layout === "sidebar" ? "p-2" : "p-3"}`}
+          >
+            {product.imageUrl && (
+              // Amazon images are served directly, without transformation.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={product.imageUrl} alt="" loading="lazy" className={AD_TILE_CLASS} />
+            )}
+            <span className="t-small line-clamp-2 text-[var(--dim)] group-hover:text-[var(--bone)]">{product.title}</span>
+          </AmazonProductLink>
+        ))}
+      </div>
       <p className="t-small mt-4 text-[var(--dim)]">
         Ads help me pay the bills for this site, thanks for supporting a small creator! As an Amazon Associate, this site earns from qualifying purchases.
       </p>
