@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/", label: "Quiz" },
   { href: "/pairings", label: "Spec pairings" },
   { href: "/methodology", label: "How it works" },
+  { href: "/about", label: "About" },
 ];
 
 const MENU_ID = "site-menu";

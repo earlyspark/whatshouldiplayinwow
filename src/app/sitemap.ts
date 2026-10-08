@@ -9,5 +9,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/pairings`, changeFrequency: "monthly", priority: 0.8 },
     ...specs.map((spec) => ({ url: `${siteUrl}/pairings/${specSlug(spec.id)}`, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${siteUrl}/methodology`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteUrl}/about`, changeFrequency: "monthly", priority: 0.5 },
   ];
 }
