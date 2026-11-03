@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { capabilityWeights, racialPairingValue } from "@/data/pairings-config";
 import { isValidCombination, raceById, races, type Faction } from "@/data/forever";
 import { specById, specs, specsForClass, type SpecId } from "@/data/specs";
-import { bestRace, PAIRING_MODES, rankPartners, rawPairScore, tierFor } from "@/lib/pairings";
+import { bestRace, PAIRING_MODES, racialValue, rankPartners, rawPairScore, tierFor } from "@/lib/pairings";
 
 const factions: Faction[] = ["alliance", "horde"];
 const topIds = (specId: SpecId, faction: Faction, mode: "pve" | "pvp", count: number) =>
@@ -52,6 +52,15 @@ describe("spec data", () => {
     expect(capabilityWeights.pvp["chance-stun"]).toBeLessThan(capabilityWeights.pvp.stun);
     expect(capabilityWeights.pve["cleave-damage"]).toBeLessThan(capabilityWeights.pve["aoe-damage"]);
     expect(capabilityWeights.pvp["opener-cc"]).toBeLessThan(capabilityWeights.pvp["hard-cc"]);
+  });
+
+  it("reflects the October Forever ability changes", () => {
+    expect(specById["druid-feral"].abilities.some((ability) => ability.name === "Berserk")).toBe(false);
+    expect(specById["paladin-retribution"].abilities).toContainEqual({ capability: "aoe-damage", name: "Consecration", spellId: 26573 });
+    for (const spec of specsForClass("hunter")) {
+      expect(spec.abilities).toContainEqual({ capability: "burst", name: "Rapid Fire", spellId: 3045 });
+    }
+    expect(specById["hunter-marksmanship"].abilities).toContainEqual({ capability: "chance-stun", name: "Improved Concussive Shot", spellId: 19407 });
   });
 
   it("has three specs for every class", () => {
@@ -198,6 +207,15 @@ describe("bestRace", () => {
   it("prefers a stun or fear break for PvP", () => {
     expect(bestRace("rogue", "alliance", "pvp")?.raceId).toBe("human");
     expect(bestRace("priest", "horde", "pvp")?.raceId).toBe("undead");
+  });
+
+  it("counts Orc Command only for pet classes", () => {
+    for (const mode of PAIRING_MODES) {
+      expect(racialValue("Command", "hunter", mode)).toBe(racialPairingValue[mode].Command);
+      expect(racialValue("Command", "warlock", mode)).toBeGreaterThan(0);
+      expect(racialValue("Command", "mage", mode)).toBe(0);
+      expect(racialValue("Blood Fury", "mage", mode)).toBe(racialPairingValue[mode]["Blood Fury"]);
+    }
   });
 
   it("uses the only race option when a faction has one", () => {

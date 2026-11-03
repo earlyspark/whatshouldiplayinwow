@@ -1,6 +1,7 @@
+import type { ClassId } from "@/data/forever";
 import type { Capability, Role } from "@/data/specs";
 
-export const PAIRINGS_VERSION = "1.2.0";
+export const PAIRINGS_VERSION = "1.3.0";
 
 export type PairingMode = "pve" | "pvp";
 
@@ -92,7 +93,6 @@ export const capabilityWeights: Record<PairingMode, Record<Capability, number>> 
 // Racials only choose the suggested partner race; they never change the spec ranking.
 export const racialPairingValue: Record<PairingMode, Record<string, number>> = {
   pve: {
-    "Endurance": 2,
     "Berserking": 2,
     "Blood Fury": 2,
     "Wind Blessed": 2,
@@ -100,16 +100,17 @@ export const racialPairingValue: Record<PairingMode, Record<string, number>> = {
     "Stoneform": 1.5,
     "Cannibalize": 1.5,
     "Rapid Regeneration": 1.5,
-    "Read Ley Line": 1.5,
+    "Artisan’s Precision": 1.5,
+    "Touch of the Grave": 1.5,
+    "Endurance": 1,
+    "Read Leyline": 1,
+    "Command": 1,
     "Expansive Mind": 1,
     "Eureka!": 1,
     "Regeneration": 1,
     "Big Game Hunter": 1,
     "Beast Slaying": 1,
-    "Sword Specialization": 1,
-    "Mace Specialization": 1,
-    "Axe Specialization": 1,
-    "Touch of the Grave": 1,
+    "Ruthless": 1,
     "Will to Survive": 1,
     "Will of the Forsaken": 1,
     "War Stomp": 1,
@@ -126,16 +127,22 @@ export const racialPairingValue: Record<PairingMode, Record<string, number>> = {
     "Hardiness": 1.5,
     "Perception": 1.5,
     "Berserking": 1.5,
-    "Shatter Curse": 1.5,
     "Endurance": 1.5,
     "Eureka!": 1.5,
+    "Touch of the Grave": 1.5,
     "Shadowmeld": 1,
     "Elune’s Light": 1,
     "Wind Blessed": 1,
-    "Touch of the Grave": 1,
+    "Shatter Curse": 1,
+    "Command": 0.5,
     "Rapid Regeneration": 0.5,
     "Walk on Air": 0.5,
   },
+};
+
+// A racial listed here only counts toward a suggested race for these classes.
+export const racialClassLimits: Record<string, ClassId[]> = {
+  "Command": ["hunter", "warlock"],
 };
 
 // Only capabilities at or above this weight are flagged when neither partner brings them.

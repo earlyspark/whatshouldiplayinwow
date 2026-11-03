@@ -160,8 +160,13 @@ describe("quiz definition", () => {
   });
 
   it("uses the current quiz release version for new result cohorts", () => {
-    expect(QUIZ_VERSION).toBe("1.26.0");
-    expect(QUIZ_CONTENT_VERSION).toBe("1.25.0");
+    expect(QUIZ_VERSION).toBe("1.27.0");
+    expect(QUIZ_CONTENT_VERSION).toBe("1.27.0");
+  });
+
+  it("credits Dwarf's unconditional hit racial for raids", () => {
+    expect(scoring.q3.raids.races?.dwarf).toBe(2);
+    expect(scoring.q3.raids.races?.human).toBe(2);
   });
 
   it("names Q10's control and debuff response without changing its racial credit", () => {

@@ -2,6 +2,7 @@ import {
   capabilityWeights,
   GAP_WEIGHT_THRESHOLD,
   MAX_REASONS,
+  racialClassLimits,
   racialPairingValue,
   roleSynergy,
   tierCutoffs,
@@ -167,11 +168,15 @@ export function racesFor(classId: ClassId, faction: Faction) {
   return races.filter((race) => race.faction === faction && race.classes.includes(classId));
 }
 
+export function racialValue(racialName: string, classId: ClassId, mode: PairingMode) {
+  if (racialClassLimits[racialName]?.includes(classId) === false) return 0;
+  return racialPairingValue[mode][racialName] ?? 0;
+}
+
 export function bestRace(classId: ClassId, faction: Faction, mode: PairingMode) {
-  const values = racialPairingValue[mode];
   let best: { raceId: RaceId; racial: string | null; value: number } | null = null;
   for (const race of racesFor(classId, faction)) {
-    const ranked = race.racials.map((racial) => ({ name: racial.name, value: values[racial.name] ?? 0 })).sort((x, y) => y.value - x.value);
+    const ranked = race.racials.map((racial) => ({ name: racial.name, value: racialValue(racial.name, classId, mode) })).sort((x, y) => y.value - x.value);
     const value = ranked.reduce((sum, racial) => sum + racial.value, 0);
     // Strictly greater keeps the earlier race on ties, so the suggestion is stable.
     if (!best || value > best.value) best = { raceId: race.id, racial: ranked[0]?.value ? ranked[0].name : null, value };

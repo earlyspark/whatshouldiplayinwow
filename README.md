@@ -101,7 +101,7 @@ Saved results retain a combined numeric score for compatibility with older recor
 - **Community players get more say in atmosphere.** Ranking *Community & the vibes* doesn't favor either faction. Instead, it makes the race and class points from your atmosphere answer count more: ×1.5 when ranked first, ×1.3 second, ×1.15 third. The class effect remains small compared with fighting style and character fantasy.
 - **Focused play is a strong preference, not an exclusion.** Choosing a defined playstyle boosts focused classes and lowers adaptable classes. Strong answers elsewhere can still favor an adaptable class.
 - **Frustrations can distinguish close fits.** Disliking downtime weighs against Rogue, while disliking repetition gives it only a small positive cue. Strong stealth and quick-melee preferences can still favor Rogue.
-- **Racial utility follows the actual kit.** Night Elf's Quickness gives a small endurance cue. Skyborne movement abilities do not receive crafting points; the Alliance Skyborne's Read Ley Line contributes to the answer about finding a useful resource or tool. Both Skyborne variants have active movement abilities, so both receive a moderate timing score.
+- **Racial utility follows the actual kit.** Night Elf's Quickness gives a small endurance cue. Skyborne movement abilities do not receive crafting points; the Alliance Skyborne's Read Leyline contributes to the answer about finding a useful resource or tool. Both Skyborne variants have active movement abilities, so both receive a moderate timing score.
 
 ### Picking the alternatives
 

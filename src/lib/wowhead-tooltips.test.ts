@@ -53,4 +53,19 @@ describe("Forever racial tooltips", () => {
     expect(wowheadRacialUrl("skyborne-horde", "Walk on Air")).toBe("https://www.wowhead.com/forever/spell=1259416");
     expect(wowheadRacialUrl("orc", "The Human Spirit")).toBeNull();
   });
+
+  it("links the racials that replaced weapon specializations and renamed Read Leyline", () => {
+    expect(wowheadRacialUrl("human", "Ruthless")).toBe("https://www.wowhead.com/forever/spell=20597");
+    expect(wowheadRacialUrl("dwarf", "Artisan’s Precision")).toBe("https://www.wowhead.com/forever/spell=1259719");
+    expect(wowheadRacialUrl("orc", "Command", "warlock")).toBe("https://www.wowhead.com/forever/spell=20575");
+    expect(wowheadRacialUrl("skyborne-alliance", "Read Leyline")).toBe("https://www.wowhead.com/forever/spell=1259705");
+    expect(wowheadRacialUrl("skyborne-alliance", "Read Ley Line")).toBe("https://www.wowhead.com/forever/spell=1259705");
+    for (const [raceId, name] of [["human", "Sword Specialization"], ["dwarf", "Mace Specialization"], ["orc", "Axe Specialization"]]) {
+      expect(wowheadRacialUrl(raceId, name)).toBeNull();
+    }
+    const racialNames = races.flatMap((race) => race.racials.map((racial) => racial.name));
+    expect(racialNames).not.toContain("Sword Specialization");
+    expect(racialNames).not.toContain("Mace Specialization");
+    expect(racialNames).not.toContain("Axe Specialization");
+  });
 });

@@ -1,6 +1,6 @@
-export const QUIZ_VERSION = "1.26.0";
+export const QUIZ_VERSION = "1.27.0";
 // Changes only when the questions or scoring change. Keeps compatible drafts and result notices stable across release-version bumps.
-export const QUIZ_CONTENT_VERSION = "1.25.0";
+export const QUIZ_CONTENT_VERSION = "1.27.0";
 
 export type QuestionId = `q${number}`;
 

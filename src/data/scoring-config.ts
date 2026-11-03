@@ -78,7 +78,7 @@ export const scoring: Record<QuestionId, Record<string, OptionScore>> = {
     },
     raids: {
       classes: { warrior: 2, priest: 2, shaman: 2, paladin: 2, mage: 2, rogue: 2, hunter: 2, warlock: 2, druid: 1 },
-      races: { orc: 3, troll: 3, "night-elf": 3, gnome: 2, human: 2, "skyborne-alliance": 2, "skyborne-horde": 2 },
+      races: { orc: 3, troll: 3, "night-elf": 3, gnome: 2, human: 2, dwarf: 2, "skyborne-alliance": 2, "skyborne-horde": 2 },
     },
     pvp: {
       classes: { rogue: 3, mage: 3, warlock: 2, priest: 2, shaman: 2, druid: 2, hunter: 2, warrior: 2, paladin: 2 },

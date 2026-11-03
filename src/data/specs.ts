@@ -1,11 +1,15 @@
 import type { ClassId } from "@/data/forever";
 
 // Spec kits combine Blizzard's beta class deep dives with Wowhead's Forever talent and spell data.
-export const SPEC_DATA_CHECKED_AT = "2026-10";
+export const SPEC_DATA_CHECKED_AT = "2026-11";
 
 export const SPEC_DATA_SOURCES = [
   { label: "Blizzard — Priest and Warrior Class Deep Dives", url: "https://news.blizzard.com/en-us/article/24301514/world-of-warcraft-forever-class-deep-dives-priest-and-warrior" },
   { label: "Blizzard — Hunter and Druid Class Deep Dives", url: "https://news.blizzard.com/en-us/article/24301515/world-of-warcraft-forever-class-deep-dives-hunter-and-druid" },
+  { label: "Blizzard — Mage and Shaman Class Deep Dives", url: "https://worldofwarcraft.blizzard.com/en-us/news/24302097" },
+  { label: "Blizzard — Rogue and Warlock Class Deep Dives", url: "https://worldofwarcraft.blizzard.com/en-us/news/24310968" },
+  { label: "Blizzard — Paladin Class Deep Dive", url: "https://worldofwarcraft.blizzard.com/en-us/news/24302099" },
+  { label: "Blizzard — WoW Forever Beta Development Notes", url: "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-updated-october-26/2360696" },
   { label: "Wowhead — Forever Talent Calculator", url: "https://www.wowhead.com/forever/talent-calc" },
   {
     label: "World of Warcraft: Forever — Deep Dive Panel Recap",
@@ -91,6 +95,7 @@ const classKits: Record<ClassId, SpecAbility[]> = {
     a("aoe-damage", "Multi-Shot", 2643),
     a("root-slow", "Concussive Shot", 5116),
     a("hard-cc", "Freezing Trap", 1499),
+    a("burst", "Rapid Fire", 3045),
     a("travel-utility", "Aspect of the Pack", 13159),
   ],
   mage: [
@@ -172,7 +177,6 @@ const definitions: SpecDefinition[] = [
     a("stealth", "Prowl", 5215),
     a("stun", "Bash", 5211),
     a("interrupt", "Feral Charge", 1238122),
-    a("burst", "Berserk", 417141),
     a("aoe-damage", "Swipe", 779),
     a("off-heal", "Regrowth", 8936),
     a("self-heal", "Frenzied Regeneration", 22842),
@@ -185,7 +189,7 @@ const definitions: SpecDefinition[] = [
   ] },
   { id: "hunter-marksmanship", classId: "hunter", name: "Marksmanship", role: "ranged", talents: [
     a("hard-cc", "Scatter Shot", 19503),
-    a("burst", "Rapid Fire", 3045),
+    a("chance-stun", "Improved Concussive Shot", 19407),
     a("party-buff", "Trueshot Aura", 1299346),
   ] },
   { id: "hunter-survival", classId: "hunter", name: "Survival", role: "melee", talents: [
@@ -212,6 +216,7 @@ const definitions: SpecDefinition[] = [
   ] },
   { id: "paladin-retribution", classId: "paladin", name: "Retribution", role: "melee", talents: [
     a("hard-cc", "Repentance", 20066),
+    a("aoe-damage", "Consecration", 26573),
     a("off-heal", "Flash of Light", 19750),
   ] },
   { id: "priest-discipline", classId: "priest", name: "Discipline", role: "healer", talents: [
