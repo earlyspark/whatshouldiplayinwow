@@ -59,6 +59,11 @@ export default function AboutPage() {
           </section>
 
           <StatsInsights />
+
+          <div className="mt-12 flex flex-wrap justify-center gap-4">
+            <TrackedLink href="/" className="btn focus-ring">Go to the quiz</TrackedLink>
+            <TrackedLink href="/pairings" className="btn-outline focus-ring">See what pairs with your spec</TrackedLink>
+          </div>
         </article>
 
         <SiteFooter />
