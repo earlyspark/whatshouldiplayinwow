@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import WowheadTooltips from "@/components/WowheadTooltips";
@@ -19,7 +19,8 @@ const roleLabels: Record<Role, string> = { tank: "Tank", healer: "Healer", melee
 const filterLabels: Record<RoleFilter, string> = { all: "All roles", tank: "Tank", healer: "Healer", dps: "DPS" };
 const factionLabels: Record<Faction, string> = { alliance: "Alliance", horde: "Horde" };
 
-const selectClass = "focus-ring mt-1 block w-full min-h-11 cursor-pointer border border-[var(--control-line)] bg-[var(--raised)] px-3 py-2 text-[var(--bone)] disabled:cursor-not-allowed disabled:opacity-40";
+const selectClass = (highlighted = false) =>
+  `focus-ring mt-1 block w-full min-h-11 cursor-pointer border ${highlighted ? "border-[var(--bronze)]" : "border-[var(--control-line)]"} bg-[var(--raised)] px-3 py-2 text-[var(--bone)] disabled:cursor-not-allowed disabled:opacity-40`;
 const chipClass = (active: boolean) =>
   `focus-ring min-h-10 cursor-pointer border px-3 py-1.5 t-small transition ${active ? "border-[var(--bronze)] bg-[rgba(200,150,74,.12)] text-[var(--bone)] forced-colors:outline forced-colors:outline-2 forced-colors:outline-offset-2" : "border-[var(--control-line)] text-[var(--dim)] hover:border-[var(--bronze)] hover:text-[var(--bone)]"}`;
 const NEW_TAB_NOTE_ID = "pairings-new-tab-note";
@@ -110,6 +111,13 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const classSelectRef = useRef<HTMLSelectElement>(null);
+  const specSelectRef = useRef<HTMLSelectElement>(null);
+  const specNeeded = Boolean(selection.classId && !selection.specId);
+  // Only on arrival (e.g. from a quiz result), so changing class later doesn't move focus.
+  const [focusSpecOnLoad] = useState(specNeeded);
+  useEffect(() => {
+    if (focusSpecOnLoad) specSelectRef.current?.focus();
+  }, [focusSpecOnLoad]);
   const hasSelection = Boolean(selection.classId || selection.raceId || selection.faction || selection.sort !== "pve" || selection.role !== "all");
 
   const reset = () => {
@@ -209,7 +217,7 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
                 Class
                 <select
                   ref={classSelectRef}
-                  className={selectClass}
+                  className={selectClass()}
                   value={selection.classId ?? ""}
                   onChange={(event) => {
                     const classId = (event.target.value || null) as PairingSelection["classId"];
@@ -225,7 +233,8 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
               <label className="t-small block">
                 Specialization
                 <select
-                  className={selectClass}
+                  ref={specSelectRef}
+                  className={selectClass(specNeeded)}
                   value={selection.specId ?? ""}
                   disabled={!selection.classId}
                   onChange={(event) => {
@@ -242,7 +251,7 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
               <label className="t-small block">
                 Race <span className="text-[var(--dim)]">(optional)</span>
                 <select
-                  className={selectClass}
+                  className={selectClass()}
                   aria-describedby={raceNote ? RACE_NOTE_ID : undefined}
                   value={selection.raceId ?? ""}
                   onChange={(event) => {
@@ -275,7 +284,11 @@ export default function PairingsFinder({ intro, sidebar, inlineCreatorCard }: { 
 
           {!mySpec ? (
             <>
-              <p className="t-body text-[var(--dim)]">Choose your class and specialization to see which specs pair best with yours in PvE and PvP.</p>
+              <p className="t-body text-[var(--dim)]">
+                {selection.classId
+                  ? `Choose your ${classById[selection.classId].name} specialization to see which specs pair best with yours in PvE and PvP.`
+                  : "Choose your class and specialization to see which specs pair best with yours in PvE and PvP."}
+              </p>
               <div className="pairings-inline">{inlineCreatorCard}</div>
             </>
           ) : (
