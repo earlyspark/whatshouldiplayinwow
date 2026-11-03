@@ -55,7 +55,7 @@ export default function AboutPage() {
               Coincidentally, around the same time as the birth of this site, I also re-launched <a href="https://earlyspark.etsy.com" {...external}>my Etsy store</a>, so I decided to shamelessly peddle my wares here as well. I&apos;m experimenting with doing things that I enjoy, figuring out how to provide value to others, while also getting rewarded for it. I haven&apos;t solved this yet but if you&apos;d like to support me, or my efforts, feel free to{" "}
               <a href="https://buymeacoffee.com/earlyspark" {...external}>buy me a coffee</a>.
             </p>
-            <p className="t-body text-[var(--dim)]">A human came up with the words to write on this page. (I&apos;m the human.)</p>
+            <p className="t-body text-[var(--dim)]">A human came up with the words in this section. (I&apos;m the human.) The next section has a little bit of slop, I&apos;m sorry.</p>
           </section>
 
           <StatsInsights />
