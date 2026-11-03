@@ -6,7 +6,7 @@ describe("Content Security Policy", () => {
     const policy = contentSecurityPolicy(false, true);
     expect(policy).toContain("script-src 'self' 'unsafe-inline' https://www.googletagmanager.com");
     expect(policy).toContain("https://pagead2.googlesyndication.com");
-    expect(policy).toContain("frame-src https://*.googlesyndication.com");
+    expect(policy).toContain("frame-src https://www.youtube-nocookie.com https://*.googlesyndication.com");
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("frame-ancestors 'none'");
     expect(policy).toContain("connect-src 'self' https://www.google-analytics.com");
@@ -20,7 +20,8 @@ describe("Content Security Policy", () => {
 
   it("leaves out AdSense sources when ads are off but keeps analytics", () => {
     const policy = contentSecurityPolicy(false, false);
-    expect(policy).not.toMatch(/googlesyndication|fundingchoices|googleadservices|adtrafficquality|frame-src/);
+    expect(policy).not.toMatch(/googlesyndication|fundingchoices|googleadservices|adtrafficquality/);
+    expect(policy).toContain("frame-src https://www.youtube-nocookie.com;");
     expect(policy).toContain("script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://*.google.com");
     expect(policy).toContain("connect-src 'self' https://www.google-analytics.com");
     expect(policy).not.toContain("  ");

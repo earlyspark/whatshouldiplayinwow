@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import SiteFooter from "@/components/SiteFooter";
 import TrackedLink from "@/components/TrackedLink";
 import { siteUrl } from "@/lib/site-url";
+import StatsInsights from "./StatsInsights";
 
 const shareTitle = "About this WoW Forever quiz";
 const shareDescription = "Who made the WoW Forever race and class quiz, and why.";
@@ -56,6 +57,8 @@ export default function AboutPage() {
             </p>
             <p className="t-body text-[var(--dim)]">A human came up with the words to write on this page. (I&apos;m the human.)</p>
           </section>
+
+          <StatsInsights />
         </article>
 
         <SiteFooter />

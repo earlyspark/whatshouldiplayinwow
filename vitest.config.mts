@@ -6,7 +6,7 @@ export default defineConfig({
     environment: "node",
     // Background-task worktrees under .claude/ hold their own copy of the repo;
     // their tests resolve "@" to this checkout's src, so mocks miss and they fail.
-    exclude: [...configDefaults.exclude, ".claude/**"],
+    exclude: [...configDefaults.exclude, ".claude/**", "video/**"],
   },
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
 });
