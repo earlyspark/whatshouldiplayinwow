@@ -1,3 +1,5 @@
+import { STATS_SNAPSHOT_RESULTS } from "@/data/stats-snapshot";
+
 const listClass = "t-body mt-4 list-disc space-y-3 pl-6 text-[var(--dim)] marker:text-[var(--bronze)]";
 const strong = "font-semibold text-[var(--bone)]";
 
@@ -14,7 +16,7 @@ export default function StatsInsights() {
   return (
     <section id="stats" aria-labelledby="stats-title" className="mt-16 scroll-mt-8">
       <h2 id="stats-title" className="t-section">Quiz results</h2>
-      <p className="t-body mt-4 text-[var(--dim)]">Updated: November 2, 2026 from 10,043 completed quiz results.</p>
+      <p className="t-body mt-4 text-[var(--dim)]">Updated: November 2, 2026 from {STATS_SNAPSHOT_RESULTS.toLocaleString("en-US")} completed quiz results.</p>
       <p className="t-body mt-3 text-[var(--dim)]">Here&apos;s the aggregate data from the quiz results. Note that there&apos;s selection bias, so take these metrics and interpretations with a grain of salt. It&apos;s just for fun.</p>
 
       <div className="mx-auto mt-8 aspect-video w-full max-w-3xl overflow-hidden rounded-lg border border-[var(--line)]">

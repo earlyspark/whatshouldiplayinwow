@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { questions, QUIZ_CONTENT_VERSION, QUIZ_VERSION, type QuizOption } from "@/data/questions";
 import QuizBanner, { useQuizProductPool } from "@/components/QuizBanner";
 import AdSenseUnit from "@/components/AdSenseUnit";
+import StatsCallout from "@/components/StatsCallout";
 import { trackEvent } from "@/lib/gtag";
 
 type Answers = Record<string, string[]>;
@@ -228,6 +229,7 @@ export default function QuizFlow({ creatorCard, creatorBanner }: { creatorCard: 
     return (
       <section id="quiz" className="w-full" aria-label="Start the WoW Forever race and class quiz">
         <div className="mb-8 flex justify-center"><button ref={startButtonRef} onClick={start} className="btn focus-ring">Start the quiz</button></div>
+        <div className="mb-8"><StatsCallout /></div>
         <div className={`mb-8 grid gap-8 ${hasAmazonProducts ? "lg:grid-cols-2" : ""}`}>
           {hasAmazonProducts ? creatorCard : creatorBanner}
           <QuizBanner questionIndex={-1} layout="sidebar" {...productPool} />
